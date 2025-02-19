@@ -1,0 +1,53 @@
+package soon.capstone.domain.milestone.entity;
+
+import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import soon.capstone.domain.project.entity.Project;
+import soon.capstone.global.domain.common.BaseTimeEntity;
+
+import java.time.LocalDateTime;
+
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Getter
+@Table(name = "milestones")
+@Entity
+public class Milestone extends BaseTimeEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "milestone_id")
+    private Long id;
+
+    @Column(nullable = false)
+    private String title;
+
+    @Column(nullable = false)
+    private String description;
+
+    @Column(nullable = false)
+    private LocalDateTime dueDate;
+
+    @Column(nullable = false)
+    private LocalDateTime startDate;
+
+    @Column(nullable = false)
+    private boolean isCompleted;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "project_id")
+    private Project project;
+
+    @Builder
+    private Milestone(String title, String description, LocalDateTime dueDate, LocalDateTime startDate, Project project) {
+        this.title = title;
+        this.description = description;
+        this.dueDate = dueDate;
+        this.startDate = startDate;
+        this.isCompleted = false;
+        this.project = project;
+    }
+
+}
