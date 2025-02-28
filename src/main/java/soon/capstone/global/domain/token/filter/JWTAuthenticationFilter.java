@@ -1,0 +1,74 @@
+package soon.capstone.global.domain.token.filter;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.util.StringUtils;
+import org.springframework.web.filter.OncePerRequestFilter;
+import soon.capstone.global.domain.token.provider.JWTProvider;
+import soon.capstone.global.exception.dto.response.ErrorResponse;
+
+import java.io.IOException;
+
+import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import static soon.capstone.global.domain.token.common.TokenType.AUTHORIZATION_HEADER;
+import static soon.capstone.global.domain.token.common.TokenType.BEARER_PREFIX;
+import static soon.capstone.global.exception.dto.ErrorDetail.INVALID_TOKEN;
+
+@RequiredArgsConstructor
+public class JWTAuthenticationFilter extends OncePerRequestFilter {
+
+    private final JWTProvider jwtProvider;
+    private final ObjectMapper objectMapper;
+
+    @Override
+    protected void doFilterInternal(
+        HttpServletRequest request,
+        HttpServletResponse response,
+        FilterChain filterChain
+    ) throws ServletException, IOException {
+        String tokenFromHeader = getTokenFromHeader(request);
+        if (tokenFromHeader == null) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        if (!jwtProvider.validateToken(tokenFromHeader)) {
+            responseJWTError(response);
+            return;
+        }
+
+        Authentication authentication = jwtProvider.getAuthentication(tokenFromHeader);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        filterChain.doFilter(request, response);
+    }
+
+    private String getTokenFromHeader(HttpServletRequest request) {
+        String tokenFromHeader = request.getHeader(AUTHORIZATION_HEADER.getValue());
+        if (StringUtils.hasText(tokenFromHeader) && tokenFromHeader.startsWith(BEARER_PREFIX.getValue())) {
+            return tokenFromHeader.substring(BEARER_PREFIX.getValue().length());
+        }
+
+        return null;
+    }
+
+    private void responseJWTError(HttpServletResponse response) throws IOException {
+        ErrorResponse errorResponse = ErrorResponse.builder()
+            .status(SC_UNAUTHORIZED)
+            .message(INVALID_TOKEN.getMessage())
+            .build();
+        String jsonResponse = objectMapper.writeValueAsString(errorResponse);
+
+        response.setStatus(SC_UNAUTHORIZED);
+        response.setContentType(APPLICATION_JSON_VALUE);
+        response.getWriter().write(jsonResponse);
+    }
+
+}

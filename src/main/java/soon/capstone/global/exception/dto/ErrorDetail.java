@@ -14,7 +14,12 @@ public enum ErrorDetail {
     S3_FILE_UPLOAD(500, "S3 파일 업로드 중 오류가 발생했습니다."),
 
     // 회원 관련
-    MEMBER_NOT_FOUND(404, "해당 회원을 찾을 수 없습니다.");
+    MEMBER_NOT_FOUND(404, "해당 회원을 찾을 수 없습니다."),
+
+    // 토큰 관련
+    INVALID_TOKEN(401, "유효하지 않은 토큰입니다."),
+
+    ;
 
     private final int status;
     private final String message;
