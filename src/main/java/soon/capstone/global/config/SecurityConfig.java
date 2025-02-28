@@ -12,6 +12,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import soon.capstone.global.oauth2.service.Oauth2GithubService;
 
 import java.util.List;
 
@@ -20,6 +21,8 @@ import java.util.List;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+    private final Oauth2GithubService oauth2GithubService;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -31,6 +34,23 @@ public class SecurityConfig {
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
             .cors(cors -> cors.configurationSource(corsConfig()));
+
+        http
+            .authorizeHttpRequests(auth -> {
+                auth
+                    .requestMatchers(
+                        "/oauth2/**", "/login/oauth2/**", "/api/v1/auth/reissue",
+                        "/swagger-ui/**", "/v3/api-docs/**"
+                    ).permitAll();
+            });
+
+        http
+            .oauth2Login(oauth2 -> {
+                oauth2
+                    .loginPage("/oauth2/authorization/github")
+                    .userInfoEndpoint(userInfoEndpointConfig ->
+                        userInfoEndpointConfig.userService(oauth2GithubService));
+            });
 
         return http.build();
     }
