@@ -12,6 +12,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import soon.capstone.global.oauth2.handler.Oauth2FailureHandler;
+import soon.capstone.global.oauth2.handler.Oauth2SuccessHandler;
 import soon.capstone.global.oauth2.service.Oauth2GithubService;
 
 import java.util.List;
@@ -23,6 +25,8 @@ import java.util.List;
 public class SecurityConfig {
 
     private final Oauth2GithubService oauth2GithubService;
+    private final Oauth2SuccessHandler oauth2SuccessHandler;
+    private final Oauth2FailureHandler oauth2FailureHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -49,7 +53,9 @@ public class SecurityConfig {
                 oauth2
                     .loginPage("/oauth2/authorization/github")
                     .userInfoEndpoint(userInfoEndpointConfig ->
-                        userInfoEndpointConfig.userService(oauth2GithubService));
+                        userInfoEndpointConfig.userService(oauth2GithubService))
+                    .successHandler(oauth2SuccessHandler)
+                    .failureHandler(oauth2FailureHandler);
             });
 
         return http.build();
