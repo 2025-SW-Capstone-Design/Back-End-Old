@@ -26,9 +26,9 @@ public class Oauth2GithubService extends DefaultOAuth2UserService {
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) {
         OAuth2User oAuth2User = super.loadUser(userRequest);
-        String oauth2Token = userRequest.getAccessToken().getTokenValue();
-        Member member = findOrCreateMember(oAuth2User, oauth2Token);
-        log.info("Oauth2GithubService.loadUser oauth2Token: {}", oauth2Token);
+        String oauthAccessToken = userRequest.getAccessToken().getTokenValue();
+        Member member = findOrCreateMember(oAuth2User, oauthAccessToken);
+        log.info("Oauth2GithubService.loadUser oauth2Token: {}", oauthAccessToken);
 
         return new CustomOAuth2Member(
             Collections.singleton(new SimpleGrantedAuthority(member.getRole().name())),
@@ -36,24 +36,24 @@ public class Oauth2GithubService extends DefaultOAuth2UserService {
             "id",
             member.getId(),
             member.getNickname(),
-            oauth2Token
+            oauthAccessToken
         );
     }
 
-    private Member findOrCreateMember(OAuth2User oAuth2User, String oauth2Token) {
+    private Member findOrCreateMember(OAuth2User oAuth2User, String oauthAccessToken) {
         String nickname = oAuth2User.getName();
         try {
             return memberRepository.findByNickname(nickname);
         } catch (MemberNotFoundException e) {
-            Member member = createMember(oAuth2User, oauth2Token, nickname);
+            Member member = createMember(oAuth2User, oauthAccessToken, nickname);
             memberRepository.save(member);
             return member;
         }
     }
 
-    private Member createMember(OAuth2User oAuth2User, String oauth2Token, String nickname) {
+    private Member createMember(OAuth2User oAuth2User, String oauthAccessToken, String nickname) {
         String profileImageURL = oAuth2User.getAttribute("avatar_url");
-        String email = getEmail(oAuth2User.getAttribute("email"), oauth2Token);
+        String email = getEmail(oAuth2User.getAttribute("email"), oauthAccessToken);
         return Member.builder()
             .email(email)
             .nickname(nickname)
@@ -61,9 +61,9 @@ public class Oauth2GithubService extends DefaultOAuth2UserService {
             .build();
     }
 
-    private String getEmail(String email, String oauth2Token) {
+    private String getEmail(String email, String oauthAccessToken) {
         if (email == null) {
-            return githubEmailService.fetchPrimaryVerifiedEmail(oauth2Token);
+            return githubEmailService.fetchPrimaryVerifiedEmail(oauthAccessToken);
         }
 
         return email;

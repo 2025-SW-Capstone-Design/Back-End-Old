@@ -57,7 +57,7 @@ public class Oauth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
     private void saveToOauthTokenWithRedis(CustomOAuth2Member oAuth2Member) {
         OauthToken token = OauthToken.builder()
-            .token(oAuth2Member.getOauth2Token())
+            .token(oAuth2Member.getOauthAccessToken())
             .memberId(oAuth2Member.getMemberId())
             .build();
         oauthTokenRepository.save(token);

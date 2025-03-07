@@ -10,8 +10,8 @@ public class OauthTokenRepository {
 
     private final OauthTokenRedisRepository oauthTokenRedisRepository;
 
-    public void save(OauthToken oauthToken) {
-        oauthTokenRedisRepository.save(oauthToken);
+    public void save(OauthToken oauthAccessToken) {
+        oauthTokenRedisRepository.save(oauthAccessToken);
     }
 
 }
