@@ -28,7 +28,6 @@ public class OAuth2GithubService extends DefaultOAuth2UserService {
         OAuth2User oAuth2User = super.loadUser(userRequest);
         String oauthAccessToken = userRequest.getAccessToken().getTokenValue();
         Member member = findOrCreateMember(oAuth2User, oauthAccessToken);
-        log.info("Oauth2GithubService.loadUser oauth2Token: {}", oauthAccessToken);
 
         return new CustomOAuth2Member(
             Collections.singleton(new SimpleGrantedAuthority(member.getRole().name())),

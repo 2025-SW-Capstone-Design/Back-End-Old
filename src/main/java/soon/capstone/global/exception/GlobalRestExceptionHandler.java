@@ -25,12 +25,14 @@ public class GlobalRestExceptionHandler {
             .validation(e.getValidation())
             .build();
 
+        log.error("RootException 발생: 상태 코드 - {}, 메시지 - {}, 상세 정보 - {}", statusCode, e.getMessage(), e.getErrorDetail(), e);
+
         return ResponseEntity.status(statusCode).body(response);
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> exception(Exception e) {
-        log.error("예외발생: ", e);
+        log.error("예외 발생: {}", e.getMessage(), e);
 
         int statusCode = INTERNAL_SERVER_ERROR.value();
         ErrorResponse response = ErrorResponse.builder()
@@ -49,16 +51,19 @@ public class GlobalRestExceptionHandler {
             .message(e.getMessage())
             .build();
 
-        for (FieldError fieldError : e.getFieldErrors()) {
-            response.addValidation(fieldError.getField(), fieldError.getDefaultMessage());
-        }
+        e.getFieldErrors().forEach(fieldError -> {
+            String field = fieldError.getField();
+            String errorMessage = fieldError.getDefaultMessage();
+            log.warn("유효성 검사 실패 - 필드: {}, 메시지: {}", field, errorMessage);
+            response.addValidation(field, errorMessage);
+        });
 
         return ResponseEntity.status(statusCode).body(response);
     }
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
     public ResponseEntity<ErrorResponse> missingRequestParameterHandler(MissingServletRequestParameterException e) {
-        log.warn("필수 파라미터가 누락되었습니다: {}", e.getParameterName());
+        log.warn("필수 요청 파라미터 누락: {}", e.getParameterName());
 
         int statusCode = e.getStatusCode().value();
         String errorMessage = e.getParameterName() + "는 필수입니다.";
