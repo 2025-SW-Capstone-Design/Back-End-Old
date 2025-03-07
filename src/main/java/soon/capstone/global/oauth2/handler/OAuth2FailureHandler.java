@@ -21,7 +21,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class Oauth2FailureHandler extends SimpleUrlAuthenticationFailureHandler {
+public class OAuth2FailureHandler extends SimpleUrlAuthenticationFailureHandler {
 
     private final ObjectMapper objectMapper;
 

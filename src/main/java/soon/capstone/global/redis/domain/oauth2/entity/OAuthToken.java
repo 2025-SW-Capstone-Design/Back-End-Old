@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @RedisHash(value = "oauth_token")
-public class OauthToken {
+public class OAuthToken {
 
     @Id
     private Long memberId;
@@ -26,7 +26,7 @@ public class OauthToken {
     private long expiration;
 
     @Builder
-    private OauthToken(Long memberId, String token) {
+    private OAuthToken(Long memberId, String token) {
         this.memberId = memberId;
         this.token = token;
         this.expiration = 8;

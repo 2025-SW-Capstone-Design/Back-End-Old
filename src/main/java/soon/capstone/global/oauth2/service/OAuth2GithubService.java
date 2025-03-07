@@ -18,7 +18,7 @@ import java.util.Collections;
 @Slf4j
 @RequiredArgsConstructor
 @Service
-public class Oauth2GithubService extends DefaultOAuth2UserService {
+public class OAuth2GithubService extends DefaultOAuth2UserService {
 
     private final MemberRepository memberRepository;
     private final GithubEmailService githubEmailService;

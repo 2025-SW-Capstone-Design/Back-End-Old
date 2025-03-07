@@ -13,8 +13,8 @@ import soon.capstone.global.domain.token.provider.JWTProvider;
 import soon.capstone.global.oauth2.dto.CustomOAuth2Member;
 import soon.capstone.global.redis.domain.jwt.entity.JWTRefreshToken;
 import soon.capstone.global.redis.domain.jwt.repository.JwtRepository;
-import soon.capstone.global.redis.domain.oauth2.entity.OauthToken;
-import soon.capstone.global.redis.domain.oauth2.repository.OauthTokenRepository;
+import soon.capstone.global.redis.domain.oauth2.entity.OAuthToken;
+import soon.capstone.global.redis.domain.oauth2.repository.OAuthTokenRepository;
 
 import java.io.IOException;
 
@@ -24,11 +24,11 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class Oauth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
+public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private final JWTProvider jwtProvider;
     private final ObjectMapper objectMapper;
-    private final OauthTokenRepository oauthTokenRepository;
+    private final OAuthTokenRepository oauthTokenRepository;
     private final JwtRepository jwtRepository;
 
     @Override
@@ -56,7 +56,7 @@ public class Oauth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     }
 
     private void saveToOauthTokenWithRedis(CustomOAuth2Member oAuth2Member) {
-        OauthToken token = OauthToken.builder()
+        OAuthToken token = OAuthToken.builder()
             .token(oAuth2Member.getOauthAccessToken())
             .memberId(oAuth2Member.getMemberId())
             .build();
