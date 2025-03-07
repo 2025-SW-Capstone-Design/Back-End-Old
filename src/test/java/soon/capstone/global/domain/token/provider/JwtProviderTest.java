@@ -15,16 +15,16 @@ import java.util.Date;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class JWTProviderTest extends IntegrationTestSupport {
+class JwtProviderTest extends IntegrationTestSupport {
 
-    private JWTProvider jwtProvider;
+    private JwtProvider jwtProvider;
 
     @Value("${spring.jwt.secretKey}")
     private String secretKey;
 
     @BeforeEach
     void setUp() {
-        jwtProvider = new JWTProvider(secretKey);
+        jwtProvider = new JwtProvider(secretKey);
     }
 
     @DisplayName("액세스 토큰과 리프레시 토큰을 생성한다.")

@@ -18,11 +18,11 @@ import static soon.capstone.global.domain.token.common.TokenExpiration.REFRESH_T
 
 @Slf4j
 @Component
-public class JWTProvider {
+public class JwtProvider {
 
     private final Key key;
 
-    public JWTProvider(@Value("${spring.jwt.secretKey}") String secretKey) {
+    public JwtProvider(@Value("${spring.jwt.secretKey}") String secretKey) {
         byte[] decode = Decoders.BASE64.decode(secretKey);
         this.key = Keys.hmacShaKeyFor(decode);
     }

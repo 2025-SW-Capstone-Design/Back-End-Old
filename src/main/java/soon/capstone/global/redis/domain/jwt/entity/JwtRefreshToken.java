@@ -14,7 +14,7 @@ import static soon.capstone.global.domain.token.common.TokenExpiration.REFRESH_T
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @RedisHash(value = "jwt_refresh_token")
-public class JWTRefreshToken {
+public class JwtRefreshToken {
 
     @Id
     private Long memberId;
@@ -26,7 +26,7 @@ public class JWTRefreshToken {
     private long expiration;
 
     @Builder
-    private JWTRefreshToken(Long memberId, String token) {
+    private JwtRefreshToken(Long memberId, String token) {
         this.memberId = memberId;
         this.token = token;
         this.expiration = REFRESH_TOKEN.getExpirationTime() / 1000; // 밀리 초 -> 초

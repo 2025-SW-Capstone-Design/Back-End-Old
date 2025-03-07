@@ -1,7 +1,7 @@
 package soon.capstone.global.redis.domain.jwt.repository;
 
 import org.springframework.data.repository.CrudRepository;
-import soon.capstone.global.redis.domain.jwt.entity.JWTRefreshToken;
+import soon.capstone.global.redis.domain.jwt.entity.JwtRefreshToken;
 
-public interface JwtRedisRepository extends CrudRepository<JWTRefreshToken, Long> {
+public interface JwtRedisRepository extends CrudRepository<JwtRefreshToken, Long> {
 }

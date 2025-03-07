@@ -9,9 +9,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 import soon.capstone.global.domain.token.dto.response.TokenResponse;
-import soon.capstone.global.domain.token.provider.JWTProvider;
+import soon.capstone.global.domain.token.provider.JwtProvider;
 import soon.capstone.global.oauth2.dto.CustomOAuth2Member;
-import soon.capstone.global.redis.domain.jwt.entity.JWTRefreshToken;
+import soon.capstone.global.redis.domain.jwt.entity.JwtRefreshToken;
 import soon.capstone.global.redis.domain.jwt.repository.JwtRepository;
 import soon.capstone.global.redis.domain.oauth2.entity.OAuthToken;
 import soon.capstone.global.redis.domain.oauth2.repository.OAuthTokenRepository;
@@ -26,7 +26,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @Component
 public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
-    private final JWTProvider jwtProvider;
+    private final JwtProvider jwtProvider;
     private final ObjectMapper objectMapper;
     private final OAuthTokenRepository oauthTokenRepository;
     private final JwtRepository jwtRepository;
@@ -48,7 +48,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     }
 
     private void saveToRefreshTokenWithRedis(Long memberId, String refreshToken) {
-        JWTRefreshToken token = JWTRefreshToken.builder()
+        JwtRefreshToken token = JwtRefreshToken.builder()
             .memberId(memberId)
             .token(refreshToken)
             .build();
