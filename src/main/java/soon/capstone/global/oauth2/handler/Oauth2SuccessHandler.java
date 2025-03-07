@@ -11,6 +11,10 @@ import org.springframework.stereotype.Component;
 import soon.capstone.global.domain.token.dto.response.TokenResponse;
 import soon.capstone.global.domain.token.provider.JWTProvider;
 import soon.capstone.global.oauth2.dto.CustomOAuth2Member;
+import soon.capstone.global.redis.domain.jwt.entity.JWTRefreshToken;
+import soon.capstone.global.redis.domain.jwt.repository.JwtRepository;
+import soon.capstone.global.redis.domain.oauth2.entity.OauthToken;
+import soon.capstone.global.redis.domain.oauth2.repository.OauthTokenRepository;
 
 import java.io.IOException;
 
@@ -24,6 +28,8 @@ public class Oauth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
     private final JWTProvider jwtProvider;
     private final ObjectMapper objectMapper;
+    private final OauthTokenRepository oauthTokenRepository;
+    private final JwtRepository jwtRepository;
 
     @Override
     public void onAuthenticationSuccess(
@@ -33,11 +39,28 @@ public class Oauth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     ) throws IOException {
         CustomOAuth2Member oAuth2Member = (CustomOAuth2Member) authentication.getPrincipal();
         TokenResponse tokenResponse = jwtProvider.generateAllToken(oAuth2Member.getNickname());
-        // TODO: redis refresh token 저장
+
+        saveToOauthTokenWithRedis(oAuth2Member);
+        saveToRefreshTokenWithRedis(oAuth2Member.getMemberId(), tokenResponse.refreshToken());
 
         responseToken(response, tokenResponse);
-
         log.info("OAuth2 인증 성공 - nickname: {}, 토큰 발행 완료", oAuth2Member.getNickname());
+    }
+
+    private void saveToRefreshTokenWithRedis(Long memberId, String refreshToken) {
+        JWTRefreshToken token = JWTRefreshToken.builder()
+            .memberId(memberId)
+            .token(refreshToken)
+            .build();
+        jwtRepository.save(token);
+    }
+
+    private void saveToOauthTokenWithRedis(CustomOAuth2Member oAuth2Member) {
+        OauthToken token = OauthToken.builder()
+            .token(oAuth2Member.getOauth2Token())
+            .memberId(oAuth2Member.getMemberId())
+            .build();
+        oauthTokenRepository.save(token);
     }
 
     private void responseToken(HttpServletResponse response, TokenResponse tokenResponse) throws IOException {

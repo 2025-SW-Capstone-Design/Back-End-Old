@@ -26,7 +26,7 @@ public class Oauth2GithubService extends DefaultOAuth2UserService {
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) {
         OAuth2User oAuth2User = super.loadUser(userRequest);
-        String oauth2Token = userRequest.getAccessToken().getTokenValue(); // TODO: redis 저장
+        String oauth2Token = userRequest.getAccessToken().getTokenValue();
         Member member = findOrCreateMember(oAuth2User, oauth2Token);
         log.info("Oauth2GithubService.loadUser oauth2Token: {}", oauth2Token);
 
@@ -34,7 +34,9 @@ public class Oauth2GithubService extends DefaultOAuth2UserService {
             Collections.singleton(new SimpleGrantedAuthority(member.getRole().name())),
             oAuth2User.getAttributes(),
             "id",
-            member.getNickname()
+            member.getId(),
+            member.getNickname(),
+            oauth2Token
         );
     }
 
