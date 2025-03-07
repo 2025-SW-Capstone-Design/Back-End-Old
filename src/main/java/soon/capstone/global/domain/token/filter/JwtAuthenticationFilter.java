@@ -10,7 +10,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
-import soon.capstone.global.domain.token.provider.JWTProvider;
+import soon.capstone.global.domain.token.provider.JwtProvider;
 import soon.capstone.global.exception.dto.response.ErrorResponse;
 
 import java.io.IOException;
@@ -22,9 +22,9 @@ import static soon.capstone.global.domain.token.common.TokenType.BEARER_PREFIX;
 import static soon.capstone.global.exception.dto.ErrorDetail.INVALID_TOKEN;
 
 @RequiredArgsConstructor
-public class JWTAuthenticationFilter extends OncePerRequestFilter {
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final JWTProvider jwtProvider;
+    private final JwtProvider jwtProvider;
     private final ObjectMapper objectMapper;
 
     @Override

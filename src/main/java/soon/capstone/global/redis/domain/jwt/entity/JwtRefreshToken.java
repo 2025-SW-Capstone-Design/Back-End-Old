@@ -1,4 +1,4 @@
-package soon.capstone.global.redis.domain.oauth2.entity;
+package soon.capstone.global.redis.domain.jwt.entity;
 
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -9,12 +9,12 @@ import org.springframework.data.redis.core.RedisHash;
 import org.springframework.data.redis.core.TimeToLive;
 import org.springframework.data.redis.core.index.Indexed;
 
-import java.util.concurrent.TimeUnit;
+import static soon.capstone.global.domain.token.common.TokenExpiration.REFRESH_TOKEN;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@RedisHash(value = "oauth_token")
-public class OauthToken {
+@RedisHash(value = "jwt_refresh_token")
+public class JwtRefreshToken {
 
     @Id
     private Long memberId;
@@ -22,14 +22,14 @@ public class OauthToken {
     @Indexed
     private String token;
 
-    @TimeToLive(unit = TimeUnit.HOURS)
+    @TimeToLive
     private long expiration;
 
     @Builder
-    private OauthToken(Long memberId, String token) {
+    private JwtRefreshToken(Long memberId, String token) {
         this.memberId = memberId;
         this.token = token;
-        this.expiration = 8;
+        this.expiration = REFRESH_TOKEN.getExpirationTime() / 1000; // 밀리 초 -> 초
     }
 
 }

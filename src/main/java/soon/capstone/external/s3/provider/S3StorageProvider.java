@@ -39,7 +39,7 @@ public class S3StorageProvider {
         try {
             s3Client.putObject(putObjectRequest, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
         } catch (IOException e) {
-            log.error("IOException S3 파일 업로드 실패: {}", e.getMessage(), e);
+            log.error("IOException S3 파일 업로드 실패 (파일명: {}): {}", fileName, e.getMessage(), e);
             throw new S3FileUploadException();
         } catch (S3Exception e) {
             log.error("S3Exception AWS S3 업로드 오류: {}", e.awsErrorDetails().errorMessage(), e);

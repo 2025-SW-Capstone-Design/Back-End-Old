@@ -21,7 +21,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @Slf4j
 @RequiredArgsConstructor
 @Component
-public class Oauth2FailureHandler extends SimpleUrlAuthenticationFailureHandler {
+public class OAuth2FailureHandler extends SimpleUrlAuthenticationFailureHandler {
 
     private final ObjectMapper objectMapper;
 
@@ -31,7 +31,7 @@ public class Oauth2FailureHandler extends SimpleUrlAuthenticationFailureHandler 
         HttpServletResponse response,
         AuthenticationException exception
     ) throws IOException, ServletException {
-        log.info("Oauth2FailureHandler : {}", exception.getMessage());
+        log.info("OAuth2 인증 실패: {}", exception.getMessage());
 
         ErrorResponse errorResponse = ErrorResponse.builder()
             .status(UNAUTHORIZED.value())

@@ -18,11 +18,11 @@ import static soon.capstone.global.domain.token.common.TokenExpiration.REFRESH_T
 
 @Slf4j
 @Component
-public class JWTProvider {
+public class JwtProvider {
 
     private final Key key;
 
-    public JWTProvider(@Value("${spring.jwt.secretKey}") String secretKey) {
+    public JwtProvider(@Value("${spring.jwt.secretKey}") String secretKey) {
         byte[] decode = Decoders.BASE64.decode(secretKey);
         this.key = Keys.hmacShaKeyFor(decode);
     }
@@ -33,13 +33,13 @@ public class JWTProvider {
             isExpiredToken(claimsFromToken);
             return true;
         } catch (SecurityException | MalformedJwtException e) {
-            log.error("Invalid JWT signature, 유효하지 않는 JWT 서명 입니다. Token: {}", token);
+            log.warn("Invalid JWT signature, 유효하지 않는 JWT 서명 입니다. Token: {}", token);
         } catch (ExpiredJwtException e) {
-            log.error("Expired JWT, 만료된 JWT 입니다. Token: {}", token);
+            log.warn("Expired JWT, 만료된 JWT 입니다. Token: {}", token);
         } catch (UnsupportedJwtException e) {
-            log.error("Unsupported JWT, 지원되지 않는 JWT 입니다. Token: {}", token);
+            log.warn("Unsupported JWT, 지원되지 않는 JWT 입니다. Token: {}", token);
         } catch (IllegalArgumentException e) {
-            log.error("JWT claims is empty, 잘못된 JWT 입니다. Token: {}", token);
+            log.warn("JWT claims is empty, 잘못된 JWT 입니다. Token: {}", token);
         }
         return false;
     }
