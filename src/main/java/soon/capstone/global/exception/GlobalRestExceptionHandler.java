@@ -2,7 +2,6 @@ package soon.capstone.global.exception;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -48,7 +47,7 @@ public class GlobalRestExceptionHandler {
         int statusCode = e.getStatusCode().value();
         ErrorResponse response = ErrorResponse.builder()
             .status(statusCode)
-            .message(e.getMessage())
+            .message("잘못된 요청입니다.")
             .build();
 
         e.getFieldErrors().forEach(fieldError -> {

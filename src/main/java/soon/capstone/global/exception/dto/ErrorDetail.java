@@ -18,6 +18,7 @@ public enum ErrorDetail {
 
     // 토큰 관련
     INVALID_TOKEN(401, "유효하지 않은 토큰입니다."),
+    TOKEN_NOT_FOUND(404, "해당 토큰을 찾을 수 없습니다"),
 
     // 깃허브 관련
     GITHUB_MEMBER_EMAIL_NOT_FOUND(404, "Github 회원의 이메일을 찾을 수 없습니다."),
