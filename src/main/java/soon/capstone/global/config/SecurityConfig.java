@@ -1,5 +1,6 @@
 package soon.capstone.global.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
@@ -9,9 +10,12 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import soon.capstone.global.domain.token.filter.JwtAuthenticationFilter;
+import soon.capstone.global.domain.token.provider.JwtProvider;
 import soon.capstone.global.oauth2.handler.OAuth2FailureHandler;
 import soon.capstone.global.oauth2.handler.OAuth2SuccessHandler;
 import soon.capstone.global.oauth2.service.OAuth2GithubService;
@@ -21,12 +25,14 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 @Configuration
-@EnableWebSecurity
+@EnableWebSecurity(debug = true)
 public class SecurityConfig {
 
     private final OAuth2GithubService oauth2GithubService;
     private final OAuth2SuccessHandler oauth2SuccessHandler;
     private final OAuth2FailureHandler oauth2FailureHandler;
+    private final JwtProvider jwtProvider;
+    private final ObjectMapper objectMapper;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -45,7 +51,8 @@ public class SecurityConfig {
                     .requestMatchers(
                         "/oauth2/**", "/login/oauth2/**", "/api/v1/auth/reissue",
                         "/swagger-ui/**", "/v3/api-docs/**"
-                    ).permitAll();
+                    ).permitAll()
+                    .anyRequest().authenticated();
             });
 
         http
@@ -57,6 +64,12 @@ public class SecurityConfig {
                     .successHandler(oauth2SuccessHandler)
                     .failureHandler(oauth2FailureHandler);
             });
+
+        http
+            .addFilterBefore(
+                new JwtAuthenticationFilter(jwtProvider, objectMapper),
+                UsernamePasswordAuthenticationFilter.class
+            );
 
         return http.build();
     }

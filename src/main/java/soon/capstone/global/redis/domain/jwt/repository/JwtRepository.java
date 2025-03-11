@@ -2,6 +2,7 @@ package soon.capstone.global.redis.domain.jwt.repository;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import soon.capstone.global.exception.token.TokenNotFoundException;
 import soon.capstone.global.redis.domain.jwt.entity.JwtRefreshToken;
 
 @RequiredArgsConstructor
@@ -12,6 +13,23 @@ public class JwtRepository {
 
     public void save(JwtRefreshToken jwtRefreshToken) {
         jwtRedisRepository.save(jwtRefreshToken);
+    }
+
+    public boolean existsByRefreshToken(String refreshToken) {
+        return jwtRedisRepository.existsByToken(refreshToken);
+    }
+
+    public JwtRefreshToken findByMemberId(Long memberId) {
+        return jwtRedisRepository.findByMemberId(memberId)
+            .orElseThrow(TokenNotFoundException::new);
+    }
+
+    public void delete(JwtRefreshToken jwtRefreshToken) {
+        jwtRedisRepository.delete(jwtRefreshToken);
+    }
+
+    public void deleteAll() {
+        jwtRedisRepository.deleteAll();
     }
 
 }

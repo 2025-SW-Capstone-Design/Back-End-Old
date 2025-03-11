@@ -20,4 +20,7 @@ public class MemberRepository {
             .orElseThrow(MemberNotFoundException::new);
     }
 
+    public void deleteAllInBatch() {
+        memberJpaRepository.deleteAllInBatch();
+    }
 }
