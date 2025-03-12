@@ -44,7 +44,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         saveToRefreshTokenWithRedis(oAuth2Member.getMemberId(), tokenResponse.refreshToken());
 
         responseToken(response, tokenResponse);
-        log.info("OAuth2 인증 성공 - nickname: {}, 토큰 발행 완료", oAuth2Member.getNickname());
+        log.info("OAuth2 인증 성공 - nickname: {}, 토큰 발행 완료{}", oAuth2Member.getNickname(), oAuth2Member.getOauthAccessToken());
     }
 
     private void saveToRefreshTokenWithRedis(Long memberId, String refreshToken) {

@@ -5,4 +5,6 @@ import soon.capstone.domain.team.entity.Team;
 
 public interface TeamJpaRepository extends JpaRepository<Team, Long> {
 
+    boolean existsByNameOrOrganizationName(String name, String organizationName);
+
 }

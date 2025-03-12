@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 public enum Position {
 
+    NONE, // 초기 상태
     BACKEND,
     FRONTEND,
     FULLSTACK,

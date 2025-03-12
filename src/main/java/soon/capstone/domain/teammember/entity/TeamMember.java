@@ -49,4 +49,13 @@ public class TeamMember extends BaseTimeEntity {
         this.team = team;
     }
 
+    public static TeamMember createLeader(Member member, Team team) {
+        return TeamMember.builder()
+            .role(Role.ROLE_LEADER)
+            .position(Position.NONE)
+            .member(member)
+            .team(team)
+            .build();
+    }
+
 }
