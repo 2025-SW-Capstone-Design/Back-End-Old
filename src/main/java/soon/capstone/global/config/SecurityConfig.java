@@ -15,6 +15,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import soon.capstone.global.domain.token.filter.JwtAuthenticationFilter;
+import soon.capstone.global.domain.token.handler.JwtAccessDeniedHandler;
+import soon.capstone.global.domain.token.handler.JwtAuthenticationEntryPoint;
 import soon.capstone.global.domain.token.provider.JwtProvider;
 import soon.capstone.global.oauth2.handler.OAuth2FailureHandler;
 import soon.capstone.global.oauth2.handler.OAuth2SuccessHandler;
@@ -25,13 +27,15 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 @Configuration
-@EnableWebSecurity(debug = true)
+@EnableWebSecurity
 public class SecurityConfig {
 
     private final OAuth2GithubService oauth2GithubService;
     private final OAuth2SuccessHandler oauth2SuccessHandler;
     private final OAuth2FailureHandler oauth2FailureHandler;
     private final JwtProvider jwtProvider;
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
     private final ObjectMapper objectMapper;
 
     @Bean
@@ -58,11 +62,17 @@ public class SecurityConfig {
         http
             .oauth2Login(oauth2 -> {
                 oauth2
-                    .loginPage("/oauth2/authorization/github")
                     .userInfoEndpoint(userInfoEndpointConfig ->
                         userInfoEndpointConfig.userService(oauth2GithubService))
                     .successHandler(oauth2SuccessHandler)
                     .failureHandler(oauth2FailureHandler);
+            });
+
+        http
+            .exceptionHandling(exception -> {
+                exception
+                    .authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                    .accessDeniedHandler(jwtAccessDeniedHandler);
             });
 
         http
@@ -80,8 +90,9 @@ public class SecurityConfig {
         config.setAllowedOriginPatterns(
             List.of("*")// TODO : 배포 시 수정
         );
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowCredentials(true);
+        config.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
