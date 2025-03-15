@@ -1,6 +1,5 @@
 package soon.capstone.global.oauth2.handler;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -8,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
+import org.springframework.web.util.UriComponentsBuilder;
 import soon.capstone.global.domain.token.dto.response.TokenResponse;
 import soon.capstone.global.domain.token.provider.JwtProvider;
 import soon.capstone.global.oauth2.dto.CustomOAuth2Member;
@@ -18,16 +18,12 @@ import soon.capstone.global.redis.domain.oauth2.repository.OAuthTokenRepository;
 
 import java.io.IOException;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
-
 @Slf4j
 @RequiredArgsConstructor
 @Component
 public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private final JwtProvider jwtProvider;
-    private final ObjectMapper objectMapper;
     private final OAuthTokenRepository oauthTokenRepository;
     private final JwtRepository jwtRepository;
 
@@ -43,16 +39,10 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         saveToOauthTokenWithRedis(oAuth2Member);
         saveToRefreshTokenWithRedis(oAuth2Member.getMemberId(), tokenResponse.refreshToken());
 
-        responseToken(response, tokenResponse);
-        log.info("OAuth2 인증 성공 - nickname: {}, 토큰 발행 완료", oAuth2Member.getNickname());
-    }
+        String redirectUrl = buildRedirectUrl(tokenResponse);
+        getRedirectStrategy().sendRedirect(request, response, redirectUrl);
 
-    private void saveToRefreshTokenWithRedis(Long memberId, String refreshToken) {
-        JwtRefreshToken token = JwtRefreshToken.builder()
-            .memberId(memberId)
-            .token(refreshToken)
-            .build();
-        jwtRepository.save(token);
+        log.info("OAuth2 인증 성공 - nickname: {}, 토큰 발행 완료{}", oAuth2Member.getNickname(), oAuth2Member.getOauthAccessToken());
     }
 
     private void saveToOauthTokenWithRedis(CustomOAuth2Member oAuth2Member) {
@@ -63,13 +53,20 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         oauthTokenRepository.save(token);
     }
 
-    private void responseToken(HttpServletResponse response, TokenResponse tokenResponse) throws IOException {
-        response.setStatus(HttpServletResponse.SC_OK);
-        response.setContentType(APPLICATION_JSON_VALUE);
-        response.setCharacterEncoding(UTF_8.name());
-        String json = objectMapper.writeValueAsString(tokenResponse);
-        response.getWriter().write(json);
-        response.getWriter().flush();
+    private void saveToRefreshTokenWithRedis(Long memberId, String refreshToken) {
+        JwtRefreshToken token = JwtRefreshToken.builder()
+            .memberId(memberId)
+            .token(refreshToken)
+            .build();
+        jwtRepository.save(token);
+    }
+
+    private String buildRedirectUrl(TokenResponse tokenResponse) {
+        return UriComponentsBuilder.fromUriString("http://localhost:8080")// TODO: 배포 시 수정
+            .queryParam("accessToken", tokenResponse.accessToken())
+            .queryParam("refreshToken", tokenResponse.refreshToken())
+            .build()
+            .toUriString();
     }
 
 }

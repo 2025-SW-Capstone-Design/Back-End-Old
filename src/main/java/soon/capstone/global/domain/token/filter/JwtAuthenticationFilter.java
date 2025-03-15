@@ -6,6 +6,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
@@ -21,6 +22,7 @@ import static soon.capstone.global.domain.token.common.TokenType.AUTHORIZATION_H
 import static soon.capstone.global.domain.token.common.TokenType.BEARER_PREFIX;
 import static soon.capstone.global.exception.dto.ErrorDetail.INVALID_TOKEN;
 
+@Slf4j
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
@@ -39,15 +41,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        if (!jwtProvider.validateToken(tokenFromHeader)) {
+        try {
+            if (jwtProvider.validateToken(tokenFromHeader)) {
+                Authentication authentication = jwtProvider.getAuthentication(tokenFromHeader);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+                filterChain.doFilter(request, response);
+            } else {
+                responseJWTError(response);
+            }
+        } catch (Exception e) {
+            log.error("JWT 인증 실패: {}", e.getMessage());
             responseJWTError(response);
-            return;
         }
-
-        Authentication authentication = jwtProvider.getAuthentication(tokenFromHeader);
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        filterChain.doFilter(request, response);
     }
 
     private String getTokenFromHeader(HttpServletRequest request) {
