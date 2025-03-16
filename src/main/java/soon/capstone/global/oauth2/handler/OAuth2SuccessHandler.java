@@ -34,7 +34,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         Authentication authentication
     ) throws IOException {
         CustomOAuth2Member oAuth2Member = (CustomOAuth2Member) authentication.getPrincipal();
-        TokenResponse tokenResponse = jwtProvider.generateAllToken(oAuth2Member.getNickname());
+        TokenResponse tokenResponse = jwtProvider.generateAllToken(oAuth2Member.getMemberId());
 
         saveToOauthTokenWithRedis(oAuth2Member);
         saveToRefreshTokenWithRedis(oAuth2Member.getMemberId(), tokenResponse.refreshToken());

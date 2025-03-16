@@ -44,7 +44,7 @@ class AuthServiceTest extends IntegrationTestSupport {
         Member member = createMember();
         memberRepository.save(member);
 
-        TokenResponse tokenResponse = jwtProvider.generateAllToken(member.getNickname());
+        TokenResponse tokenResponse = jwtProvider.generateAllToken(member.getId());
         ReissueTokenServiceRequest request = ReissueTokenServiceRequest.builder()
             .accessToken(tokenResponse.accessToken())
             .refreshToken(tokenResponse.refreshToken())
@@ -71,7 +71,7 @@ class AuthServiceTest extends IntegrationTestSupport {
         Member member = createMember();
         memberRepository.save(member);
 
-        TokenResponse tokenResponse = jwtProvider.generateAllToken(member.getNickname());
+        TokenResponse tokenResponse = jwtProvider.generateAllToken(member.getId());
         ReissueTokenServiceRequest request = ReissueTokenServiceRequest.builder()
             .accessToken(tokenResponse.accessToken())
             .refreshToken(tokenResponse.refreshToken())

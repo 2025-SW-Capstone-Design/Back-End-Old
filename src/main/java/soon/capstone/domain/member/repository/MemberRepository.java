@@ -20,7 +20,13 @@ public class MemberRepository {
             .orElseThrow(MemberNotFoundException::new);
     }
 
+    public Member findById(Long memberId) {
+        return memberJpaRepository.findById(memberId)
+            .orElseThrow(MemberNotFoundException::new);
+    }
+
     public void deleteAllInBatch() {
         memberJpaRepository.deleteAllInBatch();
     }
+
 }

@@ -51,8 +51,8 @@ public class JwtProvider {
         return false;
     }
 
-    public TokenResponse generateAllToken(String nickname) {
-        String accessToken = generateAccessToken(nickname);
+    public TokenResponse generateAllToken(Long memberId) {
+        String accessToken = generateAccessToken(memberId);
         String refreshToken = generateRefreshToken();
 
         return TokenResponse.builder()
@@ -68,14 +68,14 @@ public class JwtProvider {
 
     public Authentication getAuthentication(String token) {
         Claims claims = getClaimsFromToken(token);
-        String nickname = claims.getSubject();
+        String memberId = claims.getSubject();
 
         Role role = getRoleFromToken(token);
         Collection<SimpleGrantedAuthority> authorities = Collections.singletonList(
             new SimpleGrantedAuthority(role.name())
         );
 
-        return new UsernamePasswordAuthenticationToken(nickname, "", authorities);
+        return new UsernamePasswordAuthenticationToken(memberId, "", authorities);
     }
 
     public Role getRoleFromToken(String token) {
@@ -83,10 +83,10 @@ public class JwtProvider {
         return Role.valueOf(claimsFromToken.get(AUTHORIZATION_HEADER.getValue(), String.class));
     }
 
-    private String generateAccessToken(String nickname) {
+    private String generateAccessToken(Long memberId) {
         Date expirationDate = createExpirationDate(ACCESS_TOKEN.getExpirationTime());
         return Jwts.builder()
-            .setSubject(nickname)
+            .setSubject(String.valueOf(memberId))
             .claim(AUTHORIZATION_HEADER.getValue(), ROLE_USER)
             .setExpiration(expirationDate)
             .setIssuedAt(new Date())
