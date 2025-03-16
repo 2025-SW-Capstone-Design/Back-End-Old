@@ -26,10 +26,10 @@ public class AuthService {
     public TokenResponse reissueToken(ReissueTokenServiceRequest request) {
         String accessToken = request.accessToken();
         String refreshToken = request.refreshToken();
-        String nickname = jwtProvider.getSubjectFromToken(accessToken);
-        Member member = memberRepository.findByNickname(nickname);
+        Long memberId = Long.valueOf(jwtProvider.getSubjectFromToken(accessToken));
+        Member member = memberRepository.findById(memberId);
 
-        validateRefreshToken(refreshToken, nickname);
+        validateRefreshToken(refreshToken, member.getNickname());
 
         return updateRefreshToken(member);
     }
@@ -45,7 +45,7 @@ public class AuthService {
         JwtRefreshToken byRefreshToken = jwtRepository.findByMemberId(member.getId());
         jwtRepository.delete(byRefreshToken);
 
-        TokenResponse tokenResponse = jwtProvider.generateAllToken(member.getNickname());
+        TokenResponse tokenResponse = jwtProvider.generateAllToken(member.getId());
 
         JwtRefreshToken jwtRefreshToken = JwtRefreshToken.builder()
             .memberId(member.getId())

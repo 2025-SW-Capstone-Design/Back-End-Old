@@ -31,10 +31,10 @@ class JwtProviderTest extends IntegrationTestSupport {
     @Test
     void generateAllToken() {
         // given
-        String nickname = "test-nickname";
+        Long memberId = 1L;
 
         // when
-        TokenResponse tokenResponse = jwtProvider.generateAllToken(nickname);
+        TokenResponse tokenResponse = jwtProvider.generateAllToken(memberId);
 
         // then
         assertThat(tokenResponse).isNotNull();
@@ -46,22 +46,22 @@ class JwtProviderTest extends IntegrationTestSupport {
     @Test
     void getSubjectFromToken() {
         // given
-        String nickname = "test-nickname";
-        TokenResponse tokenResponse = jwtProvider.generateAllToken(nickname);
+        Long memberId = 1L;
+        TokenResponse tokenResponse = jwtProvider.generateAllToken(memberId);
 
         // when
         String subjectFromToken = jwtProvider.getSubjectFromToken(tokenResponse.accessToken());
 
         // then
-        assertThat(subjectFromToken).isEqualTo(nickname);
+        assertThat(subjectFromToken).isEqualTo("1");
     }
 
     @DisplayName("유효한 토큰을 검증한다.")
     @Test
     void validateTokenValidToken() {
         // given
-        String nickname = "test-nickname";
-        TokenResponse tokenResponse = jwtProvider.generateAllToken(nickname);
+        Long memberId = 1L;
+        TokenResponse tokenResponse = jwtProvider.generateAllToken(memberId);
         String validToken = tokenResponse.accessToken();
 
         // when
@@ -90,7 +90,7 @@ class JwtProviderTest extends IntegrationTestSupport {
         // given
         Key key = getDeclaredFieldKey();
         String expiredToken = Jwts.builder()
-            .setSubject("test-subject")
+            .setSubject("1")
             .setExpiration(new Date(System.currentTimeMillis() - 1000))
             .setIssuedAt(new Date(System.currentTimeMillis() - 2000))
             .signWith(key, SignatureAlgorithm.HS512)
