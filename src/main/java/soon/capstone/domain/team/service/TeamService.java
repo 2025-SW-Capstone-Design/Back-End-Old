@@ -33,11 +33,7 @@ public class TeamService {
 
         validateTeamCreation(request, oAuthToken);
 
-        Team team = Team.builder()
-            .name(request.name())
-            .description(request.description())
-            .organizationName(request.organizationName())
-            .build();
+        Team team = request.toEntity();
         teamRepository.save(team);
 
         TeamMember leader = TeamMember.createLeader(member, team);
