@@ -7,14 +7,21 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
+import soon.capstone.domain.member.entity.Role;
 import soon.capstone.global.domain.token.dto.response.TokenResponse;
 
 import java.security.Key;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 
+import static soon.capstone.domain.member.entity.Role.ROLE_USER;
 import static soon.capstone.global.domain.token.common.TokenExpiration.ACCESS_TOKEN;
 import static soon.capstone.global.domain.token.common.TokenExpiration.REFRESH_TOKEN;
+import static soon.capstone.global.domain.token.common.TokenType.AUTHORIZATION_HEADER;
+import static soon.capstone.global.exception.dto.ErrorDetail.INVALID_TOKEN;
 
 @Slf4j
 @Component
@@ -44,8 +51,8 @@ public class JwtProvider {
         return false;
     }
 
-    public TokenResponse generateAllToken(String nickname) {
-        String accessToken = generateAccessToken(nickname);
+    public TokenResponse generateAllToken(Long memberId) {
+        String accessToken = generateAccessToken(memberId);
         String refreshToken = generateRefreshToken();
 
         return TokenResponse.builder()
@@ -61,15 +68,26 @@ public class JwtProvider {
 
     public Authentication getAuthentication(String token) {
         Claims claims = getClaimsFromToken(token);
-        String nickname = claims.getSubject();
+        String memberId = claims.getSubject();
 
-        return new UsernamePasswordAuthenticationToken(nickname, "");
+        Role role = getRoleFromToken(token);
+        Collection<SimpleGrantedAuthority> authorities = Collections.singletonList(
+            new SimpleGrantedAuthority(role.name())
+        );
+
+        return new UsernamePasswordAuthenticationToken(memberId, "", authorities);
     }
 
-    private String generateAccessToken(String nickname) {
+    public Role getRoleFromToken(String token) {
+        Claims claimsFromToken = getClaimsFromToken(token);
+        return Role.valueOf(claimsFromToken.get(AUTHORIZATION_HEADER.getValue(), String.class));
+    }
+
+    private String generateAccessToken(Long memberId) {
         Date expirationDate = createExpirationDate(ACCESS_TOKEN.getExpirationTime());
         return Jwts.builder()
-            .setSubject(nickname)
+            .setSubject(String.valueOf(memberId))
+            .claim(AUTHORIZATION_HEADER.getValue(), ROLE_USER)
             .setExpiration(expirationDate)
             .setIssuedAt(new Date())
             .signWith(key, SignatureAlgorithm.HS512)
@@ -100,7 +118,7 @@ public class JwtProvider {
     private void isExpiredToken(Claims claims) {
         Date expiration = claims.getExpiration();
         if (expiration.before(new Date())) {
-            throw new ExpiredJwtException(null, claims, "만료된 토큰입니다");
+            throw new ExpiredJwtException(null, claims, INVALID_TOKEN.getMessage());
         }
     }
 
