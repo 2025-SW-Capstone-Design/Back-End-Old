@@ -128,7 +128,7 @@ class TeamServiceTest extends IntegrationTestSupport {
         Long teamId = teamService.createTeam(request, member.getId());
 
         // then
-        TeamMember teamMember = teamMemberRepository.findById(teamId);
+        TeamMember teamMember = teamMemberRepository.findByTeamId(teamId);
         assertThat(teamMember.getRole())
             .isEqualTo(ROLE_LEADER);
     }
@@ -152,7 +152,7 @@ class TeamServiceTest extends IntegrationTestSupport {
         Long teamId = teamService.createTeam(request, member.getId());
 
         // then
-        TeamMember teamMember = teamMemberRepository.findById(teamId);
+        TeamMember teamMember = teamMemberRepository.findByTeamId(teamId);
         assertThat(teamMember.getPosition())
             .isEqualTo(NONE);
     }
@@ -194,7 +194,7 @@ class TeamServiceTest extends IntegrationTestSupport {
         teamMemberRepository.save(teamMember);
 
         String fixedCode = "ABCD123";
-        given(invitationCodeGenerator.generateInvitationCode())
+        given(invitationCodeGenerator.generateInvitationCode(team.getId()))
             .willReturn(fixedCode);
 
         // when

@@ -48,7 +48,7 @@ public class TeamService {
 
     @Transactional
     public String generateInvitationCode(Long teamId, Long memberId) {
-        TeamMember teamMember = teamMemberRepository.findById(memberId);
+        TeamMember teamMember = teamMemberRepository.findByMemberId(memberId);
 
         if (!isLeader(teamMember.getRole())) {
             throw new IsNotTeamLeaderException();

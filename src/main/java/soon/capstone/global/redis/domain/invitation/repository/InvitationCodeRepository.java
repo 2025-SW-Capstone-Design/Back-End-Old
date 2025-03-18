@@ -14,4 +14,8 @@ public class InvitationCodeRepository {
         invitationCodeRedisRepository.save(invitationCode);
     }
 
+    public void deleteAll() {
+        invitationCodeRedisRepository.deleteAll();
+    }
+
 }
