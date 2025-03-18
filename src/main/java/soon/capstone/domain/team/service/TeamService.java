@@ -12,9 +12,12 @@ import soon.capstone.domain.teammember.entity.TeamMember;
 import soon.capstone.domain.teammember.repository.TeamMemberRepository;
 import soon.capstone.external.github.service.GithubOrganizationService;
 import soon.capstone.global.exception.team.IsNotAdminInOrganizationException;
+import soon.capstone.global.exception.team.IsNotTeamLeaderException;
 import soon.capstone.global.exception.team.TeamAlreadyExistsException;
 import soon.capstone.global.redis.domain.oauth2.entity.OAuthToken;
 import soon.capstone.global.redis.domain.oauth2.repository.OAuthTokenRepository;
+
+import static soon.capstone.domain.teammember.entity.common.Role.isLeader;
 
 @RequiredArgsConstructor
 @Service
@@ -25,6 +28,7 @@ public class TeamService {
     private final MemberRepository memberRepository;
     private final OAuthTokenRepository oAuthTokenRepository;
     private final GithubOrganizationService githubOrganizationService;
+    private final InvitationCodeGenerator invitationCodeGenerator;
 
     @Transactional
     public Long createTeam(TeamCreateServiceRequest request, Long memberId) {
@@ -40,6 +44,17 @@ public class TeamService {
         teamMemberRepository.save(leader);
 
         return team.getId();
+    }
+
+    @Transactional
+    public String generateInvitationCode(Long teamId, Long memberId) {
+        TeamMember teamMember = teamMemberRepository.findById(memberId);
+
+        if (!isLeader(teamMember.getRole())) {
+            throw new IsNotTeamLeaderException();
+        }
+
+        return invitationCodeGenerator.generateInvitationCode(teamId);
     }
 
     private void validateTeamCreation(TeamCreateServiceRequest request, OAuthToken oAuthToken) {

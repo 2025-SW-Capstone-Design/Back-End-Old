@@ -32,6 +32,8 @@ public enum ErrorDetail {
 
     // 팀 멤버 관련
     TEAM_MEMBER_NOT_FOUND(404, "해당 팀 멤버를 찾을 수 없습니다."),
+    TEAM_MEMBER_ALREADY_EXISTS(409, "해당 팀 멤버가 이미 존재합니다."),
+    IS_NOT_TEAM_LEADER(403, "해당 팀의 리더가 아닙니다."),
 
     ;
 

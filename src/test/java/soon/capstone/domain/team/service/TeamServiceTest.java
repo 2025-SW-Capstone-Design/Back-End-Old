@@ -15,7 +15,9 @@ import soon.capstone.domain.teammember.entity.TeamMember;
 import soon.capstone.domain.teammember.repository.TeamMemberRepository;
 import soon.capstone.external.github.service.GithubOrganizationService;
 import soon.capstone.global.exception.team.IsNotAdminInOrganizationException;
+import soon.capstone.global.exception.team.IsNotTeamLeaderException;
 import soon.capstone.global.exception.team.TeamAlreadyExistsException;
+import soon.capstone.global.redis.domain.invitation.repository.InvitationCodeRepository;
 import soon.capstone.global.redis.domain.oauth2.entity.OAuthToken;
 import soon.capstone.global.redis.domain.oauth2.repository.OAuthTokenRepository;
 
@@ -24,8 +26,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
 import static soon.capstone.domain.teammember.entity.common.Position.NONE;
 import static soon.capstone.domain.teammember.entity.common.Role.ROLE_LEADER;
-import static soon.capstone.global.exception.dto.ErrorDetail.IS_NOT_ADMIN_IN_ORGANIZATION;
-import static soon.capstone.global.exception.dto.ErrorDetail.TEAM_ALREADY_EXISTS;
+import static soon.capstone.domain.teammember.entity.common.Role.ROLE_MEMBER;
+import static soon.capstone.global.exception.dto.ErrorDetail.*;
 
 class TeamServiceTest extends IntegrationTestSupport {
 
@@ -45,7 +47,13 @@ class TeamServiceTest extends IntegrationTestSupport {
     private OAuthTokenRepository oAuthTokenRepository;
 
     @MockitoBean
+    private InvitationCodeRepository invitationCodeRepository;
+
+    @MockitoBean
     private GithubOrganizationService githubOrganizationService;
+
+    @MockitoBean
+    private InvitationCodeGenerator invitationCodeGenerator;
 
     @AfterEach
     void tearDown() {
@@ -172,11 +180,68 @@ class TeamServiceTest extends IntegrationTestSupport {
             .hasMessage(TEAM_ALREADY_EXISTS.getMessage());
     }
 
+    @DisplayName("팀 초대 코드를 생성한다")
+    @Test
+    void generateInvitationCode() {
+        // given
+        Member member = createMember();
+        memberRepository.save(member);
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        TeamMember teamMember = TeamMember.createLeader(member, team);
+        teamMemberRepository.save(teamMember);
+
+        String fixedCode = "ABCD123";
+        given(invitationCodeGenerator.generateInvitationCode())
+            .willReturn(fixedCode);
+
+        // when
+        String invitationCode = teamService.generateInvitationCode(team.getId(), member.getId());
+
+        // then
+        assertThat(invitationCode)
+            .isEqualTo(fixedCode);
+    }
+
+    @DisplayName("팀 리더가 아닌 경우 초대 코드 생성시 예외를 발생한다.")
+    @Test
+    void generateInvitationCodeIsNotLeader() {
+        // given
+        Member member = createMember();
+        memberRepository.save(member);
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        TeamMember teamMember = TeamMember.builder()
+            .role(ROLE_MEMBER)
+            .member(member)
+            .team(team)
+            .position(NONE)
+            .build();
+        teamMemberRepository.save(teamMember);
+
+        // expected
+        assertThatThrownBy(() -> teamService.generateInvitationCode(team.getId(), member.getId()))
+            .isInstanceOf(IsNotTeamLeaderException.class)
+            .hasMessage(IS_NOT_TEAM_LEADER.getMessage());
+    }
+
     private Member createMember() {
         return Member.builder()
             .email("email")
             .nickname("nickname")
             .profileImageURL("profileImageURL")
+            .build();
+    }
+
+    private Team createTeam() {
+        return Team.builder()
+            .name("name")
+            .description("description")
+            .organizationName("organizationName")
             .build();
     }
 

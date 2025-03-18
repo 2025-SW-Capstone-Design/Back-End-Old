@@ -28,4 +28,14 @@ public class TeamController {
         return ResponseEntity.ok(teamId);
     }
 
+    @PostMapping("/invitation-code")
+    public ResponseEntity<String> generateInvitationCode(
+        @RequestBody Long teamId,
+        @AuthMemberId Long memberId
+    ) {
+        String invitationCode = teamService.generateInvitationCode(teamId, memberId);
+
+        return ResponseEntity.ok(invitationCode);
+    }
+
 }

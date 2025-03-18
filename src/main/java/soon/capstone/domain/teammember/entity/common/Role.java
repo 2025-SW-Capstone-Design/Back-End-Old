@@ -10,4 +10,8 @@ public enum Role {
     ROLE_LEADER,
     ROLE_MEMBER;
 
+    public static boolean isLeader(Role role) {
+        return role == ROLE_LEADER;
+    }
+
 }
