@@ -8,6 +8,7 @@ import soon.capstone.domain.member.repository.MemberRepository;
 import soon.capstone.domain.team.entity.Team;
 import soon.capstone.domain.team.repository.TeamRepository;
 import soon.capstone.domain.team.service.dto.request.TeamCreateServiceRequest;
+import soon.capstone.domain.team.service.dto.request.TeamInvitationServiceRequest;
 import soon.capstone.domain.teammember.entity.TeamMember;
 import soon.capstone.domain.teammember.repository.TeamMemberRepository;
 import soon.capstone.external.github.service.GithubOrganizationService;
@@ -18,8 +19,6 @@ import soon.capstone.global.exception.team.TeamAlreadyExistsException;
 import soon.capstone.global.redis.domain.invitation.repository.InvitationCodeRepository;
 import soon.capstone.global.redis.domain.oauth2.entity.OAuthToken;
 import soon.capstone.global.redis.domain.oauth2.repository.OAuthTokenRepository;
-
-import java.util.List;
 
 import static soon.capstone.domain.teammember.entity.common.Role.isLeader;
 
@@ -65,14 +64,14 @@ public class TeamService {
     }
 
     @Transactional(readOnly = true)
-    public void sendInvitationEmails(Long teamId, Long memberId, List<String> emails) {
+    public void sendInvitationEmails(TeamInvitationServiceRequest request, Long memberId) {
         TeamMember teamMember = teamMemberRepository.findByMemberId(memberId);
         if (!isLeader(teamMember.getRole())) {
             throw new IsNotTeamLeaderException();
         }
 
-        String invitationCode = invitationCodeRepository.findByTeamId(teamId).getCode();
-        emails.forEach(email -> {
+        String invitationCode = invitationCodeRepository.findByTeamId(request.teamId()).getCode();
+        request.emails().forEach(email -> {
             emailSendService.sendInvitationCodeEmail(email, invitationCode);
         });
     }

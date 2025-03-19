@@ -3,7 +3,6 @@ package soon.capstone.domain.team.service;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import soon.capstone.IntegrationTestSupport;
@@ -12,6 +11,7 @@ import soon.capstone.domain.member.repository.MemberRepository;
 import soon.capstone.domain.team.entity.Team;
 import soon.capstone.domain.team.repository.TeamRepository;
 import soon.capstone.domain.team.service.dto.request.TeamCreateServiceRequest;
+import soon.capstone.domain.team.service.dto.request.TeamInvitationServiceRequest;
 import soon.capstone.domain.teammember.entity.TeamMember;
 import soon.capstone.domain.teammember.repository.TeamMemberRepository;
 import soon.capstone.external.github.service.GithubOrganizationService;
@@ -256,13 +256,14 @@ class TeamServiceTest extends IntegrationTestSupport {
         teamMemberRepository.save(teamMember);
 
         String fixedCode = "ABCD123";
-        List<String> emails = List.of("test1@example.com", "test2@example.com");
 
         InvitationCode invitationCode = createInvitationCode(team, fixedCode);
         invitationCodeRepository.save(invitationCode);
 
+        TeamInvitationServiceRequest request = createTeamInvitationServiceRequest(team.getId());
+
         // when
-        teamService.sendInvitationEmails(team.getId(), member.getId(), emails);
+        teamService.sendInvitationEmails(request, member.getId());
 
         // then
         then(emailSendService)
@@ -305,6 +306,13 @@ class TeamServiceTest extends IntegrationTestSupport {
         return InvitationCode.builder()
             .teamId(team.getId())
             .code(fixedCode)
+            .build();
+    }
+
+    private TeamInvitationServiceRequest createTeamInvitationServiceRequest(Long teamId) {
+        return TeamInvitationServiceRequest.builder()
+            .emails(List.of("test1@example.com", "test2@example.com"))
+            .teamId(teamId)
             .build();
     }
 
