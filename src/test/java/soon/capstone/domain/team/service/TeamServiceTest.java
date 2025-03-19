@@ -3,6 +3,7 @@ package soon.capstone.domain.team.service;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import soon.capstone.IntegrationTestSupport;
@@ -14,16 +15,24 @@ import soon.capstone.domain.team.service.dto.request.TeamCreateServiceRequest;
 import soon.capstone.domain.teammember.entity.TeamMember;
 import soon.capstone.domain.teammember.repository.TeamMemberRepository;
 import soon.capstone.external.github.service.GithubOrganizationService;
+import soon.capstone.global.email.service.EmailSendService;
 import soon.capstone.global.exception.team.IsNotAdminInOrganizationException;
 import soon.capstone.global.exception.team.IsNotTeamLeaderException;
 import soon.capstone.global.exception.team.TeamAlreadyExistsException;
+import soon.capstone.global.redis.domain.invitation.entity.InvitationCode;
 import soon.capstone.global.redis.domain.invitation.repository.InvitationCodeRepository;
 import soon.capstone.global.redis.domain.oauth2.entity.OAuthToken;
 import soon.capstone.global.redis.domain.oauth2.repository.OAuthTokenRepository;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.times;
 import static soon.capstone.domain.teammember.entity.common.Position.NONE;
 import static soon.capstone.domain.teammember.entity.common.Role.ROLE_LEADER;
 import static soon.capstone.domain.teammember.entity.common.Role.ROLE_MEMBER;
@@ -46,7 +55,7 @@ class TeamServiceTest extends IntegrationTestSupport {
     @Autowired
     private OAuthTokenRepository oAuthTokenRepository;
 
-    @MockitoBean
+    @Autowired
     private InvitationCodeRepository invitationCodeRepository;
 
     @MockitoBean
@@ -55,11 +64,15 @@ class TeamServiceTest extends IntegrationTestSupport {
     @MockitoBean
     private InvitationCodeGenerator invitationCodeGenerator;
 
+    @MockitoBean
+    private EmailSendService emailSendService;
+
     @AfterEach
     void tearDown() {
         teamMemberRepository.deleteAllInBatch();
         memberRepository.deleteAllInBatch();
         teamRepository.deleteAllInBatch();
+        invitationCodeRepository.deleteAll();
     }
 
     @DisplayName("팀 생성을 요청한 멤버가 조직 관리자인 경우 팀이 생성된다")
@@ -229,6 +242,34 @@ class TeamServiceTest extends IntegrationTestSupport {
             .hasMessage(IS_NOT_TEAM_LEADER.getMessage());
     }
 
+    @DisplayName("입력된 이메일들에 초대 코드를 전송한다.")
+    @Test
+    void sendInvitationEmails() {
+        // given
+        Member member = createMember();
+        memberRepository.save(member);
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        TeamMember teamMember = TeamMember.createLeader(member, team);
+        teamMemberRepository.save(teamMember);
+
+        String fixedCode = "ABCD123";
+        List<String> emails = List.of("test1@example.com", "test2@example.com");
+
+        InvitationCode invitationCode = createInvitationCode(team, fixedCode);
+        invitationCodeRepository.save(invitationCode);
+
+        // when
+        teamService.sendInvitationEmails(team.getId(), member.getId(), emails);
+
+        // then
+        then(emailSendService)
+            .should(times(2))
+            .sendInvitationCodeEmail(anyString(), eq(fixedCode));
+    }
+
     private Member createMember() {
         return Member.builder()
             .email("email")
@@ -257,6 +298,13 @@ class TeamServiceTest extends IntegrationTestSupport {
             .description("description")
             .name("name")
             .organizationName("organizationName")
+            .build();
+    }
+
+    private InvitationCode createInvitationCode(Team team, String fixedCode) {
+        return InvitationCode.builder()
+            .teamId(team.getId())
+            .code(fixedCode)
             .build();
     }
 

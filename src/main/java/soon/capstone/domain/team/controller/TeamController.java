@@ -30,7 +30,7 @@ public class TeamController {
 
     @PostMapping("/invitation-code")
     public ResponseEntity<String> generateInvitationCode(
-        @RequestBody Long teamId,
+        @RequestBody Long teamId, // TODO: dto로 변경
         @AuthMemberId Long memberId
     ) {
         String invitationCode = teamService.generateInvitationCode(teamId, memberId);

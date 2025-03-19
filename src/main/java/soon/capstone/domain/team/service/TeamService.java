@@ -11,11 +11,15 @@ import soon.capstone.domain.team.service.dto.request.TeamCreateServiceRequest;
 import soon.capstone.domain.teammember.entity.TeamMember;
 import soon.capstone.domain.teammember.repository.TeamMemberRepository;
 import soon.capstone.external.github.service.GithubOrganizationService;
+import soon.capstone.global.email.service.EmailSendService;
 import soon.capstone.global.exception.team.IsNotAdminInOrganizationException;
 import soon.capstone.global.exception.team.IsNotTeamLeaderException;
 import soon.capstone.global.exception.team.TeamAlreadyExistsException;
+import soon.capstone.global.redis.domain.invitation.repository.InvitationCodeRepository;
 import soon.capstone.global.redis.domain.oauth2.entity.OAuthToken;
 import soon.capstone.global.redis.domain.oauth2.repository.OAuthTokenRepository;
+
+import java.util.List;
 
 import static soon.capstone.domain.teammember.entity.common.Role.isLeader;
 
@@ -29,6 +33,8 @@ public class TeamService {
     private final OAuthTokenRepository oAuthTokenRepository;
     private final GithubOrganizationService githubOrganizationService;
     private final InvitationCodeGenerator invitationCodeGenerator;
+    private final InvitationCodeRepository invitationCodeRepository;
+    private final EmailSendService emailSendService;
 
     @Transactional
     public Long createTeam(TeamCreateServiceRequest request, Long memberId) {
@@ -46,8 +52,9 @@ public class TeamService {
         return team.getId();
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public String generateInvitationCode(Long teamId, Long memberId) {
+        // TODO: 이미 코드가 존재하는 경우 그대로 반환하는 로직 추가
         TeamMember teamMember = teamMemberRepository.findByMemberId(memberId);
 
         if (!isLeader(teamMember.getRole())) {
@@ -55,6 +62,19 @@ public class TeamService {
         }
 
         return invitationCodeGenerator.generateInvitationCode(teamId);
+    }
+
+    @Transactional(readOnly = true)
+    public void sendInvitationEmails(Long teamId, Long memberId, List<String> emails) {
+        TeamMember teamMember = teamMemberRepository.findByMemberId(memberId);
+        if (!isLeader(teamMember.getRole())) {
+            throw new IsNotTeamLeaderException();
+        }
+
+        String invitationCode = invitationCodeRepository.findByTeamId(teamId).getCode();
+        emails.forEach(email -> {
+            emailSendService.sendInvitationCodeEmail(email, invitationCode);
+        });
     }
 
     private void validateTeamCreation(TeamCreateServiceRequest request, OAuthToken oAuthToken) {

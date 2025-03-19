@@ -2,6 +2,7 @@ package soon.capstone.global.redis.domain.invitation.repository;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import soon.capstone.global.exception.team.InvitationCodeNotFoundException;
 import soon.capstone.global.redis.domain.invitation.entity.InvitationCode;
 
 @RequiredArgsConstructor
@@ -12,6 +13,11 @@ public class InvitationCodeRepository {
 
     public void save(InvitationCode invitationCode) {
         invitationCodeRedisRepository.save(invitationCode);
+    }
+
+    public InvitationCode findByTeamId(Long teamId) {
+        return invitationCodeRedisRepository.findByTeamId(teamId)
+            .orElseThrow(InvitationCodeNotFoundException::new);
     }
 
     public void deleteAll() {
