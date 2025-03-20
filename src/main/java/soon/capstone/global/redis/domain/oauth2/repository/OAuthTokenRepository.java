@@ -2,6 +2,7 @@ package soon.capstone.global.redis.domain.oauth2.repository;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import soon.capstone.global.exception.token.TokenNotFoundException;
 import soon.capstone.global.redis.domain.oauth2.entity.OAuthToken;
 
 @RequiredArgsConstructor
@@ -12,6 +13,11 @@ public class OAuthTokenRepository {
 
     public void save(OAuthToken oauthAccessToken) {
         oauthTokenRedisRepository.save(oauthAccessToken);
+    }
+
+    public OAuthToken findByMemberId(Long memberId) {
+        return oauthTokenRedisRepository.findById(memberId)
+            .orElseThrow(TokenNotFoundException::new);
     }
 
 }

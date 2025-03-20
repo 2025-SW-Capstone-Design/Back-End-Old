@@ -9,6 +9,7 @@ public enum ErrorDetail {
 
     // 공통
     INVALID_REQUEST(400, "잘못된 요청입니다."),
+    EMAIL_SEND(500, "이메일 전송 중 오류가 발생했습니다."),
 
     // S3
     S3_FILE_UPLOAD(500, "S3 파일 업로드 중 오류가 발생했습니다."),
@@ -24,6 +25,17 @@ public enum ErrorDetail {
     // 깃허브 관련
     GITHUB_MEMBER_EMAIL_NOT_FOUND(404, "Github 회원의 이메일을 찾을 수 없습니다."),
     PRIMARY_VERIFIED_EMAIL_NOT_FOUND(404, "Primary Verified Email을 찾을 수 없습니다."),
+
+    // 팀 관련
+    IS_NOT_ADMIN_IN_ORGANIZATION(403, "해당 조직의 관리자가 아닙니다."),
+    TEAM_NOT_FOUND(404, "해당 팀을 찾을 수 없습니다."),
+    TEAM_ALREADY_EXISTS(409, "해당 팀이 이미 존재합니다."),
+    INVITATION_CODE_NOT_FOUND(404, "해당 초대 코드를 찾을 수 없습니다."),
+
+    // 팀 멤버 관련
+    TEAM_MEMBER_NOT_FOUND(404, "해당 팀 멤버를 찾을 수 없습니다."),
+    TEAM_MEMBER_ALREADY_EXISTS(409, "해당 팀 멤버가 이미 존재합니다."),
+    IS_NOT_TEAM_LEADER(403, "해당 팀의 리더가 아닙니다."),
 
     ;
 
