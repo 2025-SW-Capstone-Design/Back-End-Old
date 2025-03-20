@@ -8,6 +8,7 @@ import soon.capstone.domain.member.repository.MemberRepository;
 import soon.capstone.domain.team.entity.Team;
 import soon.capstone.domain.team.repository.TeamRepository;
 import soon.capstone.domain.team.service.dto.request.TeamCreateServiceRequest;
+import soon.capstone.domain.team.service.dto.request.TeamGenerateInvitationCodeServiceRequest;
 import soon.capstone.domain.team.service.dto.request.TeamInvitationServiceRequest;
 import soon.capstone.domain.teammember.entity.TeamMember;
 import soon.capstone.domain.teammember.repository.TeamMemberRepository;
@@ -52,7 +53,7 @@ public class TeamService {
     }
 
     @Transactional(readOnly = true)
-    public String generateInvitationCode(Long teamId, Long memberId) {
+    public String generateInvitationCode(TeamGenerateInvitationCodeServiceRequest request, Long memberId) {
         // TODO: 이미 코드가 존재하는 경우 그대로 반환하는 로직 추가
         TeamMember teamMember = teamMemberRepository.findByMemberId(memberId);
 
@@ -60,7 +61,7 @@ public class TeamService {
             throw new IsNotTeamLeaderException();
         }
 
-        return invitationCodeGenerator.generateInvitationCode(teamId);
+        return invitationCodeGenerator.generateInvitationCode(request.teamId());
     }
 
     @Transactional(readOnly = true)
