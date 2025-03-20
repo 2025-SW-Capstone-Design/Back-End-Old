@@ -2,8 +2,10 @@ package soon.capstone.domain.team.controller.dto;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import lombok.Builder;
 import soon.capstone.domain.team.service.dto.request.TeamGenerateInvitationCodeServiceRequest;
 
+@Builder
 public record TeamGenerateInvitationCodeRequest(
 
     @Positive(message = "팀 ID는 0보다 커야 합니다.")

@@ -11,6 +11,7 @@ import soon.capstone.domain.member.repository.MemberRepository;
 import soon.capstone.domain.team.entity.Team;
 import soon.capstone.domain.team.repository.TeamRepository;
 import soon.capstone.domain.team.service.dto.request.TeamCreateServiceRequest;
+import soon.capstone.domain.team.service.dto.request.TeamGenerateInvitationCodeServiceRequest;
 import soon.capstone.domain.team.service.dto.request.TeamInvitationServiceRequest;
 import soon.capstone.domain.teammember.entity.TeamMember;
 import soon.capstone.domain.teammember.repository.TeamMemberRepository;
@@ -207,11 +208,14 @@ class TeamServiceTest extends IntegrationTestSupport {
         teamMemberRepository.save(teamMember);
 
         String fixedCode = "ABCD123";
+
+        TeamGenerateInvitationCodeServiceRequest request = getInvitationCodeServiceRequest(team);
+
         given(invitationCodeGenerator.generateInvitationCode(team.getId()))
             .willReturn(fixedCode);
 
         // when
-        String invitationCode = teamService.generateInvitationCode(team.getId(), member.getId());
+        String invitationCode = teamService.generateInvitationCode(request, member.getId());
 
         // then
         assertThat(invitationCode)
@@ -236,8 +240,10 @@ class TeamServiceTest extends IntegrationTestSupport {
             .build();
         teamMemberRepository.save(teamMember);
 
+        TeamGenerateInvitationCodeServiceRequest request = getInvitationCodeServiceRequest(team);
+
         // expected
-        assertThatThrownBy(() -> teamService.generateInvitationCode(team.getId(), member.getId()))
+        assertThatThrownBy(() -> teamService.generateInvitationCode(request, member.getId()))
             .isInstanceOf(IsNotTeamLeaderException.class)
             .hasMessage(IS_NOT_TEAM_LEADER.getMessage());
     }
@@ -313,6 +319,12 @@ class TeamServiceTest extends IntegrationTestSupport {
         return TeamInvitationServiceRequest.builder()
             .emails(List.of("test1@example.com", "test2@example.com"))
             .teamId(teamId)
+            .build();
+    }
+
+    private TeamGenerateInvitationCodeServiceRequest getInvitationCodeServiceRequest(Team team) {
+        return TeamGenerateInvitationCodeServiceRequest.builder()
+            .teamId(team.getId())
             .build();
     }
 
