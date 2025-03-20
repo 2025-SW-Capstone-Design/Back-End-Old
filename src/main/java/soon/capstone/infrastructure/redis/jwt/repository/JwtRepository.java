@@ -15,8 +15,8 @@ public class JwtRepository {
         jwtRedisRepository.save(jwtRefreshToken);
     }
 
-    public boolean existsByRefreshToken(String refreshToken) {
-        return jwtRedisRepository.existsByToken(refreshToken);
+    public boolean existsByMemberId(Long memberId) {
+        return jwtRedisRepository.existsByMemberId(memberId);
     }
 
     public JwtRefreshToken findByMemberId(Long memberId) {

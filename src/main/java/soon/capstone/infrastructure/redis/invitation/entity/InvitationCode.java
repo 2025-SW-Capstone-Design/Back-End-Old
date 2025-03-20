@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
 import org.springframework.data.redis.core.TimeToLive;
+import org.springframework.data.redis.core.index.Indexed;
 
 import java.util.concurrent.TimeUnit;
 
@@ -16,6 +17,9 @@ import java.util.concurrent.TimeUnit;
 public class InvitationCode {
 
     @Id
+    private String id;
+
+    @Indexed
     private Long teamId;
 
     private String code;
@@ -25,6 +29,7 @@ public class InvitationCode {
 
     @Builder
     private InvitationCode(Long teamId, String code) {
+        this.id = "team" + teamId;
         this.teamId = teamId;
         this.code = code;
         this.expiration = 1;

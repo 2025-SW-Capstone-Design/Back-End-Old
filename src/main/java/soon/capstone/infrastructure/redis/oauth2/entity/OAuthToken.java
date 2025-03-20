@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
 import org.springframework.data.redis.core.TimeToLive;
+import org.springframework.data.redis.core.index.Indexed;
 
 import java.util.concurrent.TimeUnit;
 
@@ -16,6 +17,9 @@ import java.util.concurrent.TimeUnit;
 public class OAuthToken {
 
     @Id
+    private String id;
+
+    @Indexed
     private Long memberId;
 
     private String token;
@@ -25,6 +29,7 @@ public class OAuthToken {
 
     @Builder
     private OAuthToken(Long memberId, String token) {
+        this.id = "member" + memberId;
         this.memberId = memberId;
         this.token = token;
         this.expiration = 8;

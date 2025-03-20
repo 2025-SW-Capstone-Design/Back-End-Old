@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import soon.capstone.ControllerTestSupport;
 import soon.capstone.domain.team.controller.dto.TeamCreateRequest;
+import soon.capstone.domain.team.controller.dto.TeamGenerateInvitationCodeRequest;
 import soon.capstone.domain.team.controller.dto.TeamInvitationRequest;
 import soon.capstone.global.anootation.TestMember;
 import soon.capstone.global.exception.team.IsNotTeamLeaderException;
@@ -118,15 +119,15 @@ class TeamControllerTest extends ControllerTestSupport {
     @Test
     void generateInvitationCode() throws Exception {
         // given
-        Long teamId = 1L;
         String mockCode = "ABCD1234";
+        TeamGenerateInvitationCodeRequest request = createGenerateInvitationCodeRequest();
 
-        given(teamService.generateInvitationCode(teamId, 1L)).willReturn(mockCode);
+        given(teamService.generateInvitationCode(request.toServiceRequest(), 1L)).willReturn(mockCode);
 
         // expected
         mockMvc.perform(
                 post(BASE_URL + "/invitation-code")
-                    .content(objectMapper.writeValueAsString(teamId))
+                    .content(objectMapper.writeValueAsString(request))
                     .contentType(MediaType.APPLICATION_JSON)
             )
             .andDo(print())
@@ -139,21 +140,62 @@ class TeamControllerTest extends ControllerTestSupport {
     @Test
     void generateInvitationCodeWhenNotLeader() throws Exception {
         // given
-        Long teamId = 1L;
+        TeamGenerateInvitationCodeRequest request = createGenerateInvitationCodeRequest();
 
-        given(teamService.generateInvitationCode(teamId, 1L))
+        given(teamService.generateInvitationCode(request.toServiceRequest(), 1L))
             .willThrow(new IsNotTeamLeaderException());
 
         // expected
         mockMvc.perform(
                 post(BASE_URL + "/invitation-code")
-                    .content(objectMapper.writeValueAsString(teamId))
+                    .content(objectMapper.writeValueAsString(request))
                     .contentType(MediaType.APPLICATION_JSON)
             )
             .andDo(print())
             .andExpect(status().isForbidden())
             .andExpect(jsonPath("$.status").value(403))
             .andExpect(jsonPath("$.message").value(IS_NOT_TEAM_LEADER.getMessage()));
+    }
+
+    @DisplayName("초대 코드 생성에 teamId는 필수값이다")
+    @Test
+    void generateInvitationCodeWithoutTeamId() throws Exception {
+        // given
+        TeamGenerateInvitationCodeRequest request = TeamGenerateInvitationCodeRequest.builder()
+            .build();
+
+        // expected
+        mockMvc.perform(
+                post(BASE_URL + "/invitation-code")
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+            .andDo(print())
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.status").value(400))
+            .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
+            .andExpect(jsonPath("$.validation.teamId").value("팀 ID는 필수 값입니다."));
+    }
+
+    @DisplayName("초대 코드 생성에 teamId는 0보다 커야한다")
+    @Test
+    void generateInvitationCodeWithInvalidTeamId() throws Exception {
+        // given
+        TeamGenerateInvitationCodeRequest request = TeamGenerateInvitationCodeRequest.builder()
+            .teamId(0L)
+            .build();
+
+        // expected
+        mockMvc.perform(
+                post(BASE_URL + "/invitation-code")
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+            .andDo(print())
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.status").value(400))
+            .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
+            .andExpect(jsonPath("$.validation.teamId").value("팀 ID는 0보다 커야 합니다."));
     }
 
     @TestMember
@@ -263,6 +305,12 @@ class TeamControllerTest extends ControllerTestSupport {
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.status").value(400))
             .andExpect(jsonPath("$.message").value("잘못된 요청입니다."));
+    }
+
+    private TeamGenerateInvitationCodeRequest createGenerateInvitationCodeRequest() {
+        return TeamGenerateInvitationCodeRequest.builder()
+            .teamId(1L)
+            .build();
     }
 
 }
