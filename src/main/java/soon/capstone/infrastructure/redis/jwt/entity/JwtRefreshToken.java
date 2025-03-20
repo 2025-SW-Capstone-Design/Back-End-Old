@@ -17,9 +17,11 @@ import static soon.capstone.global.security.jwt.common.TokenExpiration.REFRESH_T
 public class JwtRefreshToken {
 
     @Id
-    private Long memberId;
+    private String id;
 
     @Indexed
+    private Long memberId;
+
     private String token;
 
     @TimeToLive
@@ -27,6 +29,7 @@ public class JwtRefreshToken {
 
     @Builder
     private JwtRefreshToken(Long memberId, String token) {
+        this.id = "member" + memberId;
         this.memberId = memberId;
         this.token = token;
         this.expiration = REFRESH_TOKEN.getExpirationTime() / 1000; // 밀리 초 -> 초

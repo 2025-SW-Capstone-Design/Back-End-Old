@@ -7,7 +7,7 @@ import java.util.Optional;
 
 public interface JwtRedisRepository extends CrudRepository<JwtRefreshToken, Long> {
 
-    boolean existsByToken(String token);
+    boolean existsByMemberId(Long memberId);
 
     Optional<JwtRefreshToken> findByMemberId(Long memberId);
 

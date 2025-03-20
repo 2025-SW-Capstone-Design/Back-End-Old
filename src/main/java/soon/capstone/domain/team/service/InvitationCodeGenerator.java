@@ -14,6 +14,10 @@ public class InvitationCodeGenerator {
     private final InvitationCodeRepository invitationCodeRepository;
 
     public String generateInvitationCode(Long teamId) {
+        if (invitationCodeRepository.existsByTeamId(teamId)) {
+            return invitationCodeRepository.findByTeamId(teamId).getCode();
+        }
+
         String code = RandomStringUtils.randomAlphanumeric(INVITATION_CODE_LENGTH);
         InvitationCode invitationCode = InvitationCode.builder()
             .code(code)

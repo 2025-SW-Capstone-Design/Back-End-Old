@@ -16,7 +16,7 @@ public class OAuthTokenRepository {
     }
 
     public OAuthToken findByMemberId(Long memberId) {
-        return oauthTokenRedisRepository.findById(memberId)
+        return oauthTokenRedisRepository.findByMemberId(memberId)
             .orElseThrow(TokenNotFoundException::new);
     }
 

@@ -20,6 +20,10 @@ public class InvitationCodeRepository {
             .orElseThrow(InvitationCodeNotFoundException::new);
     }
 
+    public boolean existsByTeamId(Long teamId) {
+        return invitationCodeRedisRepository.existsByTeamId(teamId);
+    }
+
     public void deleteAll() {
         invitationCodeRedisRepository.deleteAll();
     }

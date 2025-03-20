@@ -14,6 +14,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -82,6 +85,26 @@ class InvitationCodeGeneratorTest {
         assertThat(savedCode)
             .extracting("code", "teamId")
             .contains(code, TEAM_ID);
+    }
+
+    @DisplayName("기존에 초대 코드가 존재한다면 기존 코드가 반환 된다.")
+    @Test
+    void returnExistingInvitationCodeWhenCodeExists() {
+        // given
+        String existingCode = "abcd1234";
+        InvitationCode invitationCode = InvitationCode.builder()
+            .code(existingCode)
+            .teamId(TEAM_ID)
+            .build();
+        given(invitationCodeRepository.existsByTeamId(TEAM_ID)).willReturn(true);
+        given(invitationCodeRepository.findByTeamId(TEAM_ID)).willReturn(invitationCode);
+
+        // when
+        String result = invitationCodeGenerator.generateInvitationCode(TEAM_ID);
+
+        // then
+        assertThat(result).isEqualTo(existingCode);
+        verify(invitationCodeRepository, never()).save(any());
     }
 
 }
