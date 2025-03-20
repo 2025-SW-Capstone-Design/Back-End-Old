@@ -1,6 +1,5 @@
 package soon.capstone.domain.team.service;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -8,8 +7,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import soon.capstone.global.redis.domain.invitation.entity.InvitationCode;
-import soon.capstone.global.redis.domain.invitation.repository.InvitationCodeRepository;
+import soon.capstone.infrastructure.redis.invitation.entity.InvitationCode;
+import soon.capstone.infrastructure.redis.invitation.repository.InvitationCodeRepository;
 
 import java.util.HashSet;
 import java.util.Set;

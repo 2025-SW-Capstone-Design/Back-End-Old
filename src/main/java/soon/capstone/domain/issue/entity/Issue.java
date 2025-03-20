@@ -7,7 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import soon.capstone.domain.milestone.entity.Milestone;
 import soon.capstone.domain.teammember.entity.TeamMember;
-import soon.capstone.global.domain.common.BaseTimeEntity;
+import soon.capstone.global.common.BaseTimeEntity;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter

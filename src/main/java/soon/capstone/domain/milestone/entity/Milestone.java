@@ -6,7 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import soon.capstone.domain.project.entity.Project;
-import soon.capstone.global.domain.common.BaseTimeEntity;
+import soon.capstone.global.common.BaseTimeEntity;
 
 import java.time.LocalDateTime;
 

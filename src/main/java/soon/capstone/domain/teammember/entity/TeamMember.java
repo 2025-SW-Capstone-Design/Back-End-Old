@@ -9,7 +9,7 @@ import soon.capstone.domain.member.entity.Member;
 import soon.capstone.domain.team.entity.Team;
 import soon.capstone.domain.teammember.entity.common.Position;
 import soon.capstone.domain.teammember.entity.common.Role;
-import soon.capstone.global.domain.common.BaseTimeEntity;
+import soon.capstone.global.common.BaseTimeEntity;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
