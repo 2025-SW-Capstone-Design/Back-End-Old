@@ -14,15 +14,15 @@ import soon.capstone.domain.team.service.dto.request.TeamCreateServiceRequest;
 import soon.capstone.domain.team.service.dto.request.TeamInvitationServiceRequest;
 import soon.capstone.domain.teammember.entity.TeamMember;
 import soon.capstone.domain.teammember.repository.TeamMemberRepository;
-import soon.capstone.external.github.service.GithubOrganizationService;
+import soon.capstone.infrastructure.github.service.GithubOrganizationService;
 import soon.capstone.global.email.service.EmailSendService;
 import soon.capstone.global.exception.team.IsNotAdminInOrganizationException;
 import soon.capstone.global.exception.team.IsNotTeamLeaderException;
 import soon.capstone.global.exception.team.TeamAlreadyExistsException;
-import soon.capstone.global.redis.domain.invitation.entity.InvitationCode;
-import soon.capstone.global.redis.domain.invitation.repository.InvitationCodeRepository;
-import soon.capstone.global.redis.domain.oauth2.entity.OAuthToken;
-import soon.capstone.global.redis.domain.oauth2.repository.OAuthTokenRepository;
+import soon.capstone.infrastructure.redis.invitation.entity.InvitationCode;
+import soon.capstone.infrastructure.redis.invitation.repository.InvitationCodeRepository;
+import soon.capstone.infrastructure.redis.oauth2.entity.OAuthToken;
+import soon.capstone.infrastructure.redis.oauth2.repository.OAuthTokenRepository;
 
 import java.util.List;
 

@@ -8,8 +8,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import soon.capstone.domain.team.controller.TeamController;
 import soon.capstone.domain.team.service.TeamService;
-import soon.capstone.global.domain.auth.controller.AuthController;
-import soon.capstone.global.domain.auth.service.AuthService;
+import soon.capstone.domain.auth.controller.AuthController;
+import soon.capstone.domain.auth.service.AuthService;
 
 @Import(TestSecurityConfig.class)
 @WebMvcTest(
