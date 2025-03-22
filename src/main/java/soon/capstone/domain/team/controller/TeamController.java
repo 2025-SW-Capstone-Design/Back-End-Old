@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import soon.capstone.domain.team.controller.dto.TeamCreateRequest;
 import soon.capstone.domain.team.controller.dto.TeamGenerateInvitationCodeRequest;
 import soon.capstone.domain.team.controller.dto.TeamInvitationRequest;
-import soon.capstone.domain.team.service.TeamService;
+import soon.capstone.domain.team.service.team.TeamService;
 import soon.capstone.global.anootation.AuthMemberId;
 
 @RequiredArgsConstructor

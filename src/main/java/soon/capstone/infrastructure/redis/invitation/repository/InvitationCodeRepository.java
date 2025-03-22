@@ -28,4 +28,9 @@ public class InvitationCodeRepository {
         invitationCodeRedisRepository.deleteAll();
     }
 
+    public InvitationCode findByCode(String code) {
+        return invitationCodeRedisRepository.findByCode(code)
+            .orElseThrow(InvitationCodeNotFoundException::new);
+    }
+
 }

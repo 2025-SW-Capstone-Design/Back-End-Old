@@ -22,6 +22,7 @@ public class InvitationCode {
     @Indexed
     private Long teamId;
 
+    @Indexed
     private String code;
 
     @TimeToLive(unit = TimeUnit.DAYS)

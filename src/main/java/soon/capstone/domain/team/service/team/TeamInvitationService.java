@@ -1,8 +1,9 @@
-package soon.capstone.domain.team.service;
+package soon.capstone.domain.team.service.team;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import soon.capstone.domain.team.service.invitation.InvitationCodeGenerator;
 import soon.capstone.global.email.service.EmailSendService;
 import soon.capstone.infrastructure.redis.invitation.repository.InvitationCodeRepository;
 

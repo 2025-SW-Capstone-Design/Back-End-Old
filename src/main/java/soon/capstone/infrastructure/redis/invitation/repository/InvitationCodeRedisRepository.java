@@ -13,4 +13,6 @@ public interface InvitationCodeRedisRepository extends CrudRepository<Invitation
 
     void deleteByTeamId(Long teamId);
 
+    Optional<InvitationCode> findByCode(String code);
+
 }
