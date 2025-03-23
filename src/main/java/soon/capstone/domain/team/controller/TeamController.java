@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import soon.capstone.domain.team.controller.dto.TeamCreateRequest;
 import soon.capstone.domain.team.controller.dto.TeamGenerateInvitationCodeRequest;
 import soon.capstone.domain.team.controller.dto.TeamInvitationRequest;
+import soon.capstone.domain.team.controller.dto.TeamJoinRequest;
 import soon.capstone.domain.team.service.team.TeamService;
 import soon.capstone.global.anootation.AuthMemberId;
 
@@ -48,6 +49,16 @@ public class TeamController {
         teamService.sendInvitationEmails(request.toServiceRequest(), memberId);
 
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/join")
+    public ResponseEntity<Long> joinTeam(
+        @Valid @RequestBody TeamJoinRequest request,
+        @AuthMemberId Long memberId
+    ) {
+        Long teamId = teamService.joinTeamWithInvitationCode(request.toServiceRequest(), memberId);
+
+        return ResponseEntity.ok(teamId);
     }
 
 }

@@ -7,6 +7,7 @@ import soon.capstone.domain.member.repository.MemberRepository;
 import soon.capstone.domain.team.service.dto.request.TeamCreateServiceRequest;
 import soon.capstone.domain.team.service.dto.request.TeamGenerateInvitationCodeServiceRequest;
 import soon.capstone.domain.team.service.dto.request.TeamInvitationServiceRequest;
+import soon.capstone.domain.team.service.dto.request.TeamJoinServiceRequest;
 import soon.capstone.domain.teammember.entity.TeamMember;
 import soon.capstone.domain.teammember.repository.TeamMemberRepository;
 import soon.capstone.global.exception.team.IsNotTeamLeaderException;
@@ -21,6 +22,7 @@ public class TeamService {
     private final TeamMemberRepository teamMemberRepository;
     private final TeamCreationService teamCreationService;
     private final TeamInvitationService teamInvitationService;
+    private final TeamJoinService teamJoinService;
 
     public Long createTeam(TeamCreateServiceRequest request, Long memberId) {
         Member member = memberRepository.findById(memberId);
@@ -43,6 +45,11 @@ public class TeamService {
         validateTeamLeader(memberId);
 
         teamInvitationService.sendInvitationEmails(request.teamId(), request.emails());
+    }
+
+    public Long joinTeamWithInvitationCode(TeamJoinServiceRequest request, Long memberId) {
+        Member member = memberRepository.findById(memberId);
+        return teamJoinService.joinTeamWithInvitationCode(member, request.invitationCode());
     }
 
     private void validateTeamLeader(Long memberId) {
