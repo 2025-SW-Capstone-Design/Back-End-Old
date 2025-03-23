@@ -7,6 +7,7 @@ import soon.capstone.ControllerTestSupport;
 import soon.capstone.domain.team.controller.dto.TeamCreateRequest;
 import soon.capstone.domain.team.controller.dto.TeamGenerateInvitationCodeRequest;
 import soon.capstone.domain.team.controller.dto.TeamInvitationRequest;
+import soon.capstone.domain.team.controller.dto.TeamJoinRequest;
 import soon.capstone.global.anootation.TestMember;
 import soon.capstone.global.exception.team.IsNotTeamLeaderException;
 
@@ -305,6 +306,51 @@ class TeamControllerTest extends ControllerTestSupport {
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.status").value(400))
             .andExpect(jsonPath("$.message").value("잘못된 요청입니다."));
+    }
+
+    @TestMember
+    @DisplayName("초대 코드를 사용하여 팀에 가입한다.")
+    @Test
+    void joinTeamWithInvitationCode() throws Exception {
+        // given
+        Long mockTeamId = 1L;
+        var request = TeamJoinRequest.builder()
+            .invitationCode("ABCD1234")
+            .build();
+
+        given(teamService.joinTeamWithInvitationCode(request.toServiceRequest(), 1L))
+            .willReturn(mockTeamId);
+
+        // expected
+        mockMvc.perform(
+                post(BASE_URL + "/join")
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$").value(mockTeamId));
+    }
+
+    @TestMember
+    @DisplayName("팀 가입 요청시 초대코는 필수 값이다.")
+    @Test
+    void joinTeamWithInvalidInvitationCode() throws Exception {
+        // given
+        var request = TeamJoinRequest.builder()
+            .build();
+
+        // expected
+        mockMvc.perform(
+                post(BASE_URL + "/join")
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+            .andDo(print())
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.status").value(400))
+            .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
+            .andExpect(jsonPath("$.validation.invitationCode").value("팀 초대 코드는 필수입니다."));
     }
 
     private TeamGenerateInvitationCodeRequest createGenerateInvitationCodeRequest() {

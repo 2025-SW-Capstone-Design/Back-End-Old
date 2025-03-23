@@ -1,4 +1,4 @@
-package soon.capstone.domain.team.service;
+package soon.capstone.domain.team.service.invitation;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

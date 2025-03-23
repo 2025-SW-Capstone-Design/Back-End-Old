@@ -1,4 +1,4 @@
-package soon.capstone.domain.team.service;
+package soon.capstone.domain.team.service.team;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
@@ -13,21 +13,23 @@ import soon.capstone.domain.team.repository.TeamRepository;
 import soon.capstone.domain.team.service.dto.request.TeamCreateServiceRequest;
 import soon.capstone.domain.team.service.dto.request.TeamGenerateInvitationCodeServiceRequest;
 import soon.capstone.domain.team.service.dto.request.TeamInvitationServiceRequest;
+import soon.capstone.domain.team.service.dto.request.TeamJoinServiceRequest;
 import soon.capstone.domain.teammember.entity.TeamMember;
 import soon.capstone.domain.teammember.repository.TeamMemberRepository;
+import soon.capstone.global.exception.member.MemberNotFoundException;
 import soon.capstone.global.exception.team.IsNotTeamLeaderException;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static soon.capstone.domain.teammember.entity.common.Position.NONE;
 import static soon.capstone.domain.teammember.entity.common.Role.ROLE_MEMBER;
 import static soon.capstone.global.exception.dto.ErrorDetail.IS_NOT_TEAM_LEADER;
+import static soon.capstone.global.exception.dto.ErrorDetail.MEMBER_NOT_FOUND;
 
 class TeamServiceTest extends IntegrationTestSupport {
 
@@ -48,6 +50,9 @@ class TeamServiceTest extends IntegrationTestSupport {
 
     @MockitoBean
     private TeamCreationService teamCreationService;
+
+    @MockitoBean
+    private TeamJoinService teamJoinService;
 
     @AfterEach
     void tearDown() {
@@ -195,6 +200,51 @@ class TeamServiceTest extends IntegrationTestSupport {
         assertThatThrownBy(() -> teamService.sendInvitationEmails(request, member.getId()))
             .isInstanceOf(IsNotTeamLeaderException.class)
             .hasMessage(IS_NOT_TEAM_LEADER.getMessage());
+    }
+
+    @DisplayName("초대 코드로 팀 가입이 성공한다.")
+    @Test
+    void joinTeamWithInvitationCode() {
+        // given
+        Member member = createMember();
+        memberRepository.save(member);
+
+        Long expectedTeamId = 1L;
+
+        var request = TeamJoinServiceRequest.builder()
+            .invitationCode("code")
+            .build();
+
+        given(teamJoinService.joinTeamWithInvitationCode(any(), anyString()))
+            .willReturn(expectedTeamId);
+
+        // when
+        Long teamId = teamService.joinTeamWithInvitationCode(request, member.getId());
+
+        // then
+        assertThat(teamId)
+            .isEqualTo(expectedTeamId);
+
+        then(teamJoinService).should()
+            .joinTeamWithInvitationCode(any(), eq(request.invitationCode()));
+    }
+
+    @DisplayName("존재하지 않는 회원 ID로 팀 가입 요청 시 예외가 발생한다")
+    @Test
+    void joinTeamWithInvitationCodeWithInvalidMemberId() {
+        // given
+        Long invalidMemberId = 999L;
+        var request = TeamJoinServiceRequest.builder()
+            .invitationCode("code")
+            .build();
+
+        // expected
+        assertThatThrownBy(() -> teamService.joinTeamWithInvitationCode(request, invalidMemberId))
+            .isInstanceOf(MemberNotFoundException.class)
+            .hasMessage(MEMBER_NOT_FOUND.getMessage());
+
+        then(teamJoinService)
+            .shouldHaveNoInteractions();
     }
 
     private Member createMember() {

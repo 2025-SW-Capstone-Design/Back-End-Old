@@ -1,4 +1,4 @@
-package soon.capstone.domain.team.service;
+package soon.capstone.domain.team.service.team;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

@@ -58,4 +58,13 @@ public class TeamMember extends BaseTimeEntity {
             .build();
     }
 
+    public static TeamMember createMember(Member member, Team team) {
+        return TeamMember.builder()
+            .role(Role.ROLE_MEMBER)
+            .position(Position.NONE)
+            .member(member)
+            .team(team)
+            .build();
+    }
+
 }

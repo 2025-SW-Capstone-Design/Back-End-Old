@@ -1,4 +1,4 @@
-package soon.capstone.domain.team.service;
+package soon.capstone.domain.team.service.invitation;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;

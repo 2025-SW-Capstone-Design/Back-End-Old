@@ -3,9 +3,12 @@ package soon.capstone.domain.teammember.repository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import soon.capstone.domain.member.entity.Member;
+import soon.capstone.domain.team.entity.Team;
 import soon.capstone.domain.teammember.entity.TeamMember;
 import soon.capstone.global.exception.team.TeamNotFoundException;
 import soon.capstone.global.exception.teammember.TeamMemberNotFoundException;
+
+import static soon.capstone.domain.teammember.entity.common.Role.ROLE_LEADER;
 
 @RequiredArgsConstructor
 @Repository
@@ -32,8 +35,13 @@ public class TeamMemberRepository {
             .orElseThrow(TeamNotFoundException::new);
     }
 
-    public boolean existsByMember(Member member) {
-        return teamMemberJpaRepository.existsByMember(member);
+    public TeamMember findByTeamIdAndLeader(Long teamId) {
+        return teamMemberJpaRepository.findByTeamIdAndRole(teamId, ROLE_LEADER)
+            .orElseThrow(TeamMemberNotFoundException::new);
+    }
+
+    public boolean existsByMemberAndTeam(Member member, Team team) {
+        return teamMemberJpaRepository.existsByMemberAndTeam(member, team);
     }
 
     public void deleteAllInBatch() {

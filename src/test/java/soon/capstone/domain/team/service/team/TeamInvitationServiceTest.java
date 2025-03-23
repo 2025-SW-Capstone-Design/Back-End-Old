@@ -1,4 +1,4 @@
-package soon.capstone.domain.team.service;
+package soon.capstone.domain.team.service.team;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
@@ -6,10 +6,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import soon.capstone.IntegrationTestSupport;
-import soon.capstone.domain.member.entity.Member;
 import soon.capstone.domain.member.repository.MemberRepository;
 import soon.capstone.domain.team.entity.Team;
 import soon.capstone.domain.team.repository.TeamRepository;
+import soon.capstone.domain.team.service.invitation.InvitationCodeGenerator;
 import soon.capstone.global.email.service.EmailSendService;
 import soon.capstone.infrastructure.redis.invitation.entity.InvitationCode;
 import soon.capstone.infrastructure.redis.invitation.repository.InvitationCodeRepository;

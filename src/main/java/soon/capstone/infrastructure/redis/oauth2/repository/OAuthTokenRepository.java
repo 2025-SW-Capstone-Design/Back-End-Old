@@ -20,4 +20,8 @@ public class OAuthTokenRepository {
             .orElseThrow(TokenNotFoundException::new);
     }
 
+    public void deleteAll() {
+        oauthTokenRedisRepository.deleteAll();
+    }
+
 }

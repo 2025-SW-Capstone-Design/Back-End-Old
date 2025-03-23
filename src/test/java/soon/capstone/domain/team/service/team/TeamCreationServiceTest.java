@@ -1,4 +1,4 @@
-package soon.capstone.domain.team.service;
+package soon.capstone.domain.team.service.team;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
@@ -50,6 +50,7 @@ class TeamCreationServiceTest extends IntegrationTestSupport {
         teamMemberRepository.deleteAllInBatch();
         memberRepository.deleteAllInBatch();
         teamRepository.deleteAllInBatch();
+        oAuthTokenRepository.deleteAll();
     }
 
     @DisplayName("팀 생성을 요청한 멤버가 조직 관리자인 경우 팀이 생성된다")
