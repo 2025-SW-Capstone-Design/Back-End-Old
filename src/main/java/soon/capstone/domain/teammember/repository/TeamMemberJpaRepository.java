@@ -8,7 +8,9 @@ import soon.capstone.domain.teammember.entity.common.Role;
 
 import java.util.Optional;
 
-public interface TeamMemberJpaRepository extends JpaRepository<TeamMember, Long> {
+public interface TeamMemberJpaRepository extends
+    JpaRepository<TeamMember, Long>,
+    TeamMemberListRepository {
 
     boolean existsByMemberAndTeam(Member member, Team team);
 
