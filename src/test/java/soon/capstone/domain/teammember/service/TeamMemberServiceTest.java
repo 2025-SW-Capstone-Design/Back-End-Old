@@ -11,7 +11,6 @@ import soon.capstone.domain.team.entity.Team;
 import soon.capstone.domain.team.repository.TeamRepository;
 import soon.capstone.domain.teammember.entity.TeamMember;
 import soon.capstone.domain.teammember.repository.TeamMemberRepository;
-import soon.capstone.domain.teammember.service.dto.request.TeamMemberDetailServiceRequest;
 import soon.capstone.domain.teammember.service.dto.response.TeamMemberDetailResponse;
 import soon.capstone.global.exception.team.TeamNotAuthorizedException;
 
@@ -60,12 +59,8 @@ class TeamMemberServiceTest extends IntegrationTestSupport {
         TeamMember teamMember3 = TeamMember.createMember(member3, team);
         teamMemberRepository.saveAll(List.of(leader, teamMember2, teamMember3));
 
-        var request = TeamMemberDetailServiceRequest.builder()
-            .teamId(team.getId())
-            .build();
-
         // when
-        List<TeamMemberDetailResponse> teamMembers = teamMemberService.getTeamMembers(request, member1.getId());
+        List<TeamMemberDetailResponse> teamMembers = teamMemberService.getTeamMembers(team.getId(), member1.getId());
 
         // then
         assertThat(teamMembers).hasSize(3)
@@ -91,12 +86,8 @@ class TeamMemberServiceTest extends IntegrationTestSupport {
         TeamMember member = TeamMember.createMember(teamMember, team);
         teamMemberRepository.save(member);
 
-        var request = TeamMemberDetailServiceRequest.builder()
-            .teamId(team.getId())
-            .build();
-
         // expect
-        assertThatThrownBy(() -> teamMemberService.getTeamMembers(request, nonTeamMember.getId()))
+        assertThatThrownBy(() -> teamMemberService.getTeamMembers(team.getId(), nonTeamMember.getId()))
             .isInstanceOf(TeamNotAuthorizedException.class)
             .hasMessage(TEAM_NOT_AUTHORIZED.getMessage());
     }
