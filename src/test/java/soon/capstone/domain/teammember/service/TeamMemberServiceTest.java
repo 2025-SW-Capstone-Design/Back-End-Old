@@ -11,7 +11,9 @@ import soon.capstone.domain.team.entity.Team;
 import soon.capstone.domain.team.repository.TeamRepository;
 import soon.capstone.domain.teammember.entity.TeamMember;
 import soon.capstone.domain.teammember.repository.TeamMemberRepository;
+import soon.capstone.domain.teammember.service.dto.request.TeamMemberUpdateRoleServiceRequest;
 import soon.capstone.domain.teammember.service.dto.response.TeamMemberDetailResponse;
+import soon.capstone.global.exception.common.InvalidRequest;
 import soon.capstone.global.exception.team.TeamNotAuthorizedException;
 
 import java.util.List;
@@ -19,6 +21,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
+import static soon.capstone.domain.teammember.entity.common.Role.ROLE_LEADER;
 import static soon.capstone.global.exception.dto.ErrorDetail.TEAM_NOT_AUTHORIZED;
 
 class TeamMemberServiceTest extends IntegrationTestSupport {
@@ -90,6 +93,84 @@ class TeamMemberServiceTest extends IntegrationTestSupport {
         assertThatThrownBy(() -> teamMemberService.getTeamMembers(team.getId(), nonTeamMember.getId()))
             .isInstanceOf(TeamNotAuthorizedException.class)
             .hasMessage(TEAM_NOT_AUTHORIZED.getMessage());
+    }
+
+    @DisplayName("팀 리더는 다른 팀원의 역할을 업데이트 할 수 있다.")
+    @Test
+    void updateTeamMemberRole() {
+        // given
+        Member leader = createMember("email1", "nickname1");
+        Member member = createMember("email2", "nickname2");
+        memberRepository.saveAll(List.of(leader, member));
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        TeamMember leaderMember = TeamMember.createLeader(leader, team);
+        TeamMember teamMember = TeamMember.createMember(member, team);
+        teamMemberRepository.saveAll(List.of(leaderMember, teamMember));
+
+        var request = new TeamMemberUpdateRoleServiceRequest(
+            team.getId(), member.getId(), ROLE_LEADER.name()
+        );
+
+        // when
+        teamMemberService.updateTeamMemberRole(request, leaderMember.getId());
+
+        // then
+        TeamMember updatedMember = teamMemberRepository.findByTeamIdAndMemberId(team.getId(), member.getId());
+        assertThat(updatedMember.getRole())
+            .isEqualTo(ROLE_LEADER);
+    }
+
+    @DisplayName("팀 리더가 아닌 멤버가 역할을 업데이트 하면 예외가 발생한다.")
+    @Test
+    void updateTeamMemberRoleIsNotLeader() {
+        // given
+        Member leader = createMember("email1", "nickname1");
+        Member member = createMember("email2", "nickname2");
+        memberRepository.saveAll(List.of(leader, member));
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        TeamMember leaderMember = TeamMember.createLeader(leader, team);
+        TeamMember teamMember = TeamMember.createMember(member, team);
+        teamMemberRepository.saveAll(List.of(leaderMember, teamMember));
+
+        var request = new TeamMemberUpdateRoleServiceRequest(
+            team.getId(), member.getId(), ROLE_LEADER.name()
+        );
+
+        // expected
+        assertThatThrownBy(() -> teamMemberService.updateTeamMemberRole(request, teamMember.getId()))
+            .isInstanceOf(TeamNotAuthorizedException.class)
+            .hasMessage(TEAM_NOT_AUTHORIZED.getMessage());
+    }
+
+    @DisplayName("존재하지 않는 역할로 업데이트시 예외가 발생한다.")
+    @Test
+    void updateTeamMemberRoleWithoutInvalidRole() {
+        // given
+        Member leader = createMember("email1", "nickname1");
+        Member member = createMember("email2", "nickname2");
+        memberRepository.saveAll(List.of(leader, member));
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        TeamMember leaderMember = TeamMember.createLeader(leader, team);
+        TeamMember teamMember = TeamMember.createMember(member, team);
+        teamMemberRepository.saveAll(List.of(leaderMember, teamMember));
+
+        var request = new TeamMemberUpdateRoleServiceRequest(
+            team.getId(), member.getId(), "ROLE_INVALID"
+        );
+
+        // expected
+        assertThatThrownBy(() -> teamMemberService.updateTeamMemberRole(request, leaderMember.getId()))
+            .isInstanceOf(InvalidRequest.class)
+            .hasMessage("잘못된 요청입니다.");
     }
 
     private Member createMember(String email, String nickname) {

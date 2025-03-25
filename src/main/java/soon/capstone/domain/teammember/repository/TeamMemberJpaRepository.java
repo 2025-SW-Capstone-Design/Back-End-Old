@@ -20,4 +20,6 @@ public interface TeamMemberJpaRepository extends
 
     Optional<TeamMember> findByTeamIdAndRole(Long teamId, Role role);
 
+    Optional<TeamMember> findByTeamIdAndMemberId(Long teamId, Long memberId);
+
 }

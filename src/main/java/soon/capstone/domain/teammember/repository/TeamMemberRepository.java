@@ -47,6 +47,11 @@ public class TeamMemberRepository {
             .orElseThrow(TeamMemberNotFoundException::new);
     }
 
+    public TeamMember findByTeamIdAndMemberId(Long teamId, Long memberId) {
+        return teamMemberJpaRepository.findByTeamIdAndMemberId(teamId, memberId)
+            .orElseThrow(TeamMemberNotFoundException::new);
+    }
+
     public boolean existsByMemberAndTeam(Member member, Team team) {
         return teamMemberJpaRepository.existsByMemberAndTeam(member, team);
     }
