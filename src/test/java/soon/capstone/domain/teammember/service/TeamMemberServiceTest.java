@@ -115,7 +115,7 @@ class TeamMemberServiceTest extends IntegrationTestSupport {
         );
 
         // when
-        teamMemberService.updateTeamMemberRole(request, leaderMember.getId());
+        teamMemberService.updateTeamMemberRole(request, leader.getId());
 
         // then
         TeamMember updatedMember = teamMemberRepository.findByTeamIdAndMemberId(team.getId(), member.getId());
@@ -143,7 +143,7 @@ class TeamMemberServiceTest extends IntegrationTestSupport {
         );
 
         // expected
-        assertThatThrownBy(() -> teamMemberService.updateTeamMemberRole(request, teamMember.getId()))
+        assertThatThrownBy(() -> teamMemberService.updateTeamMemberRole(request, member.getId()))
             .isInstanceOf(TeamNotAuthorizedException.class)
             .hasMessage(TEAM_NOT_AUTHORIZED.getMessage());
     }
@@ -168,7 +168,7 @@ class TeamMemberServiceTest extends IntegrationTestSupport {
         );
 
         // expected
-        assertThatThrownBy(() -> teamMemberService.updateTeamMemberRole(request, leaderMember.getId()))
+        assertThatThrownBy(() -> teamMemberService.updateTeamMemberRole(request, leader.getId()))
             .isInstanceOf(InvalidRequest.class)
             .hasMessage("잘못된 요청입니다.");
     }
