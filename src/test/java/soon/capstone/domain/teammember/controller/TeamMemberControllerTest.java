@@ -27,7 +27,7 @@ import static soon.capstone.domain.teammember.entity.common.Role.ROLE_MEMBER;
 
 class TeamMemberControllerTest extends ControllerTestSupport {
 
-    private static final String BASE_URL = "/api/v1/team-members";
+    private static final String BASE_URL = "/api/v1/teams/{teamId}/members";
 
     @TestMember
     @DisplayName("팀 멤버 목록을 조회한다")
@@ -45,7 +45,7 @@ class TeamMemberControllerTest extends ControllerTestSupport {
 
         // expected
         mockMvc.perform(
-                get(BASE_URL + "/{teamId}/members", teamId))
+                get(BASE_URL, teamId))
             .andDo(print())
             .andExpect(status().isOk())
             .andExpect(jsonPath("$", hasSize(2)))
@@ -65,7 +65,7 @@ class TeamMemberControllerTest extends ControllerTestSupport {
 
         // expected
         mockMvc.perform(
-                get(BASE_URL + "/{teamId}/members", teamId))
+                get(BASE_URL, teamId))
             .andDo(print())
             .andExpect(status().isForbidden());
     }
@@ -80,7 +80,7 @@ class TeamMemberControllerTest extends ControllerTestSupport {
 
         // expected
         mockMvc.perform(
-                patch(BASE_URL + "/{teamId}/members", teamId)
+                patch(BASE_URL, teamId)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(request)))
             .andDo(print())
@@ -102,7 +102,7 @@ class TeamMemberControllerTest extends ControllerTestSupport {
 
         // expected
         mockMvc.perform(
-                patch(BASE_URL + "/{teamId}/members", teamId)
+                patch(BASE_URL, teamId)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(request)))
             .andDo(print())
@@ -121,7 +121,7 @@ class TeamMemberControllerTest extends ControllerTestSupport {
 
         // expected
         mockMvc.perform(
-                patch(BASE_URL + "/{teamId}/members", teamId)
+                patch(BASE_URL, teamId)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(request)))
             .andDo(print())
@@ -140,7 +140,7 @@ class TeamMemberControllerTest extends ControllerTestSupport {
 
         // expected
         mockMvc.perform(
-                patch(BASE_URL + "/{teamId}/members", teamId)
+                patch(BASE_URL, teamId)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(request))
             )
@@ -162,7 +162,7 @@ class TeamMemberControllerTest extends ControllerTestSupport {
 
         // expected
         mockMvc.perform(
-                patch(BASE_URL + "/{teamId}/members", teamId)
+                patch(BASE_URL, teamId)
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(request)))
             .andDo(print())

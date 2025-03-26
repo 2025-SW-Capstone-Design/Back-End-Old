@@ -5,7 +5,6 @@ import org.springframework.stereotype.Service;
 import soon.capstone.domain.member.entity.Member;
 import soon.capstone.domain.member.repository.MemberRepository;
 import soon.capstone.domain.team.service.dto.request.TeamCreateServiceRequest;
-import soon.capstone.domain.team.service.dto.request.TeamGenerateInvitationCodeServiceRequest;
 import soon.capstone.domain.team.service.dto.request.TeamInvitationServiceRequest;
 import soon.capstone.domain.team.service.dto.request.TeamJoinServiceRequest;
 import soon.capstone.domain.teammember.entity.TeamMember;
@@ -35,10 +34,10 @@ public class TeamService {
         );
     }
 
-    public String generateInvitationCode(TeamGenerateInvitationCodeServiceRequest request, Long memberId) {
+    public String generateInvitationCode(Long teamId, Long memberId) {
         validateTeamLeader(memberId);
 
-        return teamInvitationService.generateInvitationCode(request.teamId());
+        return teamInvitationService.generateInvitationCode(teamId);
     }
 
     public void sendInvitationEmails(TeamInvitationServiceRequest request, Long memberId) {

@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 import soon.capstone.domain.issue.service.IssueLabelService;
 
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/issue/label")
+@RequestMapping("/api/v1/teams/{teamId}/issue-labels")
 @RestController
 public class IssueLabelController {
 
