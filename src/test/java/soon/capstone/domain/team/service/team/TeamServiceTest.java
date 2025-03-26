@@ -11,7 +11,6 @@ import soon.capstone.domain.member.repository.MemberRepository;
 import soon.capstone.domain.team.entity.Team;
 import soon.capstone.domain.team.repository.TeamRepository;
 import soon.capstone.domain.team.service.dto.request.TeamCreateServiceRequest;
-import soon.capstone.domain.team.service.dto.request.TeamGenerateInvitationCodeServiceRequest;
 import soon.capstone.domain.team.service.dto.request.TeamInvitationServiceRequest;
 import soon.capstone.domain.team.service.dto.request.TeamJoinServiceRequest;
 import soon.capstone.domain.teammember.entity.TeamMember;
@@ -101,15 +100,12 @@ class TeamServiceTest extends IntegrationTestSupport {
         teamMemberRepository.save(leaderMember);
 
         String expectedCode = "ABCD123";
-        var request = TeamGenerateInvitationCodeServiceRequest.builder()
-            .teamId(team.getId())
-            .build();
 
         given(teamInvitationService.generateInvitationCode(team.getId()))
             .willReturn(expectedCode);
 
         // when
-        String result = teamService.generateInvitationCode(request, member.getId());
+        String result = teamService.generateInvitationCode(team.getId(), member.getId());
 
         // then
         assertThat(result)
@@ -126,10 +122,6 @@ class TeamServiceTest extends IntegrationTestSupport {
         Team team = createTeam();
         teamRepository.save(team);
 
-        var request = TeamGenerateInvitationCodeServiceRequest.builder()
-            .teamId(team.getId())
-            .build();
-
         TeamMember teamMember = TeamMember.builder()
             .role(ROLE_MEMBER)
             .member(member)
@@ -139,7 +131,7 @@ class TeamServiceTest extends IntegrationTestSupport {
         teamMemberRepository.save(teamMember);
 
         // except
-        assertThatThrownBy(() -> teamService.generateInvitationCode(request, member.getId()))
+        assertThatThrownBy(() -> teamService.generateInvitationCode(team.getId(), member.getId()))
             .isInstanceOf(IsNotTeamLeaderException.class)
             .hasMessage(IS_NOT_TEAM_LEADER.getMessage());
     }

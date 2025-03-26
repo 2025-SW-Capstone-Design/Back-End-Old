@@ -3,12 +3,8 @@ package soon.capstone.domain.team.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import soon.capstone.domain.team.controller.dto.TeamCreateRequest;
-import soon.capstone.domain.team.controller.dto.TeamGenerateInvitationCodeRequest;
 import soon.capstone.domain.team.controller.dto.TeamInvitationRequest;
 import soon.capstone.domain.team.controller.dto.TeamJoinRequest;
 import soon.capstone.domain.team.service.team.TeamService;
@@ -31,22 +27,23 @@ public class TeamController {
         return ResponseEntity.ok(teamId);
     }
 
-    @PostMapping("/invitation-code")
+    @PostMapping("/{teamId}/invitation-code")
     public ResponseEntity<String> generateInvitationCode(
-        @Valid @RequestBody TeamGenerateInvitationCodeRequest request,
-        @AuthMemberId Long memberId
+        @AuthMemberId Long memberId,
+        @PathVariable Long teamId
     ) {
-        String invitationCode = teamService.generateInvitationCode(request.toServiceRequest(), memberId);
+        String invitationCode = teamService.generateInvitationCode(teamId, memberId);
 
         return ResponseEntity.ok(invitationCode);
     }
 
-    @PostMapping("/invitation-emails")
+    @PostMapping("/{teamId}/invitation-emails")
     public ResponseEntity<Void> sendInvitationEmails(
         @Valid @RequestBody TeamInvitationRequest request,
-        @AuthMemberId Long memberId
+        @AuthMemberId Long memberId,
+        @PathVariable Long teamId
     ) {
-        teamService.sendInvitationEmails(request.toServiceRequest(), memberId);
+        teamService.sendInvitationEmails(request.toServiceRequest(teamId), memberId);
 
         return ResponseEntity.ok().build();
     }
