@@ -12,13 +12,13 @@ import soon.capstone.global.anootation.AuthMemberId;
 import java.util.List;
 
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/team-members")
+@RequestMapping("/api/v1/teams/{teamId}/members")
 @RestController
 public class TeamMemberController {
 
     private final TeamMemberService teamMemberService;
 
-    @GetMapping("/{teamId}/members")
+    @GetMapping
     public ResponseEntity<List<TeamMemberDetailResponse>> getTeamMembers(
         @PathVariable("teamId") Long teamId,
         @AuthMemberId Long memberId
@@ -28,7 +28,7 @@ public class TeamMemberController {
         return ResponseEntity.ok(teamMembers);
     }
 
-    @PatchMapping("/{teamId}/members")
+    @PatchMapping
     public ResponseEntity<Void> updateTeamMemberRole(
         @PathVariable("teamId") Long teamId,
         @Valid @RequestBody TeamMemberUpdateRoleRequest request,
