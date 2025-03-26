@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 import soon.capstone.domain.issue.service.IssueService;
 
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/issue")
+@RequestMapping("/api/v1/teams/{teamId}/issues")
 @RestController
 public class IssueController {
 

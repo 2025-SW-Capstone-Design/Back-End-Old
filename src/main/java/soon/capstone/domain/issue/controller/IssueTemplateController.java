@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RestController;
 import soon.capstone.domain.issue.service.IssueTemplateService;
 
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/issue/template")
+@RequestMapping("/api/v1/teams/{teamId}/issue-templates")
 @RestController
 public class IssueTemplateController {
 
