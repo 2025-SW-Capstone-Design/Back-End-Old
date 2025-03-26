@@ -333,7 +333,7 @@ class TeamControllerTest extends ControllerTestSupport {
     }
 
     @TestMember
-    @DisplayName("팀 가입 요청시 초대코는 필수 값이다.")
+    @DisplayName("팀 가입 요청시 초대코드는 필수 값이다.")
     @Test
     void joinTeamWithInvalidInvitationCode() throws Exception {
         // given

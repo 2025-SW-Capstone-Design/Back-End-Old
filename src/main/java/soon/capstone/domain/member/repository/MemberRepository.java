@@ -5,6 +5,8 @@ import org.springframework.stereotype.Repository;
 import soon.capstone.domain.member.entity.Member;
 import soon.capstone.global.exception.member.MemberNotFoundException;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 @Repository
 public class MemberRepository {
@@ -13,6 +15,10 @@ public class MemberRepository {
 
     public void save(Member member) {
         memberJpaRepository.save(member);
+    }
+
+    public void saveAll(List<Member> members) {
+        memberJpaRepository.saveAll(members);
     }
 
     public Member findByNickname(String nickname) {

@@ -32,6 +32,7 @@ public enum ErrorDetail {
     TEAM_NOT_FOUND(404, "해당 팀을 찾을 수 없습니다."),
     TEAM_ALREADY_EXISTS(409, "해당 팀이 이미 존재합니다."),
     INVITATION_CODE_NOT_FOUND(404, "해당 초대 코드를 찾을 수 없습니다."),
+    TEAM_NOT_AUTHORIZED(403, "해당 팀에 접근할 권한이 없습니다."),
 
     // 팀 멤버 관련
     TEAM_MEMBER_NOT_FOUND(404, "해당 팀 멤버를 찾을 수 없습니다."),

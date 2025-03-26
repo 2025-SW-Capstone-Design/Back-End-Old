@@ -1,9 +1,15 @@
 package soon.capstone.domain.teammember.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import soon.capstone.domain.teammember.controller.dto.TeamMemberUpdateRoleRequest;
 import soon.capstone.domain.teammember.service.TeamMemberService;
+import soon.capstone.domain.teammember.service.dto.response.TeamMemberDetailResponse;
+import soon.capstone.global.anootation.AuthMemberId;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/team-members")
@@ -11,5 +17,26 @@ import soon.capstone.domain.teammember.service.TeamMemberService;
 public class TeamMemberController {
 
     private final TeamMemberService teamMemberService;
+
+    @GetMapping("/{teamId}/members")
+    public ResponseEntity<List<TeamMemberDetailResponse>> getTeamMembers(
+        @PathVariable("teamId") Long teamId,
+        @AuthMemberId Long memberId
+    ) {
+        List<TeamMemberDetailResponse> teamMembers = teamMemberService.getTeamMembers(teamId, memberId);
+
+        return ResponseEntity.ok(teamMembers);
+    }
+
+    @PatchMapping("/{teamId}/members")
+    public ResponseEntity<Void> updateTeamMemberRole(
+        @PathVariable("teamId") Long teamId,
+        @Valid @RequestBody TeamMemberUpdateRoleRequest request,
+        @AuthMemberId Long memberId
+    ) {
+        teamMemberService.updateTeamMemberRole(request.toServiceRequest(teamId), memberId);
+
+        return ResponseEntity.noContent().build();
+    }
 
 }
