@@ -1,3 +1,3 @@
 spring:
   profiles:
-    include: aws-s3, redis, local, oauth, email
+    include: aws-s3, redis, local, oauth, email, graphQL
