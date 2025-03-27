@@ -40,6 +40,9 @@ public enum ErrorDetail {
     TEAM_MEMBER_ALREADY_EXISTS(409, "해당 팀 멤버가 이미 존재합니다."),
     IS_NOT_TEAM_LEADER(403, "해당 팀의 리더가 아닙니다."),
 
+    // 프로젝트 관련
+    PROJECT_NOT_FOUND(404, "해당 프로젝트를 찾을 수 없습니다."),
+
     ;
 
     private final int status;
