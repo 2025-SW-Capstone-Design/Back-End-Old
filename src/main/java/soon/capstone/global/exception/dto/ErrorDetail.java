@@ -26,6 +26,7 @@ public enum ErrorDetail {
     GITHUB_MEMBER_EMAIL_NOT_FOUND(404, "Github 회원의 이메일을 찾을 수 없습니다."),
     PRIMARY_VERIFIED_EMAIL_NOT_FOUND(404, "Primary Verified Email을 찾을 수 없습니다."),
     OAUTH_TOKEN_EXPIRED(401, "OAuth 토큰이 만료되었습니다."),
+    GITHUB_HTTP_CLIENT_ERROR(500, "Github 통신 중 오류가 발생했습니다."),
 
     // 팀 관련
     IS_NOT_ADMIN_IN_ORGANIZATION(403, "해당 조직의 관리자가 아닙니다."),
