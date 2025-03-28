@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import soon.capstone.domain.milestone.entity.Milestone;
+import soon.capstone.domain.project.entity.Project;
 import soon.capstone.domain.teammember.entity.TeamMember;
 import soon.capstone.global.common.BaseTimeEntity;
 
@@ -38,13 +39,25 @@ public class Issue extends BaseTimeEntity {
     @JoinColumn(name = "milestone_id")
     private Milestone milestone;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "project_id")
+    private Project project;
+
     @Builder
-    private Issue(String title, String content, IssueLabel issueLabel, TeamMember teamMember, Milestone milestone) {
+    private Issue(
+        String title,
+        String content,
+        IssueLabel issueLabel,
+        TeamMember teamMember,
+        Milestone milestone,
+        Project project
+    ) {
         this.title = title;
         this.content = content;
         this.issueLabel = issueLabel;
         this.teamMember = teamMember;
         this.milestone = milestone;
+        this.project = project;
     }
 
 }

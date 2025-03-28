@@ -5,6 +5,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import soon.capstone.domain.project.entity.Project;
 import soon.capstone.domain.team.entity.Team;
 import soon.capstone.global.common.BaseTimeEntity;
 
@@ -32,12 +33,23 @@ public class IssueLabel extends BaseTimeEntity {
     @JoinColumn(name = "team_id")
     private Team team;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "project_id")
+    private Project project;
+
     @Builder
-    private IssueLabel(String color, String title, String description, Team team) {
+    private IssueLabel(
+        String color,
+        String title,
+        String description,
+        Team team,
+        Project project
+    ) {
         this.color = color;
         this.title = title;
         this.description = description;
         this.team = team;
+        this.project = project;
     }
 
 }
