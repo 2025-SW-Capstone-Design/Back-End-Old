@@ -43,6 +43,10 @@ public enum ErrorDetail {
     // 프로젝트 관련
     PROJECT_NOT_FOUND(404, "해당 프로젝트를 찾을 수 없습니다."),
 
+    // 이슈 관련
+    ISSUE_LABEL_ALREADY_EXISTS(409, "해당 이슈 라벨이 이미 존재합니다."),
+    ISSUE_LABEL_NOT_FOUND(404, "해당 이슈 라벨을 찾을 수 없습니다."),
+
     ;
 
     private final int status;
