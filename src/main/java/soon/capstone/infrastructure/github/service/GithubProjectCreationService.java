@@ -11,10 +11,11 @@ import soon.capstone.infrastructure.graphQL.GraphQLClientConfig;
 public class GithubProjectCreationService {
 
     private final GraphQLClientConfig graphQLClientConfig;
+    private static final String PROJECT_NAME = "%s-Project";
 
-    public void createProject(String organizationId, String title, String oauthToken) {
-        String formattedMutation = String.format(GithubQuery.CREATE_PROJECT.getQuery(), organizationId, title);
-        
+    public void createProject(String organizationId, String organizationName, String oauthToken) {
+        String formattedMutation = String.format(GithubQuery.CREATE_PROJECT.getQuery(), organizationId, String.format(PROJECT_NAME, organizationName));
+
         try {
             graphQLClientConfig.mutationClient(oauthToken)
                     .document(formattedMutation)
