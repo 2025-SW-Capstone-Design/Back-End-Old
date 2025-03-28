@@ -3,6 +3,7 @@ package soon.capstone.domain.project.repository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import soon.capstone.domain.project.entity.Project;
+import soon.capstone.global.exception.project.ProjectNotFoundException;
 
 import java.util.List;
 
@@ -21,7 +22,7 @@ public class ProjectRepository {
     }
 
     public Project findById(Long id) {
-        return projectJpaRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Project not found"));
+        return projectJpaRepository.findById(id).orElseThrow(ProjectNotFoundException::new);
     }
 
 }
