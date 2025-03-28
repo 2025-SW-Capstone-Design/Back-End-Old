@@ -52,4 +52,20 @@ public class IssueLabel extends BaseTimeEntity {
         this.project = project;
     }
 
+    public static IssueLabel createIssueLabel(
+        String color,
+        String title,
+        String description,
+        Team team,
+        Project project
+    ) {
+        return IssueLabel.builder()
+            .title(title)
+            .color(color)
+            .description(description)
+            .team(team)
+            .project(project)
+            .build();
+    }
+
 }
