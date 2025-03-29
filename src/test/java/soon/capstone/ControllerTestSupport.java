@@ -8,7 +8,10 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import soon.capstone.domain.auth.controller.AuthController;
 import soon.capstone.domain.auth.service.AuthService;
+import soon.capstone.domain.issue.controller.IssueLabelController;
+import soon.capstone.domain.issue.controller.IssueTemplateController;
 import soon.capstone.domain.issue.service.IssueManagementService;
+import soon.capstone.domain.project.controller.ProjectController;
 import soon.capstone.domain.project.service.ProjectService;
 import soon.capstone.domain.team.controller.TeamController;
 import soon.capstone.domain.team.service.team.TeamService;
@@ -20,7 +23,10 @@ import soon.capstone.domain.teammember.service.TeamMemberService;
     controllers = {
         AuthController.class,
         TeamController.class,
-        TeamMemberController.class
+        ProjectController.class,
+        TeamMemberController.class,
+        IssueLabelController.class,
+        IssueTemplateController.class
     }
 )
 public abstract class ControllerTestSupport {

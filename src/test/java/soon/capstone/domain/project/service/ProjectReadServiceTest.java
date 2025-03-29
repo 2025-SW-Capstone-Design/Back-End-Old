@@ -1,5 +1,6 @@
 package soon.capstone.domain.project.service;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +38,13 @@ class ProjectReadServiceTest extends IntegrationTestSupport {
     @Autowired
     private TeamMemberRepository teamMemberRepository;
 
+    @AfterEach
+    void tearDown() {
+        projectRepository.deleteAllInBatch();
+        teamMemberRepository.deleteAllInBatch();
+        memberRepository.deleteAllInBatch();
+        teamRepository.deleteAllInBatch();
+    }
 
     @DisplayName("사용자가 속해있는 팀의 프로젝트 목록을 반환한다.")
     @Test
@@ -63,39 +71,39 @@ class ProjectReadServiceTest extends IntegrationTestSupport {
         // Then
         assertThat(projects.size()).isEqualTo(2);
         assertThat(projects).extracting("title")
-                .containsExactlyInAnyOrder(mockProject1.getTitle(), mockProject2.getTitle());
+            .containsExactlyInAnyOrder(mockProject1.getTitle(), mockProject2.getTitle());
     }
 
     private Member createMember() {
         return Member.builder()
-                .email("email")
-                .nickname("nickname")
-                .profileImageURL("profileImageURL")
-                .build();
+            .email("email")
+            .nickname("nickname")
+            .profileImageURL("profileImageURL")
+            .build();
     }
 
     private Team createTeam() {
         return Team.builder()
-                .name("name")
-                .description("description")
-                .organizationName("organizationName")
-                .build();
+            .name("name")
+            .description("description")
+            .organizationName("organizationName")
+            .build();
     }
 
     private TeamMember createTeamMember(Member member, Team team) {
         return TeamMember.builder()
-                .member(member)
-                .team(team)
-                .position(Position.NONE)
-                .role(Role.ROLE_MEMBER)
-                .build();
+            .member(member)
+            .team(team)
+            .position(Position.NONE)
+            .role(Role.ROLE_MEMBER)
+            .build();
     }
 
     private Project createProject(String creator, Team team) {
         return Project.builder()
-                .title("title")
-                .creator(creator)
-                .team(team)
-                .build();
+            .title("title")
+            .creator(creator)
+            .team(team)
+            .build();
     }
 }

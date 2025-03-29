@@ -1,0 +1,200 @@
+package soon.capstone.domain.issue.controller;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.http.MediaType;
+import soon.capstone.ControllerTestSupport;
+import soon.capstone.domain.issue.controller.dto.IssueTemplateCreateRequest;
+import soon.capstone.global.anootation.TestMember;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+class IssueTemplateControllerTest extends ControllerTestSupport {
+
+    private static final String BASE_URL = "/api/v1/teams/{teamId}/issue-templates";
+
+    @TestMember
+    @DisplayName("이슈 템플릿을 생성한다.")
+    @Test
+    void createIssueTemplate() throws Exception {
+        // given
+        Long teamId = 1L;
+        var request = IssueTemplateCreateRequest.builder()
+            .title("title")
+            .projectId(1L)
+            .content("content")
+            .description("description")
+            .type("type")
+            .build();
+        given(issueManagementService.createIssueTemplate(any(), eq(1L)))
+            .willReturn(1L);
+
+        // expected
+        mockMvc.perform(
+                post(BASE_URL, teamId)
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$").value(1));
+    }
+
+    @DisplayName("이슈 템플릿을 생성 시 제목은 필수값이다.")
+    @Test
+    void createIssueTemplateWithoutTitle() throws Exception {
+        // given
+        Long teamId = 1L;
+        var request = IssueTemplateCreateRequest.builder()
+            .projectId(1L)
+            .content("content")
+            .description("description")
+            .type("type")
+            .build();
+
+        // expected
+        mockMvc.perform(
+                post(BASE_URL, teamId)
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+            .andDo(print())
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.status").value(400))
+            .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
+            .andExpect(jsonPath("$.validation.title").value("제목은 필수 입력 값입니다."));
+    }
+
+    @DisplayName("이슈 템플릿을 생성 시 설명은 필수값이다.")
+    @Test
+    void createIssueTemplateWithoutDescription() throws Exception {
+        // given
+        Long teamId = 1L;
+        var request = IssueTemplateCreateRequest.builder()
+            .title("title")
+            .projectId(1L)
+            .content("content")
+            .type("type")
+            .build();
+
+        // expected
+        mockMvc.perform(
+                post(BASE_URL, teamId)
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+            .andDo(print())
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.status").value(400))
+            .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
+            .andExpect(jsonPath("$.validation.description").value("설명은 필수 입력 값입니다."));
+    }
+
+    @DisplayName("이슈 템플릿을 생성 시 내용은 필수값이다.")
+    @Test
+    void createIssueTemplateWithoutContent() throws Exception {
+        // given
+        Long teamId = 1L;
+        var request = IssueTemplateCreateRequest.builder()
+            .title("title")
+            .projectId(1L)
+            .description("description")
+            .type("type")
+            .build();
+
+        // expected
+        mockMvc.perform(
+                post(BASE_URL, teamId)
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+            .andDo(print())
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.status").value(400))
+            .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
+            .andExpect(jsonPath("$.validation.content").value("내용은 필수 입력 값입니다."));
+    }
+
+    @DisplayName("이슈 템플릿을 생성 시 타입은 필수값이다.")
+    @Test
+    void createIssueTemplateWithoutType() throws Exception {
+        // given
+        Long teamId = 1L;
+        var request = IssueTemplateCreateRequest.builder()
+            .title("title")
+            .projectId(1L)
+            .content("content")
+            .description("description")
+            .build();
+
+        // expected
+        mockMvc.perform(
+                post(BASE_URL, teamId)
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+            .andDo(print())
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.status").value(400))
+            .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
+            .andExpect(jsonPath("$.validation.type").value("타입은 필수 입력 값입니다."));
+    }
+
+    @DisplayName("이슈 템플릿을 생성 시 프로젝트 ID는 필수값이다.")
+    @Test
+    void createIssueTemplateWithoutZeroProjectID() throws Exception {
+        // given
+        Long teamId = 1L;
+        var request = IssueTemplateCreateRequest.builder()
+            .title("title")
+            .projectId(0L)
+            .content("content")
+            .description("description")
+            .type("type")
+            .build();
+
+        // expected
+        mockMvc.perform(
+                post(BASE_URL, teamId)
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+            .andDo(print())
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.status").value(400))
+            .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
+            .andExpect(jsonPath("$.validation.projectId").value("프로젝트 ID는 0보다 커야합니다."));
+    }
+
+    @DisplayName("이슈 템플릿을 생성 시 프로젝트 ID는 필수값이다.")
+    @Test
+    void createIssueTemplateWithoutProjectID() throws Exception {
+        // given
+        Long teamId = 1L;
+        var request = IssueTemplateCreateRequest.builder()
+            .title("title")
+            .content("content")
+            .description("description")
+            .type("type")
+            .build();
+
+        // expected
+        mockMvc.perform(
+                post(BASE_URL, teamId)
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+            .andDo(print())
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.status").value(400))
+            .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
+            .andExpect(jsonPath("$.validation.projectId").value("프로젝트 ID는 필수 입력 값입니다."));
+    }
+
+}

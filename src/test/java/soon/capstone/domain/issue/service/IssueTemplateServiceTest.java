@@ -75,8 +75,14 @@ class IssueTemplateServiceTest extends IntegrationTestSupport {
         String content = "content";
         String type = "invalidType";
 
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        Project project = createProject(team);
+        projectJpaRepository.save(project);
+
         // expected
-        assertThatThrownBy(() -> issueTemplateService.createIssueTemplate(title, description, content, type, createProject(createTeam())))
+        assertThatThrownBy(() -> issueTemplateService.createIssueTemplate(title, description, content, type, project))
             .isInstanceOf(InvalidRequest.class)
             .hasMessage(ErrorDetail.INVALID_REQUEST.getMessage());
     }
