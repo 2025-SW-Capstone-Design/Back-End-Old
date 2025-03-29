@@ -6,23 +6,22 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import soon.capstone.domain.project.controller.ProjectController;
+import soon.capstone.domain.auth.controller.AuthController;
+import soon.capstone.domain.auth.service.AuthService;
+import soon.capstone.domain.issue.service.IssueManagementService;
 import soon.capstone.domain.project.service.ProjectService;
 import soon.capstone.domain.team.controller.TeamController;
 import soon.capstone.domain.team.service.team.TeamService;
-import soon.capstone.domain.auth.controller.AuthController;
-import soon.capstone.domain.auth.service.AuthService;
 import soon.capstone.domain.teammember.controller.TeamMemberController;
 import soon.capstone.domain.teammember.service.TeamMemberService;
 
 @Import(TestSecurityConfig.class)
 @WebMvcTest(
-        controllers = {
-                AuthController.class,
-                TeamController.class,
-                TeamMemberController.class,
-                ProjectController.class
-        }
+    controllers = {
+        AuthController.class,
+        TeamController.class,
+        TeamMemberController.class
+    }
 )
 public abstract class ControllerTestSupport {
 
@@ -43,5 +42,8 @@ public abstract class ControllerTestSupport {
 
     @MockitoBean
     protected ProjectService projectService;
+
+    @MockitoBean
+    protected IssueManagementService issueManagementService;
 
 }
