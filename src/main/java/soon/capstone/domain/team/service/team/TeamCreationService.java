@@ -1,11 +1,13 @@
 package soon.capstone.domain.team.service.team;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import soon.capstone.domain.member.entity.Member;
 import soon.capstone.domain.team.entity.Team;
 import soon.capstone.domain.team.repository.TeamRepository;
+import soon.capstone.domain.project.service.dto.request.TeamCreatedEvent;
 import soon.capstone.domain.teammember.entity.TeamMember;
 import soon.capstone.domain.teammember.repository.TeamMemberRepository;
 import soon.capstone.global.exception.team.IsNotAdminInOrganizationException;
@@ -22,6 +24,7 @@ public class TeamCreationService {
     private final GithubOrganizationService githubOrganizationService;
     private final TeamRepository teamRepository;
     private final TeamMemberRepository teamMemberRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public Long createTeam(
@@ -42,6 +45,14 @@ public class TeamCreationService {
 
         TeamMember leader = TeamMember.createLeader(member, team);
         teamMemberRepository.save(leader);
+
+        eventPublisher.publishEvent(
+                TeamCreatedEvent.builder()
+                        .teamId(team.getId())
+                        .memberId(member.getId())
+                        .oauthToken(oAuthToken.getToken())
+                        .build()
+        );
 
         return team.getId();
     }
