@@ -3,6 +3,7 @@ package soon.capstone.domain.issue.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import soon.capstone.domain.issue.service.dto.request.IssueLabelCreateServiceRequest;
+import soon.capstone.domain.issue.service.dto.request.IssueTemplateCreateServiceRequest;
 import soon.capstone.domain.member.entity.Member;
 import soon.capstone.domain.member.repository.MemberRepository;
 import soon.capstone.domain.project.entity.Project;
@@ -17,6 +18,7 @@ import soon.capstone.global.exception.team.TeamNotAuthorizedException;
 public class IssueManagementService {
 
     private final IssueLabelService issueLabelService;
+    private final IssueTemplateService issueTemplateService;
 
     private final MemberRepository memberRepository;
     private final TeamMemberRepository teamMemberRepository;
@@ -28,9 +30,7 @@ public class IssueManagementService {
         Member member = memberRepository.findById(memberId);
         Project project = projectRepository.findById(request.projectId());
 
-        if (!teamMemberRepository.existsByMemberAndTeam(member, team)) {
-            throw new TeamNotAuthorizedException();
-        }
+        validateTeamMembership(member, team); // TODO: 차후 handler로 분리
 
         return issueLabelService.createIssueLabel(
             request.title(),
@@ -40,6 +40,28 @@ public class IssueManagementService {
             member.getId(),
             team
         );
+    }
+
+    public Long createIssueTemplate(IssueTemplateCreateServiceRequest request, Long memberId) {
+        Team team = teamRepository.findById(request.teamId());
+        Member member = memberRepository.findById(memberId);
+        Project project = projectRepository.findById(request.projectId());
+
+        validateTeamMembership(member, team);
+
+        return issueTemplateService.createIssueTemplate(
+            request.title(),
+            request.description(),
+            request.content(),
+            request.type(),
+            project
+        );
+    }
+
+    private void validateTeamMembership(Member member, Team team) {
+        if (!teamMemberRepository.existsByMemberAndTeam(member, team)) {
+            throw new TeamNotAuthorizedException();
+        }
     }
 
 }

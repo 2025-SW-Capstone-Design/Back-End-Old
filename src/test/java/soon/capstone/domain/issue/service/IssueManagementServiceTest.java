@@ -8,6 +8,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import soon.capstone.IntegrationTestSupport;
 import soon.capstone.domain.issue.repository.issuelabel.IssueLabelRepository;
 import soon.capstone.domain.issue.service.dto.request.IssueLabelCreateServiceRequest;
+import soon.capstone.domain.issue.service.dto.request.IssueTemplateCreateServiceRequest;
 import soon.capstone.domain.member.entity.Member;
 import soon.capstone.domain.member.repository.MemberRepository;
 import soon.capstone.domain.project.entity.Project;
@@ -46,6 +47,9 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
 
     @MockitoBean
     private IssueLabelService issueLabelService;
+
+    @MockitoBean
+    private IssueTemplateService issueTemplateService;
 
     @AfterEach
     void tearDown() {
@@ -114,6 +118,63 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
             .hasMessage(TEAM_NOT_AUTHORIZED.getMessage());
     }
 
+    @DisplayName("이슈 템플릿을 생성한다.")
+    @Test
+    void createIssueTemplate() {
+        // given
+        Member member = createMember();
+        memberRepository.save(member);
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        TeamMember teamMember = TeamMember.createMember(member, team);
+        teamMemberRepository.save(teamMember);
+
+        Project project = createProject(team);
+        projectJpaRepository.save(project);
+
+        var request = createIssueTemplateCreateServiceRequest(team, project);
+
+        given(issueTemplateService.createIssueTemplate(
+            anyString(),
+            anyString(),
+            anyString(),
+            anyString(),
+            any(Project.class)
+        )).willReturn(1L);
+
+        // when
+        Long issueTemplateId = issueManagementService.createIssueTemplate(request, member.getId());
+
+        // then
+        assertThat(issueTemplateId)
+            .isEqualTo(1L);
+    }
+
+    @DisplayName("팀에 속하지 않은 멤버가 이슈 템플릿을 생성 할 경우 예외가 발생한다")
+    @Test
+    void createIssueTemplateWithNotTeamMember() {
+        // given
+        Member member = createMember();
+        memberRepository.save(member);
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        Project project = createProject(team);
+        projectJpaRepository.save(project);
+
+        // expected
+        assertThatThrownBy(() -> {
+            issueManagementService.createIssueTemplate(
+                createIssueTemplateCreateServiceRequest(team, project),
+                member.getId()
+            );
+        }).isInstanceOf(TeamNotAuthorizedException.class)
+            .hasMessage(TEAM_NOT_AUTHORIZED.getMessage());
+    }
+
     private Member createMember() {
         return Member.builder()
             .email("email")
@@ -145,6 +206,17 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
             .title("title")
             .description("description")
             .projectId(project.getId())
+            .build();
+    }
+
+    private IssueTemplateCreateServiceRequest createIssueTemplateCreateServiceRequest(Team team, Project project) {
+        return IssueTemplateCreateServiceRequest.builder()
+            .content("content")
+            .teamId(team.getId())
+            .title("title")
+            .description("description")
+            .projectId(project.getId())
+            .type("type")
             .build();
     }
 
