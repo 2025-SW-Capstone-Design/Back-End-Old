@@ -13,10 +13,12 @@ import soon.capstone.domain.team.entity.Team;
 import soon.capstone.domain.team.repository.TeamRepository;
 import soon.capstone.global.exception.common.InvalidRequest;
 import soon.capstone.global.exception.dto.ErrorDetail;
+import soon.capstone.global.exception.issue.template.AlreadyIssueTemplateException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static soon.capstone.domain.issue.entity.IssueType.Feature;
+import static soon.capstone.global.exception.dto.ErrorDetail.ISSUE_TEMPLATE_ALREADY_EXISTS;
 
 class IssueTemplateServiceTest extends IntegrationTestSupport {
 
@@ -79,6 +81,27 @@ class IssueTemplateServiceTest extends IntegrationTestSupport {
             .hasMessage(ErrorDetail.INVALID_REQUEST.getMessage());
     }
 
+    @DisplayName("템플릿 생성 시 이미 존재하는 이름이라면 예외가 발생한다.")
+    @Test
+    void createIssueTemplateWithDuplicatedTitle() {
+        // given
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        Project project = createProject(team);
+        projectJpaRepository.save(project);
+
+        IssueTemplate template = createIssueTemplate(project);
+        issueTemplateRepository.save(template);
+
+        // expected
+        assertThatThrownBy(() ->
+            issueTemplateService.createIssueTemplate(template.getTitle(), template.getDescription(), template.getContent(), "Feature", project)
+        )
+            .isInstanceOf(AlreadyIssueTemplateException.class)
+            .hasMessage(ISSUE_TEMPLATE_ALREADY_EXISTS.getMessage());
+    }
+
     private Team createTeam() {
         return Team.builder()
             .name("name")
@@ -92,6 +115,16 @@ class IssueTemplateServiceTest extends IntegrationTestSupport {
             .creator("creator")
             .title("title")
             .team(team)
+            .build();
+    }
+
+    private IssueTemplate createIssueTemplate(Project project) {
+        return IssueTemplate.builder()
+            .title("title")
+            .description("description")
+            .content("content")
+            .type(Feature)
+            .project(project)
             .build();
     }
 
