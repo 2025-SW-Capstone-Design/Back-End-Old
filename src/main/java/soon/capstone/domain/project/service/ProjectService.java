@@ -2,6 +2,8 @@ package soon.capstone.domain.project.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 import soon.capstone.domain.member.entity.Member;
@@ -26,12 +28,14 @@ public class ProjectService {
         return projectReadService.getProjects(member, teamId);
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void createRepository(TeamCreatedEvent event) {
         Member member = memberRepository.findById(event.memberId());
         repositoryCreationService.createRepository(event.teamId(), member.getNickname(), event.oauthToken());
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void createProject(RepositoryCreationEvent repositoryCreationEvent) {
         organizationProjectCreationService.createProject(repositoryCreationEvent.organizationName(), repositoryCreationEvent.oauthToken());
