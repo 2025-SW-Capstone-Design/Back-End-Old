@@ -28,10 +28,6 @@ public class Issue extends BaseTimeEntity {
     private String content;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "issue_label_id")
-    private IssueLabel issueLabel;
-
-    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "team_member_id")
     private TeamMember teamMember;
 
@@ -47,14 +43,12 @@ public class Issue extends BaseTimeEntity {
     private Issue(
         String title,
         String content,
-        IssueLabel issueLabel,
         TeamMember teamMember,
         Milestone milestone,
         Project project
     ) {
         this.title = title;
         this.content = content;
-        this.issueLabel = issueLabel;
         this.teamMember = teamMember;
         this.milestone = milestone;
         this.project = project;
