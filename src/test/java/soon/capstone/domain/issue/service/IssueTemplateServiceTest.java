@@ -16,12 +16,14 @@ import soon.capstone.domain.team.repository.TeamRepository;
 import soon.capstone.global.exception.common.InvalidRequest;
 import soon.capstone.global.exception.dto.ErrorDetail;
 import soon.capstone.global.exception.issue.template.AlreadyIssueTemplateException;
+import soon.capstone.global.exception.issue.template.IssueTemplateNotFoundException;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
 import static soon.capstone.domain.issue.entity.IssueType.*;
 import static soon.capstone.global.exception.dto.ErrorDetail.ISSUE_TEMPLATE_ALREADY_EXISTS;
+import static soon.capstone.global.exception.dto.ErrorDetail.ISSUE_TEMPLATE_NOT_FOUND;
 
 class IssueTemplateServiceTest extends IntegrationTestSupport {
 
@@ -275,6 +277,29 @@ class IssueTemplateServiceTest extends IntegrationTestSupport {
                 tuple("title", "description", "content", Refactor.name()),
                 tuple("title", "description", "content", Fix.name())
             );
+    }
+
+    @DisplayName("이슈 템플릿을 삭제한다.")
+    @Test
+    void deleteIssueTemplate() {
+        // given
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        Project project = createProject(team);
+        projectJpaRepository.save(project);
+
+        IssueTemplate template = createIssueTemplate(project, Feature);
+        issueTemplateRepository.save(template);
+        Long templateId = template.getId();
+
+        // when
+        issueTemplateService.deleteIssueTemplate(template.getId());
+
+        // then
+        assertThatThrownBy(() -> issueTemplateRepository.findById(templateId))
+            .isInstanceOf(IssueTemplateNotFoundException.class)
+            .hasMessage(ISSUE_TEMPLATE_NOT_FOUND.getMessage());
     }
 
     private Team createTeam() {

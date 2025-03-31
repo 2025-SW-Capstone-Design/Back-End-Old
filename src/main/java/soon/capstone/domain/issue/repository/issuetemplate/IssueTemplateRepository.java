@@ -36,6 +36,10 @@ public class IssueTemplateRepository {
         return issueTemplateJpaRepository.existsByTitleAndProject(title, project);
     }
 
+    public void deleteById(Long id) {
+        issueTemplateJpaRepository.deleteById(id);
+    }
+
     public void deleteAllInBatch() {
         issueTemplateJpaRepository.deleteAllInBatch();
     }

@@ -63,6 +63,11 @@ public class IssueTemplateService {
         return issueTemplateRepository.getIssueTemplates(type, project);
     }
 
+    @Transactional
+    public void deleteIssueTemplate(Long issueTemplateId) {
+        issueTemplateRepository.deleteById(issueTemplateId);
+    }
+
     private void validateTemplateUniqueness(String title, Project project) {
         boolean alreadyExists = issueTemplateRepository.existsByTitleAndProject(title, project);
         if (alreadyExists) {
