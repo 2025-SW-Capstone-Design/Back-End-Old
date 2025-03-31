@@ -14,6 +14,7 @@ import soon.capstone.domain.issue.service.dto.request.IssueLabelCreateServiceReq
 import soon.capstone.domain.issue.service.dto.request.IssueLabelUpdateServiceRequest;
 import soon.capstone.domain.issue.service.dto.request.IssueTemplateCreateServiceRequest;
 import soon.capstone.domain.issue.service.dto.request.IssueTemplateUpdateServiceRequest;
+import soon.capstone.domain.issue.service.dto.response.IssueTemplateDetailResponse;
 import soon.capstone.domain.member.entity.Member;
 import soon.capstone.domain.member.repository.MemberRepository;
 import soon.capstone.domain.project.entity.Project;
@@ -24,14 +25,14 @@ import soon.capstone.domain.teammember.entity.TeamMember;
 import soon.capstone.domain.teammember.repository.TeamMemberRepository;
 import soon.capstone.global.exception.team.TeamNotAuthorizedException;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
-import static soon.capstone.domain.issue.entity.IssueType.Feature;
-import static soon.capstone.domain.issue.entity.IssueType.Fix;
+import static soon.capstone.domain.issue.entity.IssueType.*;
 import static soon.capstone.global.exception.dto.ErrorDetail.TEAM_NOT_AUTHORIZED;
 
 class IssueManagementServiceTest extends IntegrationTestSupport {
@@ -282,6 +283,120 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
             .hasMessage(TEAM_NOT_AUTHORIZED.getMessage());
     }
 
+    @DisplayName("이슈 템플릿을 ID로 조회한다")
+    @Test
+    void getIssueTemplate() {
+        Member member = createMember();
+        memberRepository.save(member);
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        TeamMember teamMember = TeamMember.createMember(member, team);
+        teamMemberRepository.save(teamMember);
+
+        var expectedResponse = createIssueTemplateDetailResponse(1L, "title", Feature.name());
+        given(issueTemplateService.getIssueTemplate(anyLong()))
+            .willReturn(expectedResponse);
+
+        // when
+        var response = issueManagementService.getIssueTemplate(
+            team.getId(), 1L, member.getId());
+
+        // then
+        assertThat(response)
+            .extracting("id", "title", "description", "content", "type")
+            .containsExactly(1L, "title", "description", "content", "Feature");
+    }
+
+    @DisplayName("팀에 속하지 않은 멤버가 이슈 템플릿을 조회할 경우 예외가 발생한다")
+    @Test
+    void getIssueTemplateWithNotTeamMember() {
+        // given
+        Member member = createMember();
+        memberRepository.save(member);
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        // expected
+        assertThatThrownBy(() -> {
+            issueManagementService.getIssueTemplate(team.getId(), 1L, member.getId());
+        }).isInstanceOf(TeamNotAuthorizedException.class)
+            .hasMessage(TEAM_NOT_AUTHORIZED.getMessage());
+    }
+
+    @DisplayName("프로젝트의 이슈 템플릿 목록을 조회한다")
+    @Test
+    void getIssueTemplatesByProject() {
+        // given
+        Member member = createMember();
+        memberRepository.save(member);
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        TeamMember teamMember = TeamMember.createMember(member, team);
+        teamMemberRepository.save(teamMember);
+
+        Project project = createProject(team);
+        projectJpaRepository.save(project);
+
+        var template1 = createIssueTemplateDetailResponse(1L, "title1", Feature.name());
+        var template2 = createIssueTemplateDetailResponse(2L, "title2", Refactor.name());
+        given(issueTemplateService.getIssueTemplates(any(), any(Project.class)))
+            .willReturn(List.of(template1, template2));
+
+        // when
+        List<IssueTemplateDetailResponse> response = issueManagementService.getIssueTemplates(
+            team.getId(), member.getId(), project.getId(), null
+        );
+
+        // then
+        assertThat(response)
+            .hasSize(2)
+            .extracting("id", "title", "type")
+            .containsExactlyInAnyOrder(
+                tuple(1L, "title1", "Feature"),
+                tuple(2L, "title2", "Refactor")
+            );
+    }
+
+    @DisplayName("타입으로 필터링된 이슈 템플릿 목록을 조회한다")
+    @Test
+    void getIssueTemplatesByType() {
+        // given
+        Member member = createMember();
+        memberRepository.save(member);
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        TeamMember teamMember = TeamMember.createMember(member, team);
+        teamMemberRepository.save(teamMember);
+
+        Project project = createProject(team);
+        projectJpaRepository.save(project);
+
+        var template1 = createIssueTemplateDetailResponse(1L, "title1", Feature.name());
+        given(issueTemplateService.getIssueTemplates(anyString(), any(Project.class)))
+            .willReturn(List.of(template1));
+
+        // when
+        List<IssueTemplateDetailResponse> response = issueManagementService.getIssueTemplates(
+            team.getId(), member.getId(), project.getId(), Feature.name()
+        );
+
+        // then
+        assertThat(response)
+            .hasSize(1)
+            .extracting("id", "title", "type")
+            .contains(
+                tuple(1L, "title1", "Feature")
+            );
+        verify(issueTemplateService).getIssueTemplates(anyString(), any(Project.class));
+    }
+
     private Member createMember() {
         return Member.builder()
             .email("email")
@@ -384,6 +499,16 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
         }).when(issueTemplateService).updateIssueTemplate(
             anyLong(), anyString(), anyString(), anyString(), anyString(), any(Project.class)
         );
+    }
+
+    private IssueTemplateDetailResponse createIssueTemplateDetailResponse(long id, String title, String feature) {
+        return IssueTemplateDetailResponse.builder()
+            .id(id)
+            .title(title)
+            .description("description")
+            .content("content")
+            .type(feature)
+            .build();
     }
 
 }

@@ -6,13 +6,16 @@ import org.springframework.http.MediaType;
 import soon.capstone.ControllerTestSupport;
 import soon.capstone.domain.issue.controller.dto.IssueTemplateCreateRequest;
 import soon.capstone.domain.issue.controller.dto.IssueTemplateUpdateRequest;
+import soon.capstone.domain.issue.service.dto.response.IssueTemplateDetailResponse;
 import soon.capstone.global.anootation.TestMember;
 
+import java.util.List;
+
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -373,6 +376,88 @@ class IssueTemplateControllerTest extends ControllerTestSupport {
             .andExpect(jsonPath("$.status").value(400))
             .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
             .andExpect(jsonPath("$.validation.projectId").value("프로젝트 ID는 0보다 커야합니다."));
+    }
+
+    @TestMember
+    @DisplayName("ID로 이슈 템플릿을 조회한다.")
+    @Test
+    void getIssueTemplate() throws Exception {
+        // given
+        Long teamId = 1L;
+        Long issueTemplateId = 1L;
+        IssueTemplateDetailResponse response = new IssueTemplateDetailResponse(
+            issueTemplateId, "title", "description", "content", "Feature"
+        );
+        given(issueManagementService.getIssueTemplate(eq(teamId), eq(issueTemplateId), eq(1L)))
+            .willReturn(response);
+
+        // expected
+        mockMvc.perform(
+                get(BASE_URL + "/{issueTemplateId}", teamId, issueTemplateId)
+            )
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id").value(issueTemplateId))
+            .andExpect(jsonPath("$.title").value("title"))
+            .andExpect(jsonPath("$.description").value("description"))
+            .andExpect(jsonPath("$.content").value("content"))
+            .andExpect(jsonPath("$.type").value("Feature"));
+    }
+
+    @TestMember
+    @DisplayName("프로젝트의 모든 이슈 템플릿 목록을 조회한다.")
+    @Test
+    void getIssueTemplates() throws Exception {
+        // given
+        Long teamId = 1L;
+        Long projectId = 2L;
+        List<IssueTemplateDetailResponse> responses = List.of(
+            new IssueTemplateDetailResponse(1L, "title1", "description1", "content1", "Feature"),
+            new IssueTemplateDetailResponse(2L, "title2", "description2", "content2", "Refactor")
+        );
+        given(issueManagementService.getIssueTemplates(eq(teamId), eq(1L), eq(projectId), eq(null)))
+            .willReturn(responses);
+
+        // expected
+        mockMvc.perform(
+                get(BASE_URL + "/projects/{projectId}", teamId, projectId)
+            )
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].id").value(1))
+            .andExpect(jsonPath("$[0].title").value("title1"))
+            .andExpect(jsonPath("$[1].id").value(2))
+            .andExpect(jsonPath("$[1].title").value("title2"))
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$", hasSize(2)));
+    }
+
+    @TestMember
+    @DisplayName("타입을 기준으로 필터링된 이슈 템플릿 목록을 조회한다.")
+    @Test
+    void getIssueTemplatesWithTypeFilter() throws Exception {
+        // given
+        Long teamId = 1L;
+        Long projectId = 2L;
+        String type = "Feature";
+        List<IssueTemplateDetailResponse> responses = List.of(
+            new IssueTemplateDetailResponse(1L, "title", "description", "content", "Feature")
+        );
+        given(issueManagementService.getIssueTemplates(eq(teamId), eq(1L), eq(projectId), eq(type)))
+            .willReturn(responses);
+
+        // expected
+        mockMvc.perform(
+                get(BASE_URL + "/projects/{projectId}", teamId, projectId)
+                    .param("type", type)
+            )
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].id").value(1))
+            .andExpect(jsonPath("$[0].title").value("title"))
+            .andExpect(jsonPath("$[0].type").value("Feature"))
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$", hasSize(1)));
     }
 
 }

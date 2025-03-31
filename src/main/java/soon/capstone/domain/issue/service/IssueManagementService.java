@@ -2,10 +2,8 @@ package soon.capstone.domain.issue.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import soon.capstone.domain.issue.service.dto.request.IssueLabelCreateServiceRequest;
-import soon.capstone.domain.issue.service.dto.request.IssueLabelUpdateServiceRequest;
-import soon.capstone.domain.issue.service.dto.request.IssueTemplateCreateServiceRequest;
-import soon.capstone.domain.issue.service.dto.request.IssueTemplateUpdateServiceRequest;
+import soon.capstone.domain.issue.service.dto.request.*;
+import soon.capstone.domain.issue.service.dto.response.IssueTemplateDetailResponse;
 import soon.capstone.domain.member.entity.Member;
 import soon.capstone.domain.member.repository.MemberRepository;
 import soon.capstone.domain.project.entity.Project;
@@ -14,6 +12,8 @@ import soon.capstone.domain.team.entity.Team;
 import soon.capstone.domain.team.repository.TeamRepository;
 import soon.capstone.domain.teammember.repository.TeamMemberRepository;
 import soon.capstone.global.exception.team.TeamNotAuthorizedException;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @Service
@@ -95,6 +95,30 @@ public class IssueManagementService {
             request.type(),
             project
         );
+    }
+
+    public IssueTemplateDetailResponse getIssueTemplate(Long teamId, Long issueTemplateId, Long memberId) {
+        Team team = teamRepository.findById(teamId);
+        Member member = memberRepository.findById(memberId);
+
+        validateTeamMembership(member, team);
+
+        return issueTemplateService.getIssueTemplate(issueTemplateId);
+    }
+
+    public List<IssueTemplateDetailResponse> getIssueTemplates(
+        Long teamId,
+        Long memberId,
+        Long projectId,
+        String type
+    ) {
+        Team team = teamRepository.findById(teamId);
+        Member member = memberRepository.findById(memberId);
+        Project project = projectRepository.findById(projectId);
+
+        validateTeamMembership(member, team);
+
+        return issueTemplateService.getIssueTemplates(type, project);
     }
 
     private void validateTeamMembership(Member member, Team team) {
