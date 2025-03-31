@@ -8,9 +8,9 @@ import soon.capstone.domain.issue.repository.issuelabel.IssueLabelRepository;
 import soon.capstone.domain.project.entity.Project;
 import soon.capstone.domain.team.entity.Team;
 import soon.capstone.global.exception.issue.label.AlreadyIssueLabelException;
-import soon.capstone.infrastructure.github.service.GithubIssueLabelService;
 import soon.capstone.infrastructure.github.service.dto.GithubIssueLabelCreateServiceRequest;
 import soon.capstone.infrastructure.github.service.dto.GithubIssueLabelUpdateServiceRequest;
+import soon.capstone.infrastructure.github.service.issue.GithubIssueLabelService;
 
 @RequiredArgsConstructor
 @Service

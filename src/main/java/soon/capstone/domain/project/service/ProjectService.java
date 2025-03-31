@@ -38,7 +38,13 @@ public class ProjectService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void createProject(RepositoryCreationEvent repositoryCreationEvent) {
-        organizationProjectCreationService.createProject(repositoryCreationEvent.organizationName(), repositoryCreationEvent.oauthToken());
+        organizationProjectCreationService.createProject(
+                repositoryCreationEvent.organizationName(),
+                repositoryCreationEvent.oauthToken(),
+                repositoryCreationEvent.repositoryId(),
+                repositoryCreationEvent.repoName()
+
+        );
     }
 
 }

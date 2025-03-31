@@ -11,12 +11,15 @@ import soon.capstone.domain.project.entity.Project;
 import soon.capstone.domain.project.repository.ProjectRepository;
 import soon.capstone.domain.team.entity.Team;
 import soon.capstone.domain.team.repository.TeamRepository;
-import soon.capstone.infrastructure.github.service.GithubRepositoryCreationService;
+import soon.capstone.infrastructure.github.service.repository.GithubRepositoryCreationService;
 import soon.capstone.infrastructure.redis.oauth2.entity.OAuthToken;
 import soon.capstone.infrastructure.redis.oauth2.repository.OAuthTokenRepository;
 
 import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.BDDMockito.given;
+
 
 class RepositoryCreationServiceTest extends IntegrationTestSupport {
 
@@ -51,6 +54,9 @@ class RepositoryCreationServiceTest extends IntegrationTestSupport {
         OAuthToken oauthToken = createOAuthToken(member);
         oAuthTokenRepository.save(oauthToken);
 
+        given(githubRepositoryCreationService.createRepositoryForOrganization(anyString(), anyString(), anyString()))
+                .willReturn("repositoryId");
+
         // When
         repositoryCreationService.createRepository(team.getId(), member.getNickname(), oauthToken.getToken());
 
@@ -67,8 +73,6 @@ class RepositoryCreationServiceTest extends IntegrationTestSupport {
                 .containsExactly(expectedTitles.get(0), expectedTitles.get(1));
 
     }
-
-
 
     private Member createMember() {
         return Member.builder()

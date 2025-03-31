@@ -1,4 +1,4 @@
-package soon.capstone.infrastructure.github.service;
+package soon.capstone.infrastructure.github.service.organization;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

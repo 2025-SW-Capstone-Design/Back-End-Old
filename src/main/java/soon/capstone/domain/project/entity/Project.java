@@ -25,14 +25,18 @@ public class Project extends BaseTimeEntity {
     @Column(nullable = false)
     private String creator;
 
+    @Column(nullable = false)
+    private String repositoryId;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "team_id")
     private Team team;
 
     @Builder
-    private Project(String title, String creator, Team team) {
+    public Project(String title, String creator, String repositoryId, Team team) {
         this.title = title;
         this.creator = creator;
+        this.repositoryId = repositoryId;
         this.team = team;
     }
 

@@ -13,7 +13,7 @@ import soon.capstone.domain.project.repository.ProjectJpaRepository;
 import soon.capstone.domain.team.entity.Team;
 import soon.capstone.domain.team.repository.TeamRepository;
 import soon.capstone.global.exception.issue.label.AlreadyIssueLabelException;
-import soon.capstone.infrastructure.github.service.GithubIssueLabelService;
+import soon.capstone.infrastructure.github.service.issue.GithubIssueLabelService;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;

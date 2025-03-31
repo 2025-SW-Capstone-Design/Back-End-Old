@@ -1,4 +1,4 @@
-package soon.capstone.infrastructure.github.service;
+package soon.capstone.infrastructure.github.service.project;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -13,11 +13,11 @@ public class GithubProjectCreationService {
     private final GraphQLClientConfig graphQLClientConfig;
     private static final String PROJECT_NAME = "%s-Project";
 
-    public void createProject(String organizationId, String organizationName, String oauthToken) {
+    public String createProject(String organizationId, String organizationName, String oauthToken) {
         String formattedMutation = String.format(GithubQuery.CREATE_PROJECT.getQuery(), organizationId, String.format(PROJECT_NAME, organizationName));
 
         try {
-            graphQLClientConfig.mutationClient(oauthToken)
+            return graphQLClientConfig.mutationClient(oauthToken)
                     .document(formattedMutation)
                     .retrieve("createProjectV2.projectV2.id")
                     .toEntity(String.class)

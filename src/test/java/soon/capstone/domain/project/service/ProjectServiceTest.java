@@ -145,13 +145,15 @@ class ProjectServiceTest extends IntegrationTestSupport {
         var repositoryCreationEvent = RepositoryCreationEvent.builder()
                 .oauthToken(oAuthToken.getToken())
                 .organizationName(team.getOrganizationName())
+                .repositoryId("repositoryId")
+                .repoName("repoName")
                 .build();
 
         // When
         projectService.createProject(repositoryCreationEvent);
 
         // Then
-        verify(organizationProjectCreationService).createProject(anyString(), anyString());
+        verify(organizationProjectCreationService).createProject(anyString(), anyString(), anyString(), anyString());
     }
 
     private Member createMember() {
@@ -189,6 +191,7 @@ class ProjectServiceTest extends IntegrationTestSupport {
     private Project createProject(String creator, Team team) {
         return Project.builder()
                 .title("title")
+                .repositoryId("repositoryId")
                 .creator(creator)
                 .team(team)
                 .build();

@@ -12,7 +12,7 @@ import soon.capstone.domain.teammember.entity.TeamMember;
 import soon.capstone.domain.teammember.repository.TeamMemberRepository;
 import soon.capstone.global.exception.team.IsNotAdminInOrganizationException;
 import soon.capstone.global.exception.team.TeamAlreadyExistsException;
-import soon.capstone.infrastructure.github.service.GithubOrganizationService;
+import soon.capstone.infrastructure.github.service.organization.GithubOrganizationService;
 import soon.capstone.infrastructure.redis.oauth2.entity.OAuthToken;
 import soon.capstone.infrastructure.redis.oauth2.repository.OAuthTokenRepository;
 
