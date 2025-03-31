@@ -10,9 +10,9 @@ import soon.capstone.domain.member.entity.Member;
 import soon.capstone.domain.member.repository.MemberRepository;
 import soon.capstone.domain.team.entity.Team;
 import soon.capstone.domain.team.repository.TeamRepository;
-import soon.capstone.infrastructure.github.service.GithubLinkProjectToRepositoryService;
-import soon.capstone.infrastructure.github.service.GithubOrganizationReadService;
-import soon.capstone.infrastructure.github.service.GithubProjectCreationService;
+import soon.capstone.infrastructure.github.service.project.GithubLinkProjectToRepositoryService;
+import soon.capstone.infrastructure.github.service.organization.GithubOrganizationReadService;
+import soon.capstone.infrastructure.github.service.project.GithubProjectCreationService;
 import soon.capstone.infrastructure.redis.oauth2.entity.OAuthToken;
 import soon.capstone.infrastructure.redis.oauth2.repository.OAuthTokenRepository;
 

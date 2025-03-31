@@ -2,9 +2,9 @@ package soon.capstone.domain.project.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import soon.capstone.infrastructure.github.service.GithubLinkProjectToRepositoryService;
-import soon.capstone.infrastructure.github.service.GithubOrganizationReadService;
-import soon.capstone.infrastructure.github.service.GithubProjectCreationService;
+import soon.capstone.infrastructure.github.service.project.GithubLinkProjectToRepositoryService;
+import soon.capstone.infrastructure.github.service.organization.GithubOrganizationReadService;
+import soon.capstone.infrastructure.github.service.project.GithubProjectCreationService;
 
 @RequiredArgsConstructor
 @Service

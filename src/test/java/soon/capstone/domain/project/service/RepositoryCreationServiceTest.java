@@ -11,7 +11,7 @@ import soon.capstone.domain.project.entity.Project;
 import soon.capstone.domain.project.repository.ProjectRepository;
 import soon.capstone.domain.team.entity.Team;
 import soon.capstone.domain.team.repository.TeamRepository;
-import soon.capstone.infrastructure.github.service.GithubRepositoryCreationService;
+import soon.capstone.infrastructure.github.service.repository.GithubRepositoryCreationService;
 import soon.capstone.infrastructure.redis.oauth2.entity.OAuthToken;
 import soon.capstone.infrastructure.redis.oauth2.repository.OAuthTokenRepository;
 
