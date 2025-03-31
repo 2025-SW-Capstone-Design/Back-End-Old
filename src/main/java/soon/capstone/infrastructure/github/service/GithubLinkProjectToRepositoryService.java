@@ -1,27 +1,29 @@
 package soon.capstone.infrastructure.github.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import soon.capstone.global.exception.github.GithubHttpClientException;
 import soon.capstone.infrastructure.github.service.constant.GithubQuery;
 import soon.capstone.infrastructure.graphQL.GraphQLClientConfig;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
-public class GithubProjectCreationService {
+public class GithubLinkProjectToRepositoryService {
 
     private final GraphQLClientConfig graphQLClientConfig;
-    private static final String PROJECT_NAME = "%s-Project";
 
-    public String createProject(String organizationId, String organizationName, String oauthToken) {
-        String formattedMutation = String.format(GithubQuery.CREATE_PROJECT.getQuery(), organizationId, String.format(PROJECT_NAME, organizationName));
+    public void linkProjectToRepository(String projectId, String repositoryId, String oauthToken) {
+        String formattedQuery = String.format(GithubQuery.LINK_PROJECT_TO_REPOSITORY.getQuery(), projectId, repositoryId);
 
         try {
-            return graphQLClientConfig.mutationClient(oauthToken)
-                    .document(formattedMutation)
-                    .retrieve("createProjectV2.projectV2.id")
+            graphQLClientConfig.queryClient(oauthToken)
+                    .document(formattedQuery)
+                    .retrieve("linkProjectV2ToRepository.repository.name")
                     .toEntity(String.class)
                     .block();
+            log.info("Project linked to repository successfully: projectId={}, repositoryId={}", projectId, repositoryId);
         } catch (Exception e) {
             throw new GithubHttpClientException();
         }

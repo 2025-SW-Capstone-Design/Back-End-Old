@@ -5,6 +5,8 @@ import lombok.Builder;
 @Builder
 public record RepositoryCreationEvent(
     String oauthToken,
-    String organizationName
+    String organizationName,
+    String repositoryId,
+    String repoName
 ) {
 }
