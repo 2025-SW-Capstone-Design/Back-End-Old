@@ -45,4 +45,11 @@ public class IssueTemplate extends BaseTimeEntity {
         this.project = project;
     }
 
+    public void update(String title, String description, String content, IssueType type) {
+        this.title = title;
+        this.description = description;
+        this.content = content;
+        this.type = type;
+    }
+
 }

@@ -6,7 +6,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import soon.capstone.IntegrationTestSupport;
 import soon.capstone.domain.issue.entity.IssueTemplate;
+import soon.capstone.domain.issue.entity.IssueType;
 import soon.capstone.domain.issue.repository.issuetemplate.IssueTemplateRepository;
+import soon.capstone.domain.issue.service.dto.response.IssueTemplateDetailResponse;
 import soon.capstone.domain.project.entity.Project;
 import soon.capstone.domain.project.repository.ProjectJpaRepository;
 import soon.capstone.domain.team.entity.Team;
@@ -14,11 +16,14 @@ import soon.capstone.domain.team.repository.TeamRepository;
 import soon.capstone.global.exception.common.InvalidRequest;
 import soon.capstone.global.exception.dto.ErrorDetail;
 import soon.capstone.global.exception.issue.template.AlreadyIssueTemplateException;
+import soon.capstone.global.exception.issue.template.IssueTemplateNotFoundException;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static soon.capstone.domain.issue.entity.IssueType.Feature;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.*;
+import static soon.capstone.domain.issue.entity.IssueType.*;
 import static soon.capstone.global.exception.dto.ErrorDetail.ISSUE_TEMPLATE_ALREADY_EXISTS;
+import static soon.capstone.global.exception.dto.ErrorDetail.ISSUE_TEMPLATE_NOT_FOUND;
 
 class IssueTemplateServiceTest extends IntegrationTestSupport {
 
@@ -97,7 +102,7 @@ class IssueTemplateServiceTest extends IntegrationTestSupport {
         Project project = createProject(team);
         projectJpaRepository.save(project);
 
-        IssueTemplate template = createIssueTemplate(project);
+        IssueTemplate template = createIssueTemplate(project, Feature);
         issueTemplateRepository.save(template);
 
         // expected
@@ -106,6 +111,195 @@ class IssueTemplateServiceTest extends IntegrationTestSupport {
         )
             .isInstanceOf(AlreadyIssueTemplateException.class)
             .hasMessage(ISSUE_TEMPLATE_ALREADY_EXISTS.getMessage());
+    }
+
+    @DisplayName("이슈 템플릿을 수정한다.")
+    @Test
+    void updateIssueTemplate() {
+        // given
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        Project project = createProject(team);
+        projectJpaRepository.save(project);
+
+        IssueTemplate template = createIssueTemplate(project, Feature);
+        issueTemplateRepository.save(template);
+
+        String newTitle = "newTitle";
+        String newDescription = "newDescription";
+        String newContent = "newContent";
+        String newType = Fix.name();
+
+        // when
+        issueTemplateService.updateIssueTemplate(template.getId(), newTitle, newDescription, newContent, newType, project);
+
+        // then
+        IssueTemplate updatedTemplate = issueTemplateRepository.findById(template.getId());
+        assertThat(updatedTemplate)
+            .extracting("title", "description", "content", "type")
+            .containsExactlyInAnyOrder(newTitle, newDescription, newContent, Fix);
+    }
+
+    @DisplayName("이슈 템플릿 수정 시 존재하는 이름으로 변경하면 예외가 발생한다.")
+    @Test
+    void updateIssueTemplateWithDuplicatedTitle() {
+        // given
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        Project project = createProject(team);
+        projectJpaRepository.save(project);
+
+        IssueTemplate template = createIssueTemplate(project, Feature);
+        issueTemplateRepository.save(template);
+
+        // expected
+        assertThatThrownBy(() ->
+            issueTemplateService.updateIssueTemplate(template.getId(), template.getTitle(), template.getDescription(), template.getContent(), "Feature", project)
+        )
+            .isInstanceOf(AlreadyIssueTemplateException.class)
+            .hasMessage(ISSUE_TEMPLATE_ALREADY_EXISTS.getMessage());
+    }
+
+    @DisplayName("템플릿 수정 시 유효하지 않은 타입으로 변경하면 예외가 발생한다.")
+    @Test
+    void updateIssueTemplateWithInvalidIssueType() {
+        // given
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        Project project = createProject(team);
+        projectJpaRepository.save(project);
+
+        IssueTemplate template = createIssueTemplate(project, Feature);
+        issueTemplateRepository.save(template);
+
+        String invalidType = "invalidType";
+
+        // expected
+        assertThatThrownBy(() ->
+            issueTemplateService.updateIssueTemplate(template.getId(), "newTitle", "newDescription", "newContent", invalidType, project)
+        )
+            .isInstanceOf(InvalidRequest.class)
+            .hasMessage(ErrorDetail.INVALID_REQUEST.getMessage());
+    }
+
+    @DisplayName("템플릿 ID로 템플릿을 조회한다.")
+    @Test
+    void getIssueTemplate() {
+        // given
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        Project project = createProject(team);
+        projectJpaRepository.save(project);
+
+        IssueTemplate template = createIssueTemplate(project, Feature);
+        issueTemplateRepository.save(template);
+
+        // when
+        IssueTemplateDetailResponse response = issueTemplateService.getIssueTemplate(template.getId());
+
+        // then
+        assertThat(response)
+            .extracting("title", "description", "content", "type")
+            .containsExactlyInAnyOrder(template.getTitle(), template.getDescription(), template.getContent(), Feature.name());
+    }
+
+    @DisplayName("타입별로 프로젝트의 이슈 템플릿을 조회한다.")
+    @Test
+    void getIssueTemplatesByType() {
+        // given
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        Project project = createProject(team);
+        projectJpaRepository.save(project);
+
+        IssueTemplate template1 = createIssueTemplate(project, Feature);
+        IssueTemplate template2 = createIssueTemplate(project, Feature);
+        IssueTemplate template3 = createIssueTemplate(project, Fix);
+        issueTemplateRepository.saveAll(List.of(template1, template2, template3));
+
+        // when
+        List<IssueTemplateDetailResponse> responses = issueTemplateService.getIssueTemplates(Feature.name(), project);
+
+        // then
+        assertThat(responses).hasSize(2)
+            .extracting("title", "description", "content", "type")
+            .containsExactlyInAnyOrder(
+                tuple("title", "description", "content", Feature.name()),
+                tuple("title", "description", "content", Feature.name())
+            );
+    }
+
+    @DisplayName("특정 타입의 템플릿이 없는경우 빈 리스트를 반환한다.")
+    @Test
+    void getIssueTemplatesByTypeWithEmptyResult() {
+        // given
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        Project project = createProject(team);
+        projectJpaRepository.save(project);
+
+        // when
+        List<IssueTemplateDetailResponse> responses = issueTemplateService.getIssueTemplates(Feature.name(), project);
+
+        // then
+        assertThat(responses)
+            .isEmpty();
+    }
+
+    @DisplayName("프로젝트의 모든 이슈 템플릿을 조회한다.")
+    @Test
+    void getIssueTemplatesByProject() {
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        Project project = createProject(team);
+        projectJpaRepository.save(project);
+
+        IssueTemplate template1 = createIssueTemplate(project, Feature);
+        IssueTemplate template2 = createIssueTemplate(project, Refactor);
+        IssueTemplate template3 = createIssueTemplate(project, Fix);
+        issueTemplateRepository.saveAll(List.of(template1, template2, template3));
+
+        // when
+        List<IssueTemplateDetailResponse> responses = issueTemplateService.getIssueTemplates(null, project);
+
+        // then
+        assertThat(responses).hasSize(3)
+            .extracting("title", "description", "content", "type")
+            .containsExactlyInAnyOrder(
+                tuple("title", "description", "content", Feature.name()),
+                tuple("title", "description", "content", Refactor.name()),
+                tuple("title", "description", "content", Fix.name())
+            );
+    }
+
+    @DisplayName("이슈 템플릿을 삭제한다.")
+    @Test
+    void deleteIssueTemplate() {
+        // given
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        Project project = createProject(team);
+        projectJpaRepository.save(project);
+
+        IssueTemplate template = createIssueTemplate(project, Feature);
+        issueTemplateRepository.save(template);
+        Long templateId = template.getId();
+
+        // when
+        issueTemplateService.deleteIssueTemplate(template.getId());
+
+        // then
+        assertThatThrownBy(() -> issueTemplateRepository.findById(templateId))
+            .isInstanceOf(IssueTemplateNotFoundException.class)
+            .hasMessage(ISSUE_TEMPLATE_NOT_FOUND.getMessage());
     }
 
     private Team createTeam() {
@@ -121,15 +315,16 @@ class IssueTemplateServiceTest extends IntegrationTestSupport {
             .creator("creator")
             .title("title")
             .team(team)
+            .repositoryId("repositoryId")
             .build();
     }
 
-    private IssueTemplate createIssueTemplate(Project project) {
+    private IssueTemplate createIssueTemplate(Project project, IssueType issueType) {
         return IssueTemplate.builder()
             .title("title")
             .description("description")
             .content("content")
-            .type(Feature)
+            .type(issueType)
             .project(project)
             .build();
     }
