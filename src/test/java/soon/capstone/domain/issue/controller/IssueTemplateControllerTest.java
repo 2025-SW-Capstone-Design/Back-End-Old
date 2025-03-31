@@ -5,11 +5,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import soon.capstone.ControllerTestSupport;
 import soon.capstone.domain.issue.controller.dto.IssueTemplateCreateRequest;
+import soon.capstone.domain.issue.controller.dto.IssueTemplateUpdateRequest;
 import soon.capstone.global.anootation.TestMember;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -195,6 +197,182 @@ class IssueTemplateControllerTest extends ControllerTestSupport {
             .andExpect(jsonPath("$.status").value(400))
             .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
             .andExpect(jsonPath("$.validation.projectId").value("프로젝트 ID는 필수 입력 값입니다."));
+    }
+
+    @TestMember
+    @DisplayName("이슈 템플릿을 수정한다")
+    @Test
+    void updateIssueTemplate() throws Exception {
+        // given
+        Long issueTemplateId = 1L;
+        Long teamId = 1L;
+        var request = IssueTemplateUpdateRequest.builder()
+            .title("title")
+            .description("description")
+            .content("content")
+            .type("type")
+            .projectId(1L)
+            .build();
+
+        // expected
+        mockMvc.perform(
+                patch(BASE_URL + "/{issueTemplateId}", teamId, issueTemplateId)
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+            .andDo(print())
+            .andExpect(status().isOk());
+    }
+
+    @DisplayName("이슈 템플릿을 수정 시 제목은 필수값이다.")
+    @Test
+    void updateIssueTemplateWithoutTitle() throws Exception {
+        // given
+        Long issueTemplateId = 1L;
+        Long teamId = 1L;
+        var request = IssueTemplateUpdateRequest.builder()
+            .description("description")
+            .content("content")
+            .type("type")
+            .projectId(1L)
+            .build();
+
+        // expected
+        mockMvc.perform(
+                patch(BASE_URL + "/{issueTemplateId}", teamId, issueTemplateId)
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.status").value(400))
+            .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
+            .andExpect(jsonPath("$.validation.title").value("제목은 필수 입력 값입니다."));
+    }
+
+    @DisplayName("이슈 템플릿을 수정 시 설명은 필수값이다.")
+    @Test
+    void updateIssueTemplateWithoutDescription() throws Exception {
+        // given
+        Long issueTemplateId = 1L;
+        Long teamId = 1L;
+        var request = IssueTemplateUpdateRequest.builder()
+            .title("title")
+            .content("content")
+            .type("type")
+            .projectId(1L)
+            .build();
+
+        // expected
+        mockMvc.perform(
+                patch(BASE_URL + "/{issueTemplateId}", teamId, issueTemplateId)
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.status").value(400))
+            .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
+            .andExpect(jsonPath("$.validation.description").value("설명은 필수 입력 값입니다."));
+    }
+
+    @DisplayName("이슈 템플릿을 수정 시 내용은 필수값이다.")
+    @Test
+    void updateIssueTemplateWithoutContent() throws Exception {
+        // given
+        Long issueTemplateId = 1L;
+        Long teamId = 1L;
+        var request = IssueTemplateUpdateRequest.builder()
+            .title("title")
+            .description("description")
+            .type("type")
+            .projectId(1L)
+            .build();
+
+        // expected
+        mockMvc.perform(
+                patch(BASE_URL + "/{issueTemplateId}", teamId, issueTemplateId)
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.status").value(400))
+            .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
+            .andExpect(jsonPath("$.validation.content").value("내용은 필수 입력 값입니다."));
+    }
+
+    @DisplayName("이슈 템플릿을 수정 시 타입은 필수값이다.")
+    @Test
+    void updateIssueTemplateWithoutType() throws Exception {
+        // given
+        Long issueTemplateId = 1L;
+        Long teamId = 1L;
+        var request = IssueTemplateUpdateRequest.builder()
+            .title("title")
+            .description("description")
+            .content("content")
+            .projectId(1L)
+            .build();
+
+        // expected
+        mockMvc.perform(
+                patch(BASE_URL + "/{issueTemplateId}", teamId, issueTemplateId)
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.status").value(400))
+            .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
+            .andExpect(jsonPath("$.validation.type").value("타입은 필수 입력 값입니다."));
+    }
+
+    @DisplayName("이슈 템플릿을 수정 시 프로젝트 ID는 필수값이다.")
+    @Test
+    void updateIssueTemplateWithoutProjectId() throws Exception {
+        // given
+        Long issueTemplateId = 1L;
+        Long teamId = 1L;
+        var request = IssueTemplateUpdateRequest.builder()
+            .title("title")
+            .description("description")
+            .content("content")
+            .type("type")
+            .build();
+
+        // expected
+        mockMvc.perform(
+                patch(BASE_URL + "/{issueTemplateId}", teamId, issueTemplateId)
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.status").value(400))
+            .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
+            .andExpect(jsonPath("$.validation.projectId").value("프로젝트 ID는 필수 입력 값입니다."));
+    }
+
+    @DisplayName("이슈 템플릿을 수정 시 제목은 필수값이다.")
+    @Test
+    void updateIssueTemplateWithZero() throws Exception {
+        // given
+        Long issueTemplateId = 1L;
+        Long teamId = 1L;
+        var request = IssueTemplateUpdateRequest.builder()
+            .title("title")
+            .description("description")
+            .content("content")
+            .type("type")
+            .projectId(0L)
+            .build();
+
+        // expected
+        mockMvc.perform(
+                patch(BASE_URL + "/{issueTemplateId}", teamId, issueTemplateId)
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.status").value(400))
+            .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
+            .andExpect(jsonPath("$.validation.projectId").value("프로젝트 ID는 0보다 커야합니다."));
     }
 
 }

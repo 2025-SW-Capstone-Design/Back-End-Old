@@ -7,10 +7,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import soon.capstone.IntegrationTestSupport;
 import soon.capstone.domain.issue.entity.IssueLabel;
+import soon.capstone.domain.issue.entity.IssueTemplate;
 import soon.capstone.domain.issue.repository.issuelabel.IssueLabelRepository;
+import soon.capstone.domain.issue.repository.issuetemplate.IssueTemplateRepository;
 import soon.capstone.domain.issue.service.dto.request.IssueLabelCreateServiceRequest;
 import soon.capstone.domain.issue.service.dto.request.IssueLabelUpdateServiceRequest;
 import soon.capstone.domain.issue.service.dto.request.IssueTemplateCreateServiceRequest;
+import soon.capstone.domain.issue.service.dto.request.IssueTemplateUpdateServiceRequest;
 import soon.capstone.domain.member.entity.Member;
 import soon.capstone.domain.member.repository.MemberRepository;
 import soon.capstone.domain.project.entity.Project;
@@ -26,6 +29,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.verify;
+import static soon.capstone.domain.issue.entity.IssueType.Feature;
+import static soon.capstone.domain.issue.entity.IssueType.Fix;
 import static soon.capstone.global.exception.dto.ErrorDetail.TEAM_NOT_AUTHORIZED;
 
 class IssueManagementServiceTest extends IntegrationTestSupport {
@@ -35,6 +41,9 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
 
     @Autowired
     private IssueLabelRepository issueLabelRepository;
+
+    @Autowired
+    private IssueTemplateRepository issueTemplateRepository;
 
     @Autowired
     private MemberRepository memberRepository;
@@ -57,6 +66,7 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
     @AfterEach
     void tearDown() {
         issueLabelRepository.deleteAllInBatch();
+        issueTemplateRepository.deleteAllInBatch();
         projectJpaRepository.deleteAllInBatch();
         teamMemberRepository.deleteAllInBatch();
         memberRepository.deleteAllInBatch();
@@ -213,6 +223,65 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
         assertThat(updatedLabel.getTitle()).isEqualTo("newTitle");
     }
 
+    @DisplayName("이슈 템플릿을 수정한다")
+    @Test
+    void updateIssueTemplate() {
+        // given
+        Member member = createMember();
+        memberRepository.save(member);
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        TeamMember teamMember = TeamMember.createMember(member, team);
+        teamMemberRepository.save(teamMember);
+
+        Project project = createProject(team);
+        projectJpaRepository.save(project);
+
+        IssueTemplate template = IssueTemplate.builder()
+            .title("title")
+            .description("description")
+            .content("content")
+            .project(project)
+            .type(Feature)
+            .build();
+        issueTemplateRepository.save(template);
+
+        var request = createIssueTemplateUpdateServiceRequest(team, project);
+
+        mockIssueTemplateUpdate();
+
+        // when
+        issueManagementService.updateIssueTemplate(request, member.getId());
+
+        // then
+        verify(issueTemplateService)
+            .updateIssueTemplate(anyLong(), anyString(), anyString(), anyString(), anyString(), any(Project.class));
+    }
+
+    @DisplayName("팀에 속하지 않은 멤버가 템플릿을 수정할 경우 예외가 발생한다.")
+    @Test
+    void updateIssueTemplateWithNotTeamMember() {
+        // given
+        Member member = createMember();
+        memberRepository.save(member);
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        Project project = createProject(team);
+        projectJpaRepository.save(project);
+
+        var request = createIssueTemplateUpdateServiceRequest(team, project);
+
+        // expected
+        assertThatThrownBy(() -> {
+            issueManagementService.updateIssueTemplate(request, member.getId());
+        }).isInstanceOf(TeamNotAuthorizedException.class)
+            .hasMessage(TEAM_NOT_AUTHORIZED.getMessage());
+    }
+
     private Member createMember() {
         return Member.builder()
             .email("email")
@@ -285,6 +354,35 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
         }).when(issueLabelService).updateIssueLabel(
             anyLong(), anyString(), anyString(), anyString(), anyString(),
             anyString(), anyString(), any(Project.class), anyLong()
+        );
+    }
+
+    private IssueTemplateUpdateServiceRequest createIssueTemplateUpdateServiceRequest(Team team, Project project) {
+        return IssueTemplateUpdateServiceRequest.builder()
+            .issueTemplateId(1L)
+            .content("updatedContent")
+            .teamId(team.getId())
+            .title("updatedTitle")
+            .description("updatedDescription")
+            .projectId(project.getId())
+            .type(Fix.name())
+            .build();
+    }
+
+    private void mockIssueTemplateUpdate() {
+        doAnswer(invocation -> {
+            Long templateId = invocation.getArgument(0);
+            String title = invocation.getArgument(1);
+            String description = invocation.getArgument(2);
+            String content = invocation.getArgument(3);
+
+            IssueTemplate template = issueTemplateRepository.findById(templateId);
+            template.update(title, description, content, Fix);
+            issueTemplateRepository.save(template);
+
+            return null;
+        }).when(issueTemplateService).updateIssueTemplate(
+            anyLong(), anyString(), anyString(), anyString(), anyString(), any(Project.class)
         );
     }
 

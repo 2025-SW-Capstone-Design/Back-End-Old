@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import soon.capstone.domain.issue.service.dto.request.IssueLabelCreateServiceRequest;
 import soon.capstone.domain.issue.service.dto.request.IssueLabelUpdateServiceRequest;
 import soon.capstone.domain.issue.service.dto.request.IssueTemplateCreateServiceRequest;
+import soon.capstone.domain.issue.service.dto.request.IssueTemplateUpdateServiceRequest;
 import soon.capstone.domain.member.entity.Member;
 import soon.capstone.domain.member.repository.MemberRepository;
 import soon.capstone.domain.project.entity.Project;
@@ -71,6 +72,23 @@ public class IssueManagementService {
         validateTeamMembership(member, team);
 
         return issueTemplateService.createIssueTemplate(
+            request.title(),
+            request.description(),
+            request.content(),
+            request.type(),
+            project
+        );
+    }
+
+    public void updateIssueTemplate(IssueTemplateUpdateServiceRequest request, Long memberId) {
+        Team team = teamRepository.findById(request.teamId());
+        Member member = memberRepository.findById(memberId);
+        Project project = projectRepository.findById(request.projectId());
+
+        validateTeamMembership(member, team);
+
+        issueTemplateService.updateIssueTemplate(
+            request.issueTemplateId(),
             request.title(),
             request.description(),
             request.content(),
