@@ -2,6 +2,7 @@ package soon.capstone.domain.issue.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import soon.capstone.domain.issue.entity.IssueTemplate;
 import soon.capstone.domain.issue.entity.IssueType;
 import soon.capstone.domain.issue.repository.issuetemplate.IssueTemplateRepository;
@@ -21,22 +22,40 @@ public class IssueTemplateService {
         String type,
         Project project
     ) {
-        boolean alreadyExists = issueTemplateRepository.existsByTitleAndProject(title, project);
-        if (alreadyExists) {
-            throw new AlreadyIssueTemplateException();
-        }
+        validateTemplateUniqueness(title, project);
 
-        IssueType issueType = IssueType.contains(type);
         IssueTemplate issueTemplate = IssueTemplate.builder()
             .title(title)
             .description(description)
             .content(content)
-            .type(issueType)
+            .type(IssueType.contains(type))
             .project(project)
             .build();
 
         return issueTemplateRepository.save(issueTemplate)
             .getId();
+    }
+
+    @Transactional
+    public void updateIssueTemplate(
+        Long issueTemplateId,
+        String title,
+        String description,
+        String content,
+        String type,
+        Project project
+    ) {
+        validateTemplateUniqueness(title, project);
+
+        IssueTemplate template = issueTemplateRepository.findById(issueTemplateId);
+        template.update(title, description, content, IssueType.contains(type));
+    }
+
+    private void validateTemplateUniqueness(String title, Project project) {
+        boolean alreadyExists = issueTemplateRepository.existsByTitleAndProject(title, project);
+        if (alreadyExists) {
+            throw new AlreadyIssueTemplateException();
+        }
     }
 
 }

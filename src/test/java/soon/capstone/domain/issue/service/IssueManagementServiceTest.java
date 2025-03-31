@@ -234,6 +234,7 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
             .creator("creator")
             .title("title")
             .team(team)
+            .repositoryId("repositoryId")
             .build();
     }
 

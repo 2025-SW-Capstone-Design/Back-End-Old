@@ -18,6 +18,7 @@ import soon.capstone.global.exception.issue.template.AlreadyIssueTemplateExcepti
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static soon.capstone.domain.issue.entity.IssueType.Feature;
+import static soon.capstone.domain.issue.entity.IssueType.Fix;
 import static soon.capstone.global.exception.dto.ErrorDetail.ISSUE_TEMPLATE_ALREADY_EXISTS;
 
 class IssueTemplateServiceTest extends IntegrationTestSupport {
@@ -108,6 +109,78 @@ class IssueTemplateServiceTest extends IntegrationTestSupport {
             .hasMessage(ISSUE_TEMPLATE_ALREADY_EXISTS.getMessage());
     }
 
+    @DisplayName("이슈 템플릿을 수정한다.")
+    @Test
+    void updateIssueTemplate() {
+        // given
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        Project project = createProject(team);
+        projectJpaRepository.save(project);
+
+        IssueTemplate template = createIssueTemplate(project);
+        issueTemplateRepository.save(template);
+
+        String newTitle = "newTitle";
+        String newDescription = "newDescription";
+        String newContent = "newContent";
+        String newType = Fix.name();
+
+        // when
+        issueTemplateService.updateIssueTemplate(template.getId(), newTitle, newDescription, newContent, newType, project);
+
+        // then
+        IssueTemplate updatedTemplate = issueTemplateRepository.findById(template.getId());
+        assertThat(updatedTemplate)
+            .extracting("title", "description", "content", "type")
+            .containsExactlyInAnyOrder(newTitle, newDescription, newContent, Fix);
+    }
+
+    @DisplayName("이슈 템플릿 수정 시 존재하는 이름으로 변경하면 예외가 발생한다.")
+    @Test
+    void updateIssueTemplateWithDuplicatedTitle() {
+        // given
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        Project project = createProject(team);
+        projectJpaRepository.save(project);
+
+        IssueTemplate template = createIssueTemplate(project);
+        issueTemplateRepository.save(template);
+
+        // expected
+        assertThatThrownBy(() ->
+            issueTemplateService.updateIssueTemplate(template.getId(), template.getTitle(), template.getDescription(), template.getContent(), "Feature", project)
+        )
+            .isInstanceOf(AlreadyIssueTemplateException.class)
+            .hasMessage(ISSUE_TEMPLATE_ALREADY_EXISTS.getMessage());
+    }
+
+    @DisplayName("템플릿 수정 시 유효하지 않은 타입으로 변경하면 예외가 발생한다.")
+    @Test
+    void updateIssueTemplateWithInvalidIssueType() {
+        // given
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        Project project = createProject(team);
+        projectJpaRepository.save(project);
+
+        IssueTemplate template = createIssueTemplate(project);
+        issueTemplateRepository.save(template);
+
+        String invalidType = "invalidType";
+
+        // expected
+        assertThatThrownBy(() ->
+            issueTemplateService.updateIssueTemplate(template.getId(), "newTitle", "newDescription", "newContent", invalidType, project)
+        )
+            .isInstanceOf(InvalidRequest.class)
+            .hasMessage(ErrorDetail.INVALID_REQUEST.getMessage());
+    }
+
     private Team createTeam() {
         return Team.builder()
             .name("name")
@@ -121,6 +194,7 @@ class IssueTemplateServiceTest extends IntegrationTestSupport {
             .creator("creator")
             .title("title")
             .team(team)
+            .repositoryId("repositoryId")
             .build();
     }
 
