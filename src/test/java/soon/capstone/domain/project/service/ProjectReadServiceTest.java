@@ -101,9 +101,10 @@ class ProjectReadServiceTest extends IntegrationTestSupport {
 
     private Project createProject(String creator, Team team) {
         return Project.builder()
-            .title("title")
-            .creator(creator)
-            .team(team)
-            .build();
+                .title("title")
+                .repositoryId("repositoryId")
+                .creator(creator)
+                .team(team)
+                .build();
     }
 }

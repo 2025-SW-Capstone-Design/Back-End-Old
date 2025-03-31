@@ -23,6 +23,16 @@ public enum GithubQuery {
                 }
             }
         }
+    """),
+    LINK_PROJECT_TO_REPOSITORY(
+        """
+        mutation {
+            linkProjectV2ToRepository(input: {projectId: "%s", repositoryId: "%s"}) {
+                repository {
+                    name
+                }
+            }
+        }
     """);
 
     private final String query;

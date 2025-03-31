@@ -10,6 +10,7 @@ import soon.capstone.domain.member.entity.Member;
 import soon.capstone.domain.member.repository.MemberRepository;
 import soon.capstone.domain.team.entity.Team;
 import soon.capstone.domain.team.repository.TeamRepository;
+import soon.capstone.infrastructure.github.service.GithubLinkProjectToRepositoryService;
 import soon.capstone.infrastructure.github.service.GithubOrganizationReadService;
 import soon.capstone.infrastructure.github.service.GithubProjectCreationService;
 import soon.capstone.infrastructure.redis.oauth2.entity.OAuthToken;
@@ -38,6 +39,9 @@ class OrganizationProjectCreationServiceTest extends IntegrationTestSupport {
     @MockitoBean
     private GithubProjectCreationService githubProjectCreationService;
 
+    @MockitoBean
+    private GithubLinkProjectToRepositoryService githubLinkProjectToRepositoryService;
+
     @AfterEach
     void tearDown() {
         memberRepository.deleteAllInBatch();
@@ -61,16 +65,18 @@ class OrganizationProjectCreationServiceTest extends IntegrationTestSupport {
         String organizationName = team.getOrganizationName();
         String token = oauthToken.getToken();
         String mockOrgId = "mock-organization-id";
+        String mockRepoId = "mock-repo-id";
+        String mockRepoName = "mock-repo-name";
 
         given(githubOrganizationReadService.getOrganizationId(organizationName, token))
                 .willReturn(mockOrgId);
 
         // When
-        organizationProjectCreationService.createProject(organizationName, token);
+        organizationProjectCreationService.createProject(organizationName, token, mockRepoId, mockRepoName);
 
         // Then
         verify(githubOrganizationReadService).getOrganizationId(organizationName, token);
-        verify(githubProjectCreationService).createProject(mockOrgId, organizationName, token);
+        verify(githubProjectCreationService).createProject(mockOrgId, mockRepoName, token);
     }
 
     private Member createMember() {
