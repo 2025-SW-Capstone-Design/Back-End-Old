@@ -8,7 +8,7 @@ import soon.capstone.domain.project.repository.ProjectRepository;
 import soon.capstone.domain.project.service.dto.response.RepositoryCreationEvent;
 import soon.capstone.domain.team.entity.Team;
 import soon.capstone.domain.team.repository.TeamRepository;
-import soon.capstone.infrastructure.github.service.GithubRepositoryCreationService;
+import soon.capstone.infrastructure.github.service.repository.GithubRepositoryCreationService;
 
 import java.util.List;
 

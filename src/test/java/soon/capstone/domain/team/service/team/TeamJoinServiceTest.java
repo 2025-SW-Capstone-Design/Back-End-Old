@@ -12,11 +12,10 @@ import soon.capstone.domain.team.entity.Team;
 import soon.capstone.domain.team.repository.TeamRepository;
 import soon.capstone.domain.teammember.entity.TeamMember;
 import soon.capstone.domain.teammember.repository.TeamMemberRepository;
-import soon.capstone.global.exception.dto.ErrorDetail;
 import soon.capstone.global.exception.github.OAuthTokenExpiredException;
 import soon.capstone.global.exception.team.InvitationCodeNotFoundException;
 import soon.capstone.global.exception.teammember.AlreadyTeamMemberException;
-import soon.capstone.infrastructure.github.service.GithubOrganizationService;
+import soon.capstone.infrastructure.github.service.organization.GithubOrganizationService;
 import soon.capstone.infrastructure.redis.invitation.entity.InvitationCode;
 import soon.capstone.infrastructure.redis.invitation.repository.InvitationCodeRepository;
 
