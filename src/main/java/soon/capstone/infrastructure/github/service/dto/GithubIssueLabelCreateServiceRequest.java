@@ -4,7 +4,7 @@ import lombok.Builder;
 import soon.capstone.infrastructure.github.dto.request.GithubIssueLabelCreateRequest;
 
 @Builder
-public record GithubIssueLabelServiceRequest(
+public record GithubIssueLabelCreateServiceRequest(
 
     Long memberId,
     String title,

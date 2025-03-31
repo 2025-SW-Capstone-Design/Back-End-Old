@@ -6,8 +6,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import soon.capstone.IntegrationTestSupport;
+import soon.capstone.domain.issue.entity.IssueLabel;
 import soon.capstone.domain.issue.repository.issuelabel.IssueLabelRepository;
 import soon.capstone.domain.issue.service.dto.request.IssueLabelCreateServiceRequest;
+import soon.capstone.domain.issue.service.dto.request.IssueLabelUpdateServiceRequest;
 import soon.capstone.domain.issue.service.dto.request.IssueTemplateCreateServiceRequest;
 import soon.capstone.domain.member.entity.Member;
 import soon.capstone.domain.member.repository.MemberRepository;
@@ -23,6 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doAnswer;
 import static soon.capstone.global.exception.dto.ErrorDetail.TEAM_NOT_AUTHORIZED;
 
 class IssueManagementServiceTest extends IntegrationTestSupport {
@@ -175,6 +178,41 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
             .hasMessage(TEAM_NOT_AUTHORIZED.getMessage());
     }
 
+    @DisplayName("이슈 라벨을 수정한다")
+    @Test
+    void updateIssueLabel() {
+        // given
+        Member member = createMember();
+        memberRepository.save(member);
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        TeamMember teamMember = TeamMember.createMember(member, team);
+        teamMemberRepository.save(teamMember);
+
+        Project project = createProject(team);
+        projectJpaRepository.save(project);
+
+        IssueLabel issueLabel = IssueLabel.createIssueLabel(
+            "color", "title", "description", team, project
+        );
+        issueLabelRepository.save(issueLabel);
+
+        var request = createIssueLabelUpdateServiceRequest(
+            issueLabel.getId(), project.getId(), team.getId(), "newTitle", issueLabel.getTitle()
+        );
+
+        mockIssueLabelUpdate();
+
+        // when
+        issueManagementService.updateIssueLabel(request, member.getId());
+
+        // then
+        IssueLabel updatedLabel = issueLabelRepository.findById(issueLabel.getId());
+        assertThat(updatedLabel.getTitle()).isEqualTo("newTitle");
+    }
+
     private Member createMember() {
         return Member.builder()
             .email("email")
@@ -218,6 +256,35 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
             .projectId(project.getId())
             .type("type")
             .build();
+    }
+
+    private IssueLabelUpdateServiceRequest createIssueLabelUpdateServiceRequest(Long labelId, Long projectId, Long teamId, String newTitle, String oldTitle) {
+        return IssueLabelUpdateServiceRequest.builder()
+            .color("color")
+            .description("description")
+            .labelId(labelId)
+            .newTitle(newTitle)
+            .oldTitle(oldTitle)
+            .organizationName("organizationName")
+            .projectId(projectId)
+            .repositoryName("repositoryName")
+            .teamId(teamId)
+            .build();
+    }
+
+    private void mockIssueLabelUpdate() {
+        doAnswer(invocation -> {
+            Long labelId = invocation.getArgument(0);
+            String newTitle = invocation.getArgument(2);
+
+            IssueLabel label = issueLabelRepository.findById(labelId);
+            label.update(newTitle, "description", "color");
+            issueLabelRepository.save(label);
+            return null;
+        }).when(issueLabelService).updateIssueLabel(
+            anyLong(), anyString(), anyString(), anyString(), anyString(),
+            anyString(), anyString(), any(Project.class), anyLong()
+        );
     }
 
 }

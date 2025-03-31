@@ -68,4 +68,10 @@ public class IssueLabel extends BaseTimeEntity {
             .build();
     }
 
+    public void update(String title, String description, String color) {
+        this.title = title;
+        this.description = description;
+        this.color = color;
+    }
+
 }

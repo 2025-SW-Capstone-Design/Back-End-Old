@@ -3,6 +3,7 @@ package soon.capstone.domain.issue.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import soon.capstone.domain.issue.service.dto.request.IssueLabelCreateServiceRequest;
+import soon.capstone.domain.issue.service.dto.request.IssueLabelUpdateServiceRequest;
 import soon.capstone.domain.issue.service.dto.request.IssueTemplateCreateServiceRequest;
 import soon.capstone.domain.member.entity.Member;
 import soon.capstone.domain.member.repository.MemberRepository;
@@ -39,6 +40,26 @@ public class IssueManagementService {
             project,
             member.getId(),
             team
+        );
+    }
+
+    public void updateIssueLabel(IssueLabelUpdateServiceRequest request, Long memberId) {
+        Team team = teamRepository.findById(request.teamId());
+        Member member = memberRepository.findById(memberId);
+        Project project = projectRepository.findById(request.projectId());
+
+        validateTeamMembership(member, team);
+
+        issueLabelService.updateIssueLabel(
+            request.labelId(),
+            request.oldTitle(),
+            request.newTitle(),
+            request.description(),
+            request.color(),
+            request.organizationName(),
+            request.repositoryName(),
+            project,
+            member.getId()
         );
     }
 

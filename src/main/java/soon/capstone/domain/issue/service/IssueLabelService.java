@@ -2,13 +2,15 @@ package soon.capstone.domain.issue.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import soon.capstone.domain.issue.entity.IssueLabel;
 import soon.capstone.domain.issue.repository.issuelabel.IssueLabelRepository;
 import soon.capstone.domain.project.entity.Project;
 import soon.capstone.domain.team.entity.Team;
 import soon.capstone.global.exception.issue.label.AlreadyIssueLabelException;
+import soon.capstone.infrastructure.github.service.dto.GithubIssueLabelCreateServiceRequest;
+import soon.capstone.infrastructure.github.service.dto.GithubIssueLabelUpdateServiceRequest;
 import soon.capstone.infrastructure.github.service.issue.GithubIssueLabelService;
-import soon.capstone.infrastructure.github.service.dto.GithubIssueLabelServiceRequest;
 
 @RequiredArgsConstructor
 @Service
@@ -36,6 +38,28 @@ public class IssueLabelService {
             .getId();
     }
 
+    @Transactional
+    public void updateIssueLabel(
+        Long labelId,
+        String oldTitle,
+        String newTitle,
+        String description,
+        String color,
+        String organizationName,
+        String repositoryName,
+        Project project,
+        Long memberId
+    ) {
+        validateLabelNotExists(newTitle, project);
+
+        updateGithubIssueLabel(
+            oldTitle, newTitle, description, color, organizationName, repositoryName, memberId
+        );
+
+        IssueLabel issueLabel = issueLabelRepository.findById(labelId);
+        issueLabel.update(newTitle, description, color);
+    }
+
     private void validateLabelNotExists(String title, Project project) {
         boolean alreadyExists = issueLabelRepository.existsByTitleAndProject(title, project);
         if (alreadyExists) {
@@ -51,7 +75,7 @@ public class IssueLabelService {
         Long memberId,
         Team team
     ) {
-        GithubIssueLabelServiceRequest request = GithubIssueLabelServiceRequest.builder()
+        GithubIssueLabelCreateServiceRequest request = GithubIssueLabelCreateServiceRequest.builder()
             .memberId(memberId)
             .title(title)
             .description(description)
@@ -61,6 +85,27 @@ public class IssueLabelService {
             .build();
 
         githubIssueLabelService.createGithubIssueLabel(request);
+    }
+
+    private void updateGithubIssueLabel(
+        String oldTitle,
+        String newTitle,
+        String description,
+        String color,
+        String organizationName,
+        String repositoryName,
+        Long memberId
+    ) {
+        GithubIssueLabelUpdateServiceRequest request = GithubIssueLabelUpdateServiceRequest.builder()
+            .oldTitle(oldTitle)
+            .newTitle(newTitle)
+            .description(description)
+            .color(color)
+            .organizationName(organizationName)
+            .repositoryName(repositoryName)
+            .memberId(memberId)
+            .build();
+        githubIssueLabelService.updateGithubIssueLabel(request);
     }
 
 }

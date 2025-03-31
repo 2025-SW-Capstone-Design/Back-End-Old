@@ -5,24 +5,26 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
+import soon.capstone.global.exception.github.GithubIssueLabelNotFoundException;
 import soon.capstone.global.exception.issue.label.AlreadyIssueLabelException;
-import soon.capstone.infrastructure.github.service.dto.GithubIssueLabelServiceRequest;
+import soon.capstone.infrastructure.github.service.dto.GithubIssueLabelCreateServiceRequest;
+import soon.capstone.infrastructure.github.service.dto.GithubIssueLabelUpdateServiceRequest;
 import soon.capstone.infrastructure.redis.oauth2.repository.OAuthTokenRepository;
 import soon.capstone.infrastructure.restclient.config.RestClientConfig;
 
+import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 
 @Slf4j
 @RequiredArgsConstructor
 @Service
 public class GithubIssueLabelService {
-
     private static final String ISSUE_LABEL_URL = "/repos/{organizationName}/{repositoryName}/labels";
 
     private final RestClientConfig restClientConfig;
     private final OAuthTokenRepository oAuthTokenRepository;
 
-    public void createGithubIssueLabel(GithubIssueLabelServiceRequest request) {
+    public void createGithubIssueLabel(GithubIssueLabelCreateServiceRequest request) {
         try {
             String token = oAuthTokenRepository.findByMemberId(request.memberId()).getToken();
             RestClient restClient = restClientConfig.githubRestClient(token);
@@ -46,6 +48,33 @@ public class GithubIssueLabelService {
             log.error("GitHub API 호출 중 오류 발생: {}", e.getMessage(), e);
         } catch (Exception e) {
             log.error("issue label 추가 중 에러 발생", e);
+        }
+    }
+
+    public void updateGithubIssueLabel(GithubIssueLabelUpdateServiceRequest request) {
+        try {
+            String token = oAuthTokenRepository.findByMemberId(request.memberId()).getToken();
+            RestClient restClient = restClientConfig.githubRestClient(token);
+
+            String uri = ISSUE_LABEL_URL
+                .replace("{organizationName}", request.organizationName())
+                .replace("{repositoryName}", request.repositoryName());
+
+            restClient.patch()
+                .uri(uri + "/" + request.oldTitle())
+                .body(request.toGithubRequest())
+                .retrieve()
+                .body(Void.class);
+
+        } catch (HttpClientErrorException e) {
+            if (e.getStatusCode() == NOT_FOUND) {
+                log.info("라벨 '{}'이 GitHub에 존재하지 않습니다.", request.oldTitle());
+                throw new GithubIssueLabelNotFoundException();
+            }
+
+            log.error("GitHub API 호출 중 오류 발생: {}", e.getMessage(), e);
+        } catch (Exception e) {
+            log.error("issue label 수정 중 에러 발생", e);
         }
     }
 
