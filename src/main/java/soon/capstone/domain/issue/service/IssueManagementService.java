@@ -2,7 +2,10 @@ package soon.capstone.domain.issue.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import soon.capstone.domain.issue.service.dto.request.*;
+import soon.capstone.domain.issue.service.dto.request.IssueLabelCreateServiceRequest;
+import soon.capstone.domain.issue.service.dto.request.IssueLabelUpdateServiceRequest;
+import soon.capstone.domain.issue.service.dto.request.IssueTemplateCreateServiceRequest;
+import soon.capstone.domain.issue.service.dto.request.IssueTemplateUpdateServiceRequest;
 import soon.capstone.domain.issue.service.dto.response.IssueTemplateDetailResponse;
 import soon.capstone.domain.member.entity.Member;
 import soon.capstone.domain.member.repository.MemberRepository;
@@ -119,6 +122,15 @@ public class IssueManagementService {
         validateTeamMembership(member, team);
 
         return issueTemplateService.getIssueTemplates(type, project);
+    }
+
+    public void deleteIssueTemplate(Long teamId, Long issueTemplateId, Long memberId) {
+        Team team = teamRepository.findById(teamId);
+        Member member = memberRepository.findById(memberId);
+
+        validateTeamMembership(member, team);
+
+        issueTemplateService.deleteIssueTemplate(issueTemplateId);
     }
 
     private void validateTeamMembership(Member member, Team team) {

@@ -249,7 +249,7 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
             .build();
         issueTemplateRepository.save(template);
 
-        var request = createIssueTemplateUpdateServiceRequest(team, project);
+        var request = createIssueTemplateUpdateServiceRequest(team, project, template.getId());
 
         mockIssueTemplateUpdate();
 
@@ -274,7 +274,7 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
         Project project = createProject(team);
         projectJpaRepository.save(project);
 
-        var request = createIssueTemplateUpdateServiceRequest(team, project);
+        var request = createIssueTemplateUpdateServiceRequest(team, project, 1L);
 
         // expected
         assertThatThrownBy(() -> {
@@ -397,6 +397,67 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
         verify(issueTemplateService).getIssueTemplates(anyString(), any(Project.class));
     }
 
+    @DisplayName("이슈 템플릿을 삭제한다")
+    @Test
+    void deleteIssueTemplate() {
+        // given
+        Member member = createMember();
+        memberRepository.save(member);
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        TeamMember teamMember = TeamMember.createMember(member, team);
+        teamMemberRepository.save(teamMember);
+
+        Project project = createProject(team);
+        projectJpaRepository.save(project);
+
+        IssueTemplate template = IssueTemplate.builder()
+            .title("title")
+            .description("description")
+            .content("content")
+            .project(project)
+            .type(Feature)
+            .build();
+        issueTemplateRepository.save(template);
+
+        // when
+        issueManagementService.deleteIssueTemplate(team.getId(), template.getId(), member.getId());
+
+        // then
+        verify(issueTemplateService).deleteIssueTemplate(template.getId());
+    }
+
+    @DisplayName("팀에 속하지 않은 멤버가 이슈 템플릿을 삭제할 경우 예외가 발생한다")
+    @Test
+    void deleteIssueTemplateWithNotTeamMember() {
+        // given
+        Member member = createMember();
+        memberRepository.save(member);
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        Project project = createProject(team);
+        projectJpaRepository.save(project);
+
+        IssueTemplate template = IssueTemplate.builder()
+            .title("title")
+            .description("description")
+            .content("content")
+            .project(project)
+            .type(Feature)
+            .build();
+        issueTemplateRepository.save(template);
+
+        // expected
+        assertThatThrownBy(() -> {
+            issueManagementService.deleteIssueTemplate(team.getId(), template.getId(), member.getId());
+        }).isInstanceOf(TeamNotAuthorizedException.class)
+            .hasMessage(TEAM_NOT_AUTHORIZED.getMessage());
+    }
+
     private Member createMember() {
         return Member.builder()
             .email("email")
@@ -472,9 +533,9 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
         );
     }
 
-    private IssueTemplateUpdateServiceRequest createIssueTemplateUpdateServiceRequest(Team team, Project project) {
+    private IssueTemplateUpdateServiceRequest createIssueTemplateUpdateServiceRequest(Team team, Project project, long issueTemplateId) {
         return IssueTemplateUpdateServiceRequest.builder()
-            .issueTemplateId(1L)
+            .issueTemplateId(issueTemplateId)
             .content("updatedContent")
             .teamId(team.getId())
             .title("updatedTitle")
