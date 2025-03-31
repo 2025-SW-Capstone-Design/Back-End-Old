@@ -69,4 +69,15 @@ public class IssueTemplateController {
         return ResponseEntity.ok(issueTemplateResponse);
     }
 
+    @DeleteMapping("/{issueTemplateId}")
+    public ResponseEntity<Void> deleteIssueTemplate(
+        @PathVariable Long teamId,
+        @PathVariable Long issueTemplateId,
+        @AuthMemberId Long memberId
+    ) {
+        issueManagementService.deleteIssueTemplate(teamId, issueTemplateId, memberId);
+
+        return ResponseEntity.ok().build();
+    }
+
 }

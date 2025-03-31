@@ -460,4 +460,21 @@ class IssueTemplateControllerTest extends ControllerTestSupport {
             .andExpect(jsonPath("$", hasSize(1)));
     }
 
+    @TestMember
+    @DisplayName("이슈 템플릿을 삭제한다.")
+    @Test
+    void deleteIssueTemplate() throws Exception {
+        // given
+        Long teamId = 1L;
+        Long issueTemplateId = 1L;
+
+        // expected
+        mockMvc.perform(
+                delete(BASE_URL + "/{issueTemplateId}", teamId, issueTemplateId)
+            )
+            .andDo(print())
+            .andExpect(status().isOk());
+    }
+
+
 }
