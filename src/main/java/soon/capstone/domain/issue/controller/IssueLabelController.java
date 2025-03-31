@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import soon.capstone.domain.issue.controller.dto.IssueLabelCreateRequest;
+import soon.capstone.domain.issue.controller.dto.IssueLabelUpdateRequest;
 import soon.capstone.domain.issue.service.IssueManagementService;
 import soon.capstone.global.anootation.AuthMemberId;
 
@@ -24,6 +25,18 @@ public class IssueLabelController {
         Long issueLabelId = issueManagementService.createIssueLabel(request.toServiceRequest(teamId), memberId);
 
         return ResponseEntity.ok(issueLabelId);
+    }
+
+    @PatchMapping("/{labelId}")
+    public ResponseEntity<Void> updateIssueLabel(
+        @Valid @RequestBody IssueLabelUpdateRequest request,
+        @AuthMemberId Long memberId,
+        @PathVariable Long teamId,
+        @PathVariable Long labelId
+    ) {
+        issueManagementService.updateIssueLabel(request.toServiceRequest(teamId, labelId), memberId);
+
+        return ResponseEntity.ok().build();
     }
 
 }
