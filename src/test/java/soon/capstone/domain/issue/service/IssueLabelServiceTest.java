@@ -92,6 +92,60 @@ class IssueLabelServiceTest extends IntegrationTestSupport {
             .hasMessage(ISSUE_LABEL_ALREADY_EXISTS.getMessage());
     }
 
+    @DisplayName("이슈 라벨을 수정한다.")
+    @Test
+    void updateIssueLabel() {
+        // given
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        Project project = createProject(team);
+        projectJpaRepository.save(project);
+
+        IssueLabel issueLabel = IssueLabel.createIssueLabel(
+            "color", "oldTitle", "description", team, project
+        );
+        issueLabelRepository.save(issueLabel);
+
+        // when
+        issueLabelService.updateIssueLabel(
+            issueLabel.getId(), "oldTitle", "newTitle", "description", "color", "organizationName", "repositoryName", project, 1L
+        );
+
+        // then
+        IssueLabel updatedIssueLabel = issueLabelRepository.findById(issueLabel.getId());
+        assertThat(updatedIssueLabel)
+            .extracting("title", "description", "color")
+            .containsExactly("newTitle", "description", "color");
+
+        verify(githubIssueLabelService).updateGithubIssueLabel(any());
+    }
+
+    @DisplayName("이미 존재하는 라벨명으로 수정 할 경우 예외가 발생한다.")
+    @Test
+    void updateIssueLabelWithDuplicateTitle() {
+        // given
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        Project project = createProject(team);
+        projectJpaRepository.save(project);
+
+        IssueLabel issueLabel = IssueLabel.createIssueLabel(
+            "color", "oldTitle", "description", team, project
+        );
+        issueLabelRepository.save(issueLabel);
+
+        // expected
+        assertThatThrownBy(() ->
+            issueLabelService.updateIssueLabel(
+                issueLabel.getId(), "oldTitle", "oldTitle", "description", "color", "organizationName", "repositoryName", project, 1L
+            )
+        )
+            .isInstanceOf(AlreadyIssueLabelException.class)
+            .hasMessage(ISSUE_LABEL_ALREADY_EXISTS.getMessage());
+    }
+
     private Team createTeam() {
         return Team.builder()
             .organizationName("organizationName")
