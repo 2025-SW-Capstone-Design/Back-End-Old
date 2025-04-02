@@ -13,6 +13,7 @@ import soon.capstone.domain.project.repository.ProjectJpaRepository;
 import soon.capstone.domain.team.entity.Team;
 import soon.capstone.domain.team.repository.TeamRepository;
 import soon.capstone.global.exception.issue.label.AlreadyIssueLabelException;
+import soon.capstone.global.exception.issue.label.IssueLabelNotFoundException;
 import soon.capstone.infrastructure.github.service.issue.GithubIssueLabelService;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -20,8 +21,11 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static soon.capstone.global.exception.dto.ErrorDetail.ISSUE_LABEL_ALREADY_EXISTS;
+import static soon.capstone.global.exception.dto.ErrorDetail.ISSUE_LABEL_NOT_FOUND;
 
-class IssueLabelServiceTest extends IntegrationTestSupport {
+class
+
+IssueLabelServiceTest extends IntegrationTestSupport {
 
     @Autowired
     private IssueLabelService issueLabelService;
@@ -144,6 +148,36 @@ class IssueLabelServiceTest extends IntegrationTestSupport {
         )
             .isInstanceOf(AlreadyIssueLabelException.class)
             .hasMessage(ISSUE_LABEL_ALREADY_EXISTS.getMessage());
+    }
+
+    @DisplayName("이슈 라벨을 삭제한다.")
+    @Test
+    void deleteIssueLabel() {
+        // given
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        Project project = createProject(team);
+        projectJpaRepository.save(project);
+
+        IssueLabel issueLabel = IssueLabel.createIssueLabel(
+            "color", "title", "description", team, project
+        );
+        issueLabelRepository.save(issueLabel);
+
+        Long issueLabelId = issueLabel.getId();
+        String organizationName = team.getOrganizationName();
+        String repositoryName = project.getTitle();
+
+        // when
+        issueLabelService.deleteIssueLabel(1L, issueLabelId, organizationName, repositoryName, "title");
+
+        // then
+        assertThatThrownBy(() -> issueLabelRepository.findById(issueLabelId))
+            .isInstanceOf(IssueLabelNotFoundException.class)
+            .hasMessage(ISSUE_LABEL_NOT_FOUND.getMessage());
+
+        verify(githubIssueLabelService).deleteGithubIssueLabel(any());
     }
 
     private Team createTeam() {

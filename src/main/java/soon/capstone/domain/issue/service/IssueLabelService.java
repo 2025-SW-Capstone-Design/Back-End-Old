@@ -9,6 +9,7 @@ import soon.capstone.domain.project.entity.Project;
 import soon.capstone.domain.team.entity.Team;
 import soon.capstone.global.exception.issue.label.AlreadyIssueLabelException;
 import soon.capstone.infrastructure.github.service.dto.GithubIssueLabelCreateServiceRequest;
+import soon.capstone.infrastructure.github.service.dto.GithubIssueLabelDeleteServiceRequest;
 import soon.capstone.infrastructure.github.service.dto.GithubIssueLabelUpdateServiceRequest;
 import soon.capstone.infrastructure.github.service.issue.GithubIssueLabelService;
 
@@ -60,6 +61,19 @@ public class IssueLabelService {
         issueLabel.update(newTitle, description, color);
     }
 
+    @Transactional
+    public void deleteIssueLabel(
+        Long memberId,
+        Long labelId,
+        String organizationName,
+        String repositoryName,
+        String title
+    ) {
+        deleteGithubIssueLabel(memberId, organizationName, repositoryName, title);
+
+        issueLabelRepository.deleteById(labelId);
+    }
+
     private void validateLabelNotExists(String title, Project project) {
         boolean alreadyExists = issueLabelRepository.existsByTitleAndProject(title, project);
         if (alreadyExists) {
@@ -106,6 +120,16 @@ public class IssueLabelService {
             .memberId(memberId)
             .build();
         githubIssueLabelService.updateGithubIssueLabel(request);
+    }
+
+    private void deleteGithubIssueLabel(Long memberId, String organizationName, String repositoryName, String title) {
+        GithubIssueLabelDeleteServiceRequest request = GithubIssueLabelDeleteServiceRequest.builder()
+            .memberId(memberId)
+            .organizationName(organizationName)
+            .repositoryName(repositoryName)
+            .title(title)
+            .build();
+        githubIssueLabelService.deleteGithubIssueLabel(request);
     }
 
 }

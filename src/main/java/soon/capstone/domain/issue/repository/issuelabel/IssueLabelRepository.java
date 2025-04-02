@@ -25,6 +25,10 @@ public class IssueLabelRepository {
         return issueLabelJpaRepository.existsByTitleAndProject(title, project);
     }
 
+    public void deleteById(Long labelId) {
+        issueLabelJpaRepository.deleteById(labelId);
+    }
+
     public void deleteAllInBatch() {
         issueLabelJpaRepository.deleteAllInBatch();
     }
