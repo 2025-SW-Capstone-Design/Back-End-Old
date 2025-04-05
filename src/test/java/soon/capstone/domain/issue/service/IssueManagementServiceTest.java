@@ -10,10 +10,7 @@ import soon.capstone.domain.issue.entity.IssueLabel;
 import soon.capstone.domain.issue.entity.IssueTemplate;
 import soon.capstone.domain.issue.repository.issuelabel.IssueLabelRepository;
 import soon.capstone.domain.issue.repository.issuetemplate.IssueTemplateRepository;
-import soon.capstone.domain.issue.service.dto.request.IssueLabelCreateServiceRequest;
-import soon.capstone.domain.issue.service.dto.request.IssueLabelUpdateServiceRequest;
-import soon.capstone.domain.issue.service.dto.request.IssueTemplateCreateServiceRequest;
-import soon.capstone.domain.issue.service.dto.request.IssueTemplateUpdateServiceRequest;
+import soon.capstone.domain.issue.service.dto.request.*;
 import soon.capstone.domain.issue.service.dto.response.IssueTemplateDetailResponse;
 import soon.capstone.domain.member.entity.Member;
 import soon.capstone.domain.member.repository.MemberRepository;
@@ -23,6 +20,7 @@ import soon.capstone.domain.team.entity.Team;
 import soon.capstone.domain.team.repository.TeamRepository;
 import soon.capstone.domain.teammember.entity.TeamMember;
 import soon.capstone.domain.teammember.repository.TeamMemberRepository;
+import soon.capstone.global.exception.issue.label.IssueLabelNotFoundException;
 import soon.capstone.global.exception.team.TeamNotAuthorizedException;
 
 import java.util.List;
@@ -33,6 +31,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
 import static soon.capstone.domain.issue.entity.IssueType.*;
+import static soon.capstone.global.exception.dto.ErrorDetail.ISSUE_LABEL_NOT_FOUND;
 import static soon.capstone.global.exception.dto.ErrorDetail.TEAM_NOT_AUTHORIZED;
 
 class IssueManagementServiceTest extends IntegrationTestSupport {
@@ -454,6 +453,77 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
         // expected
         assertThatThrownBy(() -> {
             issueManagementService.deleteIssueTemplate(team.getId(), template.getId(), member.getId());
+        }).isInstanceOf(TeamNotAuthorizedException.class)
+            .hasMessage(TEAM_NOT_AUTHORIZED.getMessage());
+    }
+
+    @DisplayName("이슈라벨을 삭제한다.")
+    @Test
+    void deleteIssueLabel() {
+        // given
+        Member member = createMember();
+        memberRepository.save(member);
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        TeamMember teamMember = TeamMember.createMember(member, team);
+        teamMemberRepository.save(teamMember);
+
+        Project project = createProject(team);
+        projectJpaRepository.save(project);
+
+        IssueLabel issueLabel = IssueLabel.createIssueLabel("color", "title", "description", team, project);
+        issueLabelRepository.save(issueLabel);
+
+        IssueLabelDeleteServiceRequest request = IssueLabelDeleteServiceRequest.builder()
+            .labelId(issueLabel.getId())
+            .teamId(team.getId())
+            .title("title")
+            .repositoryName("repository")
+            .organizationName("organization")
+            .build();
+
+        // when
+        issueManagementService.deleteIssueLabel(request, member.getId());
+
+        // then
+        verify(issueLabelService).deleteIssueLabel(
+            member.getId(),
+            issueLabel.getId(),
+            request.organizationName(),
+            request.repositoryName(),
+            request.title()
+        );
+    }
+
+    @DisplayName("팀에 속하지 않은 멤버가 이슈 라벨을 삭제할 경우 예외가 발생한다")
+    @Test
+    void deleteIssueLabelWithNotTeamMember() {
+        // given
+        Member member = createMember();
+        memberRepository.save(member);
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        Project project = createProject(team);
+        projectJpaRepository.save(project);
+
+        IssueLabel issueLabel = IssueLabel.createIssueLabel("color", "title", "description", team, project);
+        issueLabelRepository.save(issueLabel);
+
+        IssueLabelDeleteServiceRequest request = IssueLabelDeleteServiceRequest.builder()
+            .labelId(issueLabel.getId())
+            .teamId(team.getId())
+            .title("title")
+            .repositoryName("repository")
+            .organizationName("organization")
+            .build();
+
+        // expected
+        assertThatThrownBy(() -> {
+            issueManagementService.deleteIssueLabel(request, member.getId());
         }).isInstanceOf(TeamNotAuthorizedException.class)
             .hasMessage(TEAM_NOT_AUTHORIZED.getMessage());
     }

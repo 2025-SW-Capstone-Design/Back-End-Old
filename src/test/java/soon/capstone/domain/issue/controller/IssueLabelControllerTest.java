@@ -5,14 +5,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import soon.capstone.ControllerTestSupport;
 import soon.capstone.domain.issue.controller.dto.IssueLabelCreateRequest;
+import soon.capstone.domain.issue.controller.dto.IssueLabelDeleteRequest;
 import soon.capstone.domain.issue.controller.dto.IssueLabelUpdateRequest;
 import soon.capstone.global.anootation.TestMember;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -388,6 +388,89 @@ class IssueLabelControllerTest extends ControllerTestSupport {
             .andExpect(jsonPath("$.validation.projectId").value("프로젝트 ID는 1 이상의 값이어야 합니다."));
     }
 
+    @TestMember
+    @DisplayName("이슈 라벨을 삭제한다.")
+    @Test
+    void deleteIssueLabel() throws Exception {
+        // given
+        var request = createIssueLabelDeleteRequest();
+
+        // expected
+        mockMvc.perform(
+                delete(BASE_URL + "/{labelId}", 1L, 1L)
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+            .andDo(print())
+            .andExpect(status().isOk());
+    }
+
+    @DisplayName("이슈 라벨을 삭제 할 때 라벨명은 필수값이다.")
+    @Test
+    void deleteIssueLabelWithoutTitle() throws Exception {
+        // given
+        var request = IssueLabelDeleteRequest.builder()
+            .organizationName("organizationName")
+            .repositoryName("repositoryName")
+            .build();
+
+        // expected
+        mockMvc.perform(
+                delete(BASE_URL + "/{labelId}", 1L, 1L)
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+            .andDo(print())
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.status").value(400))
+            .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
+            .andExpect(jsonPath("$.validation.title").value("라벨명은 필수 입력 값입니다."));
+    }
+
+    @DisplayName("이슈 라벨을 삭제 할 때 오가니제이션명은 필수값이다.")
+    @Test
+    void deleteIssueLabelWithoutOrganizationName() throws Exception {
+        // given
+        var request = IssueLabelDeleteRequest.builder()
+            .title("title")
+            .repositoryName("repositoryName")
+            .build();
+
+        // expected
+        mockMvc.perform(
+                delete(BASE_URL + "/{labelId}", 1L, 1L)
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+            .andDo(print())
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.status").value(400))
+            .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
+            .andExpect(jsonPath("$.validation.organizationName").value("오가니제이션명은 필수 입력 값입니다."));
+    }
+
+    @DisplayName("이슈 라벨을 삭제 할 때 레포지토리명은 필수값이다.")
+    @Test
+    void deleteIssueLabelWithoutRepositoryName() throws Exception {
+        // given
+        var request = IssueLabelDeleteRequest.builder()
+            .title("title")
+            .organizationName("organizationName")
+            .build();
+
+        // expected
+        mockMvc.perform(
+                delete(BASE_URL + "/{labelId}", 1L, 1L)
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+            .andDo(print())
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.status").value(400))
+            .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
+            .andExpect(jsonPath("$.validation.repositoryName").value("리포지토리명은 필수 입력 값입니다."));
+    }
+
     private IssueLabelCreateRequest createIssueLabelRequest() {
         return IssueLabelCreateRequest.builder()
             .color("color")
@@ -404,6 +487,14 @@ class IssueLabelControllerTest extends ControllerTestSupport {
             .oldTitle("oldTitle")
             .projectId(1L)
             .description("description")
+            .organizationName("organizationName")
+            .repositoryName("repositoryName")
+            .build();
+    }
+
+    private IssueLabelDeleteRequest createIssueLabelDeleteRequest() {
+        return IssueLabelDeleteRequest.builder()
+            .title("title")
             .organizationName("organizationName")
             .repositoryName("repositoryName")
             .build();
