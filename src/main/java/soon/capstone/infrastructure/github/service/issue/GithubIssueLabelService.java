@@ -6,6 +6,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
+import soon.capstone.domain.issue.service.dto.response.IssueLabelDetailResponse;
 import soon.capstone.global.exception.github.GithubIssueLabelNotFoundException;
 import soon.capstone.global.exception.issue.label.AlreadyIssueLabelException;
 import soon.capstone.infrastructure.github.dto.GithubIssueLabelDetailDto;
@@ -101,27 +102,32 @@ public class GithubIssueLabelService {
 
             log.error("GitHub API 호출 중 오류 발생: {}", e.getMessage(), e);
         } catch (Exception e) {
-            log.error("issue label 수정 중 에러 발생", e);
+            log.error("issue label 삭제 중 에러 발생", e);
         }
     }
 
-    public List<GithubIssueLabelDetailDto> getIssueLabels(GithubIssueLabelDetailServiceRequest request) {
+    public List<IssueLabelDetailResponse> getIssueLabels(GithubIssueLabelDetailServiceRequest request) {
         try {
             String token = oAuthTokenRepository.findByMemberId(request.memberId()).getToken();
             RestClient restClient = restClientConfig.githubRestClient(token);
 
             String uri = buildUri(request.organizationName(), request.repositoryName());
-            return restClient.get()
+            List<GithubIssueLabelDetailDto> labels = restClient.get()
                 .uri(uri)
                 .retrieve()
-                .body(new ParameterizedTypeReference<List<GithubIssueLabelDetailDto>>() {
+                .body(new ParameterizedTypeReference<>() {
                 });
+
+            return labels == null ? Collections.emptyList() :
+                labels.stream()
+                    .map(GithubIssueLabelDetailDto::toResponse)
+                    .toList();
 
         } catch (HttpClientErrorException e) {
             log.error("GitHub API 호출 중 오류 발생: {}", e.getMessage(), e);
             return Collections.emptyList();
         } catch (Exception e) {
-            log.error("이슈 라벨 조회 중 예상치 못한 오류 발생", e);
+            log.error("이슈 라벨 조회 중 에러 발생", e);
             return Collections.emptyList();
         }
     }
