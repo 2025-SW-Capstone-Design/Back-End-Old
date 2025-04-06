@@ -2,16 +2,22 @@ package soon.capstone.infrastructure.github.service.issue;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 import soon.capstone.global.exception.github.GithubIssueLabelNotFoundException;
 import soon.capstone.global.exception.issue.label.AlreadyIssueLabelException;
+import soon.capstone.infrastructure.github.dto.GithubIssueLabelDetailDto;
 import soon.capstone.infrastructure.github.service.dto.GithubIssueLabelCreateServiceRequest;
 import soon.capstone.infrastructure.github.service.dto.GithubIssueLabelDeleteServiceRequest;
+import soon.capstone.infrastructure.github.service.dto.GithubIssueLabelDetailServiceRequest;
 import soon.capstone.infrastructure.github.service.dto.GithubIssueLabelUpdateServiceRequest;
 import soon.capstone.infrastructure.redis.oauth2.repository.OAuthTokenRepository;
 import soon.capstone.infrastructure.restclient.config.RestClientConfig;
+
+import java.util.Collections;
+import java.util.List;
 
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
@@ -96,6 +102,27 @@ public class GithubIssueLabelService {
             log.error("GitHub API 호출 중 오류 발생: {}", e.getMessage(), e);
         } catch (Exception e) {
             log.error("issue label 수정 중 에러 발생", e);
+        }
+    }
+
+    public List<GithubIssueLabelDetailDto> getIssueLabels(GithubIssueLabelDetailServiceRequest request) {
+        try {
+            String token = oAuthTokenRepository.findByMemberId(request.memberId()).getToken();
+            RestClient restClient = restClientConfig.githubRestClient(token);
+
+            String uri = buildUri(request.organizationName(), request.repositoryName());
+            return restClient.get()
+                .uri(uri)
+                .retrieve()
+                .body(new ParameterizedTypeReference<List<GithubIssueLabelDetailDto>>() {
+                });
+
+        } catch (HttpClientErrorException e) {
+            log.error("GitHub API 호출 중 오류 발생: {}", e.getMessage(), e);
+            return Collections.emptyList();
+        } catch (Exception e) {
+            log.error("이슈 라벨 조회 중 예상치 못한 오류 발생", e);
+            return Collections.emptyList();
         }
     }
 
