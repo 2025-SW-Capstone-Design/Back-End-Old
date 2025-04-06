@@ -1,6 +1,7 @@
 package soon.capstone.domain.issue.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import soon.capstone.domain.issue.entity.IssueLabel;
@@ -20,6 +21,8 @@ public class IssueLabelService {
     private final IssueLabelRepository issueLabelRepository;
     private final GithubIssueLabelService githubIssueLabelService;
 
+    // repositoryName == project.title
+    @CacheEvict(value = "issueLabels", key = "#team.organizationName + '_' + #project.title")
     public Long createIssueLabel(
         String title,
         String description,
@@ -39,6 +42,7 @@ public class IssueLabelService {
             .getId();
     }
 
+    @CacheEvict(value = "issueLabels", key = "#organizationName + '_' + #project.title")
     @Transactional
     public void updateIssueLabel(
         Long labelId,
@@ -61,6 +65,7 @@ public class IssueLabelService {
         issueLabel.update(newTitle, description, color);
     }
 
+    @CacheEvict(value = "issueLabels", key = "#organizationName + '_' + #repositoryName")
     @Transactional
     public void deleteIssueLabel(
         Long memberId,

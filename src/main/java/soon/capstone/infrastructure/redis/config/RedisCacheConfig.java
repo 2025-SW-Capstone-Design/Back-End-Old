@@ -1,6 +1,5 @@
 package soon.capstone.infrastructure.redis.config;
 
-import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,25 +11,33 @@ import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 
 @EnableCaching
 @Configuration
 public class RedisCacheConfig {
 
-    private static final long CACHE_EXPIRATION_TIME = 3L;
+    private static final Duration DEFAULT_TTL = Duration.ofMinutes(10);
 
     @Bean
-    public CacheManager redisCacheManager(RedisConnectionFactory cf) {
-        RedisCacheConfiguration redisCacheConfiguration = RedisCacheConfiguration.defaultCacheConfig()
+    public RedisCacheManager redisCacheManager(RedisConnectionFactory cf) {
+        RedisCacheConfiguration defaultConfig = createDefaultCacheConfig();
+
+        Map<String, RedisCacheConfiguration> cacheConfigs = new HashMap<>();
+        cacheConfigs.put("issueLabels", defaultConfig);
+
+        return RedisCacheManager.builder(cf)
+            .cacheDefaults(defaultConfig)
+            .withInitialCacheConfigurations(cacheConfigs)
+            .build();
+    }
+
+    private RedisCacheConfiguration createDefaultCacheConfig() {
+        return RedisCacheConfiguration.defaultCacheConfig()
             .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
             .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()))
-            .entryTtl(Duration.ofMinutes(CACHE_EXPIRATION_TIME));
-
-        return RedisCacheManager
-            .RedisCacheManagerBuilder
-            .fromConnectionFactory(cf)
-            .cacheDefaults(redisCacheConfiguration)
-            .build();
+            .entryTtl(DEFAULT_TTL);
     }
 
 }
