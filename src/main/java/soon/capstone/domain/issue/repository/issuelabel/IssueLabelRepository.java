@@ -6,6 +6,8 @@ import soon.capstone.domain.issue.entity.IssueLabel;
 import soon.capstone.domain.project.entity.Project;
 import soon.capstone.global.exception.issue.label.IssueLabelNotFoundException;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 @Repository
 public class IssueLabelRepository {
@@ -16,9 +18,17 @@ public class IssueLabelRepository {
         return issueLabelJpaRepository.save(issueLabel);
     }
 
+    public void saveAll(List<IssueLabel> issueLabels) {
+        issueLabelJpaRepository.saveAll(issueLabels);
+    }
+
     public IssueLabel findById(Long id) {
         return issueLabelJpaRepository.findById(id)
             .orElseThrow(IssueLabelNotFoundException::new);
+    }
+
+    public List<IssueLabel> findAllByProject(Project project) {
+        return issueLabelJpaRepository.findAllByProject(project);
     }
 
     public boolean existsByTitleAndProject(String title, Project project) {

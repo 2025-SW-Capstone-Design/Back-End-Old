@@ -2,17 +2,25 @@ package soon.capstone.domain.issue.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import soon.capstone.domain.issue.entity.IssueLabel;
 import soon.capstone.domain.issue.repository.issuelabel.IssueLabelRepository;
+import soon.capstone.domain.issue.service.dto.response.IssueLabelDetailResponse;
 import soon.capstone.domain.project.entity.Project;
 import soon.capstone.domain.team.entity.Team;
 import soon.capstone.global.exception.issue.label.AlreadyIssueLabelException;
 import soon.capstone.infrastructure.github.service.dto.GithubIssueLabelCreateServiceRequest;
 import soon.capstone.infrastructure.github.service.dto.GithubIssueLabelDeleteServiceRequest;
+import soon.capstone.infrastructure.github.service.dto.GithubIssueLabelDetailServiceRequest;
 import soon.capstone.infrastructure.github.service.dto.GithubIssueLabelUpdateServiceRequest;
 import soon.capstone.infrastructure.github.service.issue.GithubIssueLabelService;
+
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -79,6 +87,28 @@ public class IssueLabelService {
         issueLabelRepository.deleteById(labelId);
     }
 
+    @Cacheable(value = "issueLabels", key = "#team.organizationName + '_' + #project.title")
+    public List<IssueLabelDetailResponse> getIssueLabels(
+        Long memberId,
+        Team team,
+        Project project
+    ) {
+        List<IssueLabelDetailResponse> labelResponse = getGithubIssueLabels(
+            memberId, team.getOrganizationName(), project.getTitle()
+        );
+
+        Map<String, IssueLabel> labelMap = issueLabelRepository.findAllByProject(project)
+            .stream()
+            .collect(Collectors.toMap(IssueLabel::getTitle, Function.identity()));
+
+        return labelResponse.stream()
+            .map(response -> {
+                IssueLabel label = labelMap.get(response.getName());
+                return response.withId(label.getId());
+            })
+            .collect(Collectors.toList());
+    }
+
     private void validateLabelNotExists(String title, Project project) {
         boolean alreadyExists = issueLabelRepository.existsByTitleAndProject(title, project);
         if (alreadyExists) {
@@ -135,6 +165,20 @@ public class IssueLabelService {
             .title(title)
             .build();
         githubIssueLabelService.deleteGithubIssueLabel(request);
+    }
+
+    private List<IssueLabelDetailResponse> getGithubIssueLabels(
+        Long memberId,
+        String organizationName,
+        String repositoryName
+    ) {
+        GithubIssueLabelDetailServiceRequest request = GithubIssueLabelDetailServiceRequest.builder()
+            .memberId(memberId)
+            .organizationName(organizationName)
+            .repositoryName(repositoryName)
+            .build();
+
+        return githubIssueLabelService.getIssueLabels(request);
     }
 
 }
