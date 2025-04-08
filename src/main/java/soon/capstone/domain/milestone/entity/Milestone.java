@@ -28,6 +28,9 @@ public class Milestone extends BaseTimeEntity {
     private String description;
 
     @Column(nullable = false)
+    private String creator;
+
+    @Column(nullable = false)
     private LocalDateTime dueDate;
 
     @Column(nullable = false)
@@ -41,13 +44,13 @@ public class Milestone extends BaseTimeEntity {
     private Project project;
 
     @Builder
-    private Milestone(String title, String description, LocalDateTime dueDate, LocalDateTime startDate, Project project) {
+    private Milestone(String title, String description, String creator, LocalDateTime dueDate, LocalDateTime startDate, Project project) {
         this.title = title;
         this.description = description;
+        this.creator = creator;
         this.dueDate = dueDate;
         this.startDate = startDate;
         this.isCompleted = false;
         this.project = project;
     }
-
 }

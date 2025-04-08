@@ -11,6 +11,8 @@ import soon.capstone.domain.auth.service.AuthService;
 import soon.capstone.domain.issue.controller.IssueLabelController;
 import soon.capstone.domain.issue.controller.IssueTemplateController;
 import soon.capstone.domain.issue.service.IssueManagementService;
+import soon.capstone.domain.milestone.controller.MilestoneController;
+import soon.capstone.domain.milestone.service.MilestoneService;
 import soon.capstone.domain.project.controller.ProjectController;
 import soon.capstone.domain.project.service.ProjectService;
 import soon.capstone.domain.team.controller.TeamController;
@@ -20,14 +22,15 @@ import soon.capstone.domain.teammember.service.TeamMemberService;
 
 @Import(TestSecurityConfig.class)
 @WebMvcTest(
-    controllers = {
-        AuthController.class,
-        TeamController.class,
-        ProjectController.class,
-        TeamMemberController.class,
-        IssueLabelController.class,
-        IssueTemplateController.class
-    }
+        controllers = {
+                AuthController.class,
+                TeamController.class,
+                ProjectController.class,
+                TeamMemberController.class,
+                IssueLabelController.class,
+                IssueTemplateController.class,
+                MilestoneController.class
+        }
 )
 public abstract class ControllerTestSupport {
 
@@ -51,5 +54,8 @@ public abstract class ControllerTestSupport {
 
     @MockitoBean
     protected IssueManagementService issueManagementService;
+
+    @MockitoBean
+    protected MilestoneService milestoneService;
 
 }
