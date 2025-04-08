@@ -1,4 +1,4 @@
-package soon.capstone.domain.milestone.controller.dto;
+package soon.capstone.domain.milestone.controller.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
