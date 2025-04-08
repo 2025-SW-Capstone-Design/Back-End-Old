@@ -4,13 +4,15 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import soon.capstone.ControllerTestSupport;
-import soon.capstone.domain.milestone.controller.dto.MilestoneCreateRequest;
+import soon.capstone.domain.milestone.controller.dto.request.MilestoneCreateRequest;
+import soon.capstone.domain.milestone.controller.dto.response.MilestoneResponse;
 import soon.capstone.global.anootation.TestMember;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -230,4 +232,55 @@ class MilestoneControllerTest extends ControllerTestSupport {
                 .andExpect(jsonPath("$.validation.dueDate").value("마일스톤 마감일을 입력해주세요."));
     }
 
+    @TestMember
+    @DisplayName("프로젝트에 속한 마일스톤을 반환한다.")
+    @Test
+    void getMilestonesByProject() throws Exception {
+        // Given
+        Long memberId = 1L;
+        Long teamId = 1L;
+        Long projectId = 1L;
+
+        LocalDateTime startDate = LocalDateTime.now();
+        LocalDateTime dueDate = startDate.plusDays(7);
+
+        List<MilestoneResponse> milestones = List.of(
+                createMilestoneResponse(1L, startDate, dueDate),
+                createMilestoneResponse(2L, startDate, dueDate)
+        );
+
+        given(milestoneService.getMilestonesByProject(memberId, teamId, projectId))
+                .willReturn(milestones);
+
+        // Expected
+        mockMvc.perform(
+                        get(BASE_URL + "/{teamId}/{projectId}", teamId, projectId)
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].title").value("Test"))
+                .andExpect(jsonPath("$[0].description").value("Description"))
+                .andExpect(jsonPath("$[0].startDate").exists())
+                .andExpect(jsonPath("$[0].dueDate").exists())
+                .andExpect(jsonPath("$[0].creator").value("nickname"))
+                .andExpect(jsonPath("$[1].title").value("Test"))
+                .andExpect(jsonPath("$[1].description").value("Description"))
+                .andExpect(jsonPath("$[1].startDate").exists())
+                .andExpect(jsonPath("$[1].dueDate").exists())
+                .andExpect(jsonPath("$[1].creator").value("nickname"));
+
+    }
+
+    private MilestoneResponse createMilestoneResponse(Long milestoneId, LocalDateTime startDate, LocalDateTime dueDate) {
+        return MilestoneResponse.builder()
+                .milestoneId(milestoneId)
+                .title("Test")
+                .description("Description")
+                .creator("nickname")
+                .startDate(startDate)
+                .dueDate(dueDate)
+                .isCompleted(false)
+                .build();
+    }
 }
