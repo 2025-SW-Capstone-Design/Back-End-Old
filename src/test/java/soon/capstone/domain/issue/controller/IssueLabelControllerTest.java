@@ -5,14 +5,18 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import soon.capstone.ControllerTestSupport;
 import soon.capstone.domain.issue.controller.dto.IssueLabelCreateRequest;
+import soon.capstone.domain.issue.controller.dto.IssueLabelDeleteRequest;
+import soon.capstone.domain.issue.controller.dto.IssueLabelDetailRequest;
 import soon.capstone.domain.issue.controller.dto.IssueLabelUpdateRequest;
+import soon.capstone.domain.issue.service.dto.response.IssueLabelDetailResponse;
 import soon.capstone.global.anootation.TestMember;
+
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -388,6 +392,111 @@ class IssueLabelControllerTest extends ControllerTestSupport {
             .andExpect(jsonPath("$.validation.projectId").value("프로젝트 ID는 1 이상의 값이어야 합니다."));
     }
 
+    @TestMember
+    @DisplayName("이슈 라벨을 삭제한다.")
+    @Test
+    void deleteIssueLabel() throws Exception {
+        // given
+        var request = createIssueLabelDeleteRequest();
+
+        // expected
+        mockMvc.perform(
+                delete(BASE_URL + "/{labelId}", 1L, 1L)
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+            .andDo(print())
+            .andExpect(status().isOk());
+    }
+
+    @DisplayName("이슈 라벨을 삭제 할 때 라벨명은 필수값이다.")
+    @Test
+    void deleteIssueLabelWithoutTitle() throws Exception {
+        // given
+        var request = IssueLabelDeleteRequest.builder()
+            .organizationName("organizationName")
+            .repositoryName("repositoryName")
+            .build();
+
+        // expected
+        mockMvc.perform(
+                delete(BASE_URL + "/{labelId}", 1L, 1L)
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+            .andDo(print())
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.status").value(400))
+            .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
+            .andExpect(jsonPath("$.validation.title").value("라벨명은 필수 입력 값입니다."));
+    }
+
+    @DisplayName("이슈 라벨을 삭제 할 때 오가니제이션명은 필수값이다.")
+    @Test
+    void deleteIssueLabelWithoutOrganizationName() throws Exception {
+        // given
+        var request = IssueLabelDeleteRequest.builder()
+            .title("title")
+            .repositoryName("repositoryName")
+            .build();
+
+        // expected
+        mockMvc.perform(
+                delete(BASE_URL + "/{labelId}", 1L, 1L)
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+            .andDo(print())
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.status").value(400))
+            .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
+            .andExpect(jsonPath("$.validation.organizationName").value("오가니제이션명은 필수 입력 값입니다."));
+    }
+
+    @DisplayName("이슈 라벨을 삭제 할 때 레포지토리명은 필수값이다.")
+    @Test
+    void deleteIssueLabelWithoutRepositoryName() throws Exception {
+        // given
+        var request = IssueLabelDeleteRequest.builder()
+            .title("title")
+            .organizationName("organizationName")
+            .build();
+
+        // expected
+        mockMvc.perform(
+                delete(BASE_URL + "/{labelId}", 1L, 1L)
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+            .andDo(print())
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.status").value(400))
+            .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
+            .andExpect(jsonPath("$.validation.repositoryName").value("리포지토리명은 필수 입력 값입니다."));
+    }
+
+    @TestMember
+    @DisplayName("이슈 라벨 목록을 조회한다.")
+    @Test
+    void getIssueLabels() throws Exception {
+        // given
+        var request = IssueLabelDetailRequest.toServiceRequest(1L, 1L);
+        given(issueManagementService.getIssueLabels(request, 1L))
+            .willReturn(List.of(createIssueLabelDetailResponse()));
+
+        // expected
+        mockMvc.perform(
+                get(BASE_URL, 1L)
+                    .param("projectId", "1")
+            )
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].id").value(1L))
+            .andExpect(jsonPath("$[0].name").value("name"))
+            .andExpect(jsonPath("$[0].color").value("color"))
+            .andExpect(jsonPath("$[0].description").value("description"));
+    }
+
     private IssueLabelCreateRequest createIssueLabelRequest() {
         return IssueLabelCreateRequest.builder()
             .color("color")
@@ -406,6 +515,23 @@ class IssueLabelControllerTest extends ControllerTestSupport {
             .description("description")
             .organizationName("organizationName")
             .repositoryName("repositoryName")
+            .build();
+    }
+
+    private IssueLabelDeleteRequest createIssueLabelDeleteRequest() {
+        return IssueLabelDeleteRequest.builder()
+            .title("title")
+            .organizationName("organizationName")
+            .repositoryName("repositoryName")
+            .build();
+    }
+
+    private static IssueLabelDetailResponse createIssueLabelDetailResponse() {
+        return IssueLabelDetailResponse.builder()
+            .id(1L)
+            .name("name")
+            .color("color")
+            .description("description")
             .build();
     }
 

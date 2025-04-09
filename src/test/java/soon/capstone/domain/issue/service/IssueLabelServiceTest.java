@@ -4,22 +4,30 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import soon.capstone.IntegrationTestSupport;
 import soon.capstone.domain.issue.entity.IssueLabel;
 import soon.capstone.domain.issue.repository.issuelabel.IssueLabelRepository;
+import soon.capstone.domain.issue.service.dto.response.IssueLabelDetailResponse;
 import soon.capstone.domain.project.entity.Project;
-import soon.capstone.domain.project.repository.ProjectJpaRepository;
+import soon.capstone.domain.project.repository.ProjectRepository;
 import soon.capstone.domain.team.entity.Team;
 import soon.capstone.domain.team.repository.TeamRepository;
 import soon.capstone.global.exception.issue.label.AlreadyIssueLabelException;
+import soon.capstone.global.exception.issue.label.IssueLabelNotFoundException;
 import soon.capstone.infrastructure.github.service.issue.GithubIssueLabelService;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static soon.capstone.global.exception.dto.ErrorDetail.ISSUE_LABEL_ALREADY_EXISTS;
+import static soon.capstone.global.exception.dto.ErrorDetail.ISSUE_LABEL_NOT_FOUND;
 
 class IssueLabelServiceTest extends IntegrationTestSupport {
 
@@ -30,18 +38,26 @@ class IssueLabelServiceTest extends IntegrationTestSupport {
     private IssueLabelRepository issueLabelRepository;
 
     @Autowired
-    private ProjectJpaRepository projectJpaRepository; // TODO: ProjectRepository로 변경
+    private ProjectRepository projectRepository;
 
     @Autowired
     private TeamRepository teamRepository;
+
+    @Autowired
+    private CacheManager cacheManager;
 
     @MockitoBean
     private GithubIssueLabelService githubIssueLabelService;
 
     @AfterEach
     void tearDown() {
+        Cache cache = cacheManager.getCache("issueLabels");
+        if (cache != null) {
+            cache.clear();
+        }
+
         issueLabelRepository.deleteAllInBatch();
-        projectJpaRepository.deleteAllInBatch();
+        projectRepository.deleteAllInBatch();
         teamRepository.deleteAllInBatch();
     }
 
@@ -53,7 +69,7 @@ class IssueLabelServiceTest extends IntegrationTestSupport {
         teamRepository.save(team);
 
         Project project = createProject(team);
-        projectJpaRepository.save(project);
+        projectRepository.save(project);
 
         // when
         Long issueLabelId = issueLabelService.createIssueLabel(
@@ -77,7 +93,7 @@ class IssueLabelServiceTest extends IntegrationTestSupport {
         teamRepository.save(team);
 
         Project project = createProject(team);
-        projectJpaRepository.save(project);
+        projectRepository.save(project);
 
         IssueLabel issueLabel = IssueLabel.createIssueLabel(
             "color", "title", "description", team, project
@@ -100,7 +116,7 @@ class IssueLabelServiceTest extends IntegrationTestSupport {
         teamRepository.save(team);
 
         Project project = createProject(team);
-        projectJpaRepository.save(project);
+        projectRepository.save(project);
 
         IssueLabel issueLabel = IssueLabel.createIssueLabel(
             "color", "oldTitle", "description", team, project
@@ -129,7 +145,7 @@ class IssueLabelServiceTest extends IntegrationTestSupport {
         teamRepository.save(team);
 
         Project project = createProject(team);
-        projectJpaRepository.save(project);
+        projectRepository.save(project);
 
         IssueLabel issueLabel = IssueLabel.createIssueLabel(
             "color", "oldTitle", "description", team, project
@@ -146,6 +162,102 @@ class IssueLabelServiceTest extends IntegrationTestSupport {
             .hasMessage(ISSUE_LABEL_ALREADY_EXISTS.getMessage());
     }
 
+    @DisplayName("이슈 라벨을 삭제한다.")
+    @Test
+    void deleteIssueLabel() {
+        // given
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        Project project = createProject(team);
+        projectRepository.save(project);
+
+        IssueLabel issueLabel = IssueLabel.createIssueLabel(
+            "color", "title", "description", team, project
+        );
+        issueLabelRepository.save(issueLabel);
+
+        Long issueLabelId = issueLabel.getId();
+        String organizationName = team.getOrganizationName();
+        String repositoryName = project.getTitle();
+
+        // when
+        issueLabelService.deleteIssueLabel(1L, issueLabelId, organizationName, repositoryName, "title");
+
+        // then
+        assertThatThrownBy(() -> issueLabelRepository.findById(issueLabelId))
+            .isInstanceOf(IssueLabelNotFoundException.class)
+            .hasMessage(ISSUE_LABEL_NOT_FOUND.getMessage());
+
+        verify(githubIssueLabelService).deleteGithubIssueLabel(any());
+    }
+
+    @DisplayName("이슈 라벨 목록을 조회한다.")
+    @Test
+    void getIssueLabels() {
+        // given
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        Project project = createProject(team);
+        projectRepository.save(project);
+
+        IssueLabel issueLabel1 = IssueLabel.createIssueLabel("color1", "title1", "description1", team, project);
+        IssueLabel issueLabel2 = IssueLabel.createIssueLabel("color2", "title2", "description2", team, project);
+        issueLabelRepository.saveAll(List.of(issueLabel1, issueLabel2));
+
+        List<IssueLabelDetailResponse> githubLabels = List.of(
+            createIssueLabelDetailResponse(null, "title1", "description1", "color1"),
+            createIssueLabelDetailResponse(null, "title2", "description2", "color2")
+        );
+
+        given(githubIssueLabelService.getIssueLabels(any()))
+            .willReturn(githubLabels);
+
+        // when
+        List<IssueLabelDetailResponse> result = issueLabelService.getIssueLabels(1L, team, project);
+
+        // then
+        assertThat(result)
+            .hasSize(2)
+            .extracting("id", "name", "description", "color")
+            .containsExactlyInAnyOrder(
+                tuple(issueLabel1.getId(), "title1", "description1", "color1"),
+                tuple(issueLabel2.getId(), "title2", "description2", "color2")
+            );
+
+        verify(githubIssueLabelService).getIssueLabels(any());
+    }
+
+    @DisplayName("이슈 라벨 조회 시 캐시가 동작한다.")
+    @Test
+    void getIssueLabelsCaching() {
+        // given
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        Project project = createProject(team);
+        projectRepository.save(project);
+
+        IssueLabel issueLabel = IssueLabel.createIssueLabel("color", "title", "description", team, project);
+        issueLabelRepository.save(issueLabel);
+
+        List<IssueLabelDetailResponse> githubLabels = List.of(
+            createIssueLabelDetailResponse(null, "title", "description", "color")
+        );
+
+        given(githubIssueLabelService.getIssueLabels(any()))
+            .willReturn(githubLabels);
+
+        // when
+        issueLabelService.getIssueLabels(1L, team, project);
+        issueLabelService.getIssueLabels(1L, team, project);
+
+        // then
+        verify(githubIssueLabelService, times(1))
+            .getIssueLabels(any());
+    }
+
     private Team createTeam() {
         return Team.builder()
             .organizationName("organizationName")
@@ -160,6 +272,15 @@ class IssueLabelServiceTest extends IntegrationTestSupport {
             .title("title")
             .team(team)
             .repositoryId("repositoryId")
+            .build();
+    }
+
+    private IssueLabelDetailResponse createIssueLabelDetailResponse(Long id, String title, String description, String color) {
+        return IssueLabelDetailResponse.builder()
+            .id(id)
+            .name(title)
+            .description(description)
+            .color(color)
             .build();
     }
 

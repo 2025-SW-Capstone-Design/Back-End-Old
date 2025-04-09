@@ -10,15 +10,13 @@ import soon.capstone.domain.issue.entity.IssueLabel;
 import soon.capstone.domain.issue.entity.IssueTemplate;
 import soon.capstone.domain.issue.repository.issuelabel.IssueLabelRepository;
 import soon.capstone.domain.issue.repository.issuetemplate.IssueTemplateRepository;
-import soon.capstone.domain.issue.service.dto.request.IssueLabelCreateServiceRequest;
-import soon.capstone.domain.issue.service.dto.request.IssueLabelUpdateServiceRequest;
-import soon.capstone.domain.issue.service.dto.request.IssueTemplateCreateServiceRequest;
-import soon.capstone.domain.issue.service.dto.request.IssueTemplateUpdateServiceRequest;
+import soon.capstone.domain.issue.service.dto.request.*;
+import soon.capstone.domain.issue.service.dto.response.IssueLabelDetailResponse;
 import soon.capstone.domain.issue.service.dto.response.IssueTemplateDetailResponse;
 import soon.capstone.domain.member.entity.Member;
 import soon.capstone.domain.member.repository.MemberRepository;
 import soon.capstone.domain.project.entity.Project;
-import soon.capstone.domain.project.repository.ProjectJpaRepository;
+import soon.capstone.domain.project.repository.ProjectRepository;
 import soon.capstone.domain.team.entity.Team;
 import soon.capstone.domain.team.repository.TeamRepository;
 import soon.capstone.domain.teammember.entity.TeamMember;
@@ -50,7 +48,7 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
     private MemberRepository memberRepository;
 
     @Autowired
-    private ProjectJpaRepository projectJpaRepository; // TODO: ProjectRepository로 변경
+    private ProjectRepository projectRepository;
 
     @Autowired
     private TeamRepository teamRepository;
@@ -68,7 +66,7 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
     void tearDown() {
         issueLabelRepository.deleteAllInBatch();
         issueTemplateRepository.deleteAllInBatch();
-        projectJpaRepository.deleteAllInBatch();
+        projectRepository.deleteAllInBatch();
         teamMemberRepository.deleteAllInBatch();
         memberRepository.deleteAllInBatch();
         teamRepository.deleteAllInBatch();
@@ -88,7 +86,7 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
         teamMemberRepository.save(teamMember);
 
         Project project = createProject(team);
-        projectJpaRepository.save(project);
+        projectRepository.save(project);
 
         var request = createIssueLabelCreateServiceRequest(team, project);
 
@@ -120,7 +118,7 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
         teamRepository.save(team);
 
         Project project = createProject(team);
-        projectJpaRepository.save(project);
+        projectRepository.save(project);
 
         // expected
         assertThatThrownBy(() -> {
@@ -146,7 +144,7 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
         teamMemberRepository.save(teamMember);
 
         Project project = createProject(team);
-        projectJpaRepository.save(project);
+        projectRepository.save(project);
 
         var request = createIssueTemplateCreateServiceRequest(team, project);
 
@@ -177,7 +175,7 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
         teamRepository.save(team);
 
         Project project = createProject(team);
-        projectJpaRepository.save(project);
+        projectRepository.save(project);
 
         // expected
         assertThatThrownBy(() -> {
@@ -203,7 +201,7 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
         teamMemberRepository.save(teamMember);
 
         Project project = createProject(team);
-        projectJpaRepository.save(project);
+        projectRepository.save(project);
 
         IssueLabel issueLabel = IssueLabel.createIssueLabel(
             "color", "title", "description", team, project
@@ -238,7 +236,7 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
         teamMemberRepository.save(teamMember);
 
         Project project = createProject(team);
-        projectJpaRepository.save(project);
+        projectRepository.save(project);
 
         IssueTemplate template = IssueTemplate.builder()
             .title("title")
@@ -272,7 +270,7 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
         teamRepository.save(team);
 
         Project project = createProject(team);
-        projectJpaRepository.save(project);
+        projectRepository.save(project);
 
         var request = createIssueTemplateUpdateServiceRequest(team, project, 1L);
 
@@ -340,7 +338,7 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
         teamMemberRepository.save(teamMember);
 
         Project project = createProject(team);
-        projectJpaRepository.save(project);
+        projectRepository.save(project);
 
         var template1 = createIssueTemplateDetailResponse(1L, "title1", Feature.name());
         var template2 = createIssueTemplateDetailResponse(2L, "title2", Refactor.name());
@@ -376,7 +374,7 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
         teamMemberRepository.save(teamMember);
 
         Project project = createProject(team);
-        projectJpaRepository.save(project);
+        projectRepository.save(project);
 
         var template1 = createIssueTemplateDetailResponse(1L, "title1", Feature.name());
         given(issueTemplateService.getIssueTemplates(anyString(), any(Project.class)))
@@ -411,7 +409,7 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
         teamMemberRepository.save(teamMember);
 
         Project project = createProject(team);
-        projectJpaRepository.save(project);
+        projectRepository.save(project);
 
         IssueTemplate template = IssueTemplate.builder()
             .title("title")
@@ -440,7 +438,7 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
         teamRepository.save(team);
 
         Project project = createProject(team);
-        projectJpaRepository.save(project);
+        projectRepository.save(project);
 
         IssueTemplate template = IssueTemplate.builder()
             .title("title")
@@ -454,6 +452,153 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
         // expected
         assertThatThrownBy(() -> {
             issueManagementService.deleteIssueTemplate(team.getId(), template.getId(), member.getId());
+        }).isInstanceOf(TeamNotAuthorizedException.class)
+            .hasMessage(TEAM_NOT_AUTHORIZED.getMessage());
+    }
+
+    @DisplayName("이슈라벨을 삭제한다.")
+    @Test
+    void deleteIssueLabel() {
+        // given
+        Member member = createMember();
+        memberRepository.save(member);
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        TeamMember teamMember = TeamMember.createMember(member, team);
+        teamMemberRepository.save(teamMember);
+
+        Project project = createProject(team);
+        projectRepository.save(project);
+
+        IssueLabel issueLabel = IssueLabel.createIssueLabel("color", "title", "description", team, project);
+        issueLabelRepository.save(issueLabel);
+
+        IssueLabelDeleteServiceRequest request = IssueLabelDeleteServiceRequest.builder()
+            .labelId(issueLabel.getId())
+            .teamId(team.getId())
+            .title("title")
+            .repositoryName("repository")
+            .organizationName("organization")
+            .build();
+
+        // when
+        issueManagementService.deleteIssueLabel(request, member.getId());
+
+        // then
+        verify(issueLabelService).deleteIssueLabel(
+            member.getId(),
+            issueLabel.getId(),
+            request.organizationName(),
+            request.repositoryName(),
+            request.title()
+        );
+    }
+
+    @DisplayName("팀에 속하지 않은 멤버가 이슈 라벨을 삭제할 경우 예외가 발생한다")
+    @Test
+    void deleteIssueLabelWithNotTeamMember() {
+        // given
+        Member member = createMember();
+        memberRepository.save(member);
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        Project project = createProject(team);
+        projectRepository.save(project);
+
+        IssueLabel issueLabel = IssueLabel.createIssueLabel("color", "title", "description", team, project);
+        issueLabelRepository.save(issueLabel);
+
+        IssueLabelDeleteServiceRequest request = IssueLabelDeleteServiceRequest.builder()
+            .labelId(issueLabel.getId())
+            .teamId(team.getId())
+            .title("title")
+            .repositoryName("repository")
+            .organizationName("organization")
+            .build();
+
+        // expected
+        assertThatThrownBy(() -> {
+            issueManagementService.deleteIssueLabel(request, member.getId());
+        }).isInstanceOf(TeamNotAuthorizedException.class)
+            .hasMessage(TEAM_NOT_AUTHORIZED.getMessage());
+    }
+
+    @DisplayName("프로젝트의 이슈 라벨 목록을 조회한다")
+    @Test
+    void getIssueLabelsByProject() {
+        // given
+        Member member = createMember();
+        memberRepository.save(member);
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        TeamMember teamMember = TeamMember.createMember(member, team);
+        teamMemberRepository.save(teamMember);
+
+        Project project = createProject(team);
+        projectRepository.save(project);
+
+        var label1 = IssueLabelDetailResponse.builder()
+            .id(1L)
+            .name("bug")
+            .color("#ff0000")
+            .description("버그 라벨")
+            .build();
+
+        var label2 = IssueLabelDetailResponse.builder()
+            .id(2L)
+            .name("enhancement")
+            .color("#0000ff")
+            .description("기능 개선 라벨")
+            .build();
+
+        given(issueLabelService.getIssueLabels(anyLong(), any(Team.class), any(Project.class)))
+            .willReturn(List.of(label1, label2));
+
+        var request = IssueLabelDetailServiceRequest.builder()
+            .teamId(team.getId())
+            .projectId(project.getId())
+            .build();
+
+        // when
+        List<IssueLabelDetailResponse> response = issueManagementService.getIssueLabels(request, member.getId());
+
+        // then
+        assertThat(response)
+            .hasSize(2)
+            .extracting("id", "name", "color")
+            .containsExactlyInAnyOrder(
+                tuple(label1.getId(), "bug", "#ff0000"),
+                tuple(label2.getId(), "enhancement", "#0000ff")
+            );
+    }
+
+    @DisplayName("팀에 속하지 않은 멤버가 이슈 라벨을 조회할 경우 예외가 발생한다")
+    @Test
+    void getIssueLabelsWithNotTeamMember() {
+        // given
+        Member member = createMember();
+        memberRepository.save(member);
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        Project project = createProject(team);
+        projectRepository.save(project);
+
+        var request = IssueLabelDetailServiceRequest.builder()
+            .teamId(team.getId())
+            .projectId(project.getId())
+            .build();
+
+        // expected
+        assertThatThrownBy(() -> {
+            issueManagementService.getIssueLabels(request, member.getId());
         }).isInstanceOf(TeamNotAuthorizedException.class)
             .hasMessage(TEAM_NOT_AUTHORIZED.getMessage());
     }
