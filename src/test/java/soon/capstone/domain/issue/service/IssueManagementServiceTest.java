@@ -16,7 +16,7 @@ import soon.capstone.domain.issue.service.dto.response.IssueTemplateDetailRespon
 import soon.capstone.domain.member.entity.Member;
 import soon.capstone.domain.member.repository.MemberRepository;
 import soon.capstone.domain.project.entity.Project;
-import soon.capstone.domain.project.repository.ProjectJpaRepository;
+import soon.capstone.domain.project.repository.ProjectRepository;
 import soon.capstone.domain.team.entity.Team;
 import soon.capstone.domain.team.repository.TeamRepository;
 import soon.capstone.domain.teammember.entity.TeamMember;
@@ -48,7 +48,7 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
     private MemberRepository memberRepository;
 
     @Autowired
-    private ProjectJpaRepository projectJpaRepository; // TODO: ProjectRepository로 변경
+    private ProjectRepository projectRepository;
 
     @Autowired
     private TeamRepository teamRepository;
@@ -66,7 +66,7 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
     void tearDown() {
         issueLabelRepository.deleteAllInBatch();
         issueTemplateRepository.deleteAllInBatch();
-        projectJpaRepository.deleteAllInBatch();
+        projectRepository.deleteAllInBatch();
         teamMemberRepository.deleteAllInBatch();
         memberRepository.deleteAllInBatch();
         teamRepository.deleteAllInBatch();
@@ -86,7 +86,7 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
         teamMemberRepository.save(teamMember);
 
         Project project = createProject(team);
-        projectJpaRepository.save(project);
+        projectRepository.save(project);
 
         var request = createIssueLabelCreateServiceRequest(team, project);
 
@@ -118,7 +118,7 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
         teamRepository.save(team);
 
         Project project = createProject(team);
-        projectJpaRepository.save(project);
+        projectRepository.save(project);
 
         // expected
         assertThatThrownBy(() -> {
@@ -144,7 +144,7 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
         teamMemberRepository.save(teamMember);
 
         Project project = createProject(team);
-        projectJpaRepository.save(project);
+        projectRepository.save(project);
 
         var request = createIssueTemplateCreateServiceRequest(team, project);
 
@@ -175,7 +175,7 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
         teamRepository.save(team);
 
         Project project = createProject(team);
-        projectJpaRepository.save(project);
+        projectRepository.save(project);
 
         // expected
         assertThatThrownBy(() -> {
@@ -201,7 +201,7 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
         teamMemberRepository.save(teamMember);
 
         Project project = createProject(team);
-        projectJpaRepository.save(project);
+        projectRepository.save(project);
 
         IssueLabel issueLabel = IssueLabel.createIssueLabel(
             "color", "title", "description", team, project
@@ -236,7 +236,7 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
         teamMemberRepository.save(teamMember);
 
         Project project = createProject(team);
-        projectJpaRepository.save(project);
+        projectRepository.save(project);
 
         IssueTemplate template = IssueTemplate.builder()
             .title("title")
@@ -270,7 +270,7 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
         teamRepository.save(team);
 
         Project project = createProject(team);
-        projectJpaRepository.save(project);
+        projectRepository.save(project);
 
         var request = createIssueTemplateUpdateServiceRequest(team, project, 1L);
 
@@ -338,7 +338,7 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
         teamMemberRepository.save(teamMember);
 
         Project project = createProject(team);
-        projectJpaRepository.save(project);
+        projectRepository.save(project);
 
         var template1 = createIssueTemplateDetailResponse(1L, "title1", Feature.name());
         var template2 = createIssueTemplateDetailResponse(2L, "title2", Refactor.name());
@@ -374,7 +374,7 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
         teamMemberRepository.save(teamMember);
 
         Project project = createProject(team);
-        projectJpaRepository.save(project);
+        projectRepository.save(project);
 
         var template1 = createIssueTemplateDetailResponse(1L, "title1", Feature.name());
         given(issueTemplateService.getIssueTemplates(anyString(), any(Project.class)))
@@ -409,7 +409,7 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
         teamMemberRepository.save(teamMember);
 
         Project project = createProject(team);
-        projectJpaRepository.save(project);
+        projectRepository.save(project);
 
         IssueTemplate template = IssueTemplate.builder()
             .title("title")
@@ -438,7 +438,7 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
         teamRepository.save(team);
 
         Project project = createProject(team);
-        projectJpaRepository.save(project);
+        projectRepository.save(project);
 
         IssueTemplate template = IssueTemplate.builder()
             .title("title")
@@ -470,7 +470,7 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
         teamMemberRepository.save(teamMember);
 
         Project project = createProject(team);
-        projectJpaRepository.save(project);
+        projectRepository.save(project);
 
         IssueLabel issueLabel = IssueLabel.createIssueLabel("color", "title", "description", team, project);
         issueLabelRepository.save(issueLabel);
@@ -507,7 +507,7 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
         teamRepository.save(team);
 
         Project project = createProject(team);
-        projectJpaRepository.save(project);
+        projectRepository.save(project);
 
         IssueLabel issueLabel = IssueLabel.createIssueLabel("color", "title", "description", team, project);
         issueLabelRepository.save(issueLabel);
@@ -541,7 +541,7 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
         teamMemberRepository.save(teamMember);
 
         Project project = createProject(team);
-        projectJpaRepository.save(project);
+        projectRepository.save(project);
 
         var label1 = IssueLabelDetailResponse.builder()
             .id(1L)
@@ -589,7 +589,7 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
         teamRepository.save(team);
 
         Project project = createProject(team);
-        projectJpaRepository.save(project);
+        projectRepository.save(project);
 
         var request = IssueLabelDetailServiceRequest.builder()
             .teamId(team.getId())

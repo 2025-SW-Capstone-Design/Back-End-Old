@@ -12,7 +12,7 @@ import soon.capstone.domain.issue.entity.IssueLabel;
 import soon.capstone.domain.issue.repository.issuelabel.IssueLabelRepository;
 import soon.capstone.domain.issue.service.dto.response.IssueLabelDetailResponse;
 import soon.capstone.domain.project.entity.Project;
-import soon.capstone.domain.project.repository.ProjectJpaRepository;
+import soon.capstone.domain.project.repository.ProjectRepository;
 import soon.capstone.domain.team.entity.Team;
 import soon.capstone.domain.team.repository.TeamRepository;
 import soon.capstone.global.exception.issue.label.AlreadyIssueLabelException;
@@ -38,7 +38,7 @@ class IssueLabelServiceTest extends IntegrationTestSupport {
     private IssueLabelRepository issueLabelRepository;
 
     @Autowired
-    private ProjectJpaRepository projectJpaRepository; // TODO: ProjectRepository로 변경
+    private ProjectRepository projectRepository;
 
     @Autowired
     private TeamRepository teamRepository;
@@ -57,7 +57,7 @@ class IssueLabelServiceTest extends IntegrationTestSupport {
         }
 
         issueLabelRepository.deleteAllInBatch();
-        projectJpaRepository.deleteAllInBatch();
+        projectRepository.deleteAllInBatch();
         teamRepository.deleteAllInBatch();
     }
 
@@ -69,7 +69,7 @@ class IssueLabelServiceTest extends IntegrationTestSupport {
         teamRepository.save(team);
 
         Project project = createProject(team);
-        projectJpaRepository.save(project);
+        projectRepository.save(project);
 
         // when
         Long issueLabelId = issueLabelService.createIssueLabel(
@@ -93,7 +93,7 @@ class IssueLabelServiceTest extends IntegrationTestSupport {
         teamRepository.save(team);
 
         Project project = createProject(team);
-        projectJpaRepository.save(project);
+        projectRepository.save(project);
 
         IssueLabel issueLabel = IssueLabel.createIssueLabel(
             "color", "title", "description", team, project
@@ -116,7 +116,7 @@ class IssueLabelServiceTest extends IntegrationTestSupport {
         teamRepository.save(team);
 
         Project project = createProject(team);
-        projectJpaRepository.save(project);
+        projectRepository.save(project);
 
         IssueLabel issueLabel = IssueLabel.createIssueLabel(
             "color", "oldTitle", "description", team, project
@@ -145,7 +145,7 @@ class IssueLabelServiceTest extends IntegrationTestSupport {
         teamRepository.save(team);
 
         Project project = createProject(team);
-        projectJpaRepository.save(project);
+        projectRepository.save(project);
 
         IssueLabel issueLabel = IssueLabel.createIssueLabel(
             "color", "oldTitle", "description", team, project
@@ -170,7 +170,7 @@ class IssueLabelServiceTest extends IntegrationTestSupport {
         teamRepository.save(team);
 
         Project project = createProject(team);
-        projectJpaRepository.save(project);
+        projectRepository.save(project);
 
         IssueLabel issueLabel = IssueLabel.createIssueLabel(
             "color", "title", "description", team, project
@@ -200,7 +200,7 @@ class IssueLabelServiceTest extends IntegrationTestSupport {
         teamRepository.save(team);
 
         Project project = createProject(team);
-        projectJpaRepository.save(project);
+        projectRepository.save(project);
 
         IssueLabel issueLabel1 = IssueLabel.createIssueLabel("color1", "title1", "description1", team, project);
         IssueLabel issueLabel2 = IssueLabel.createIssueLabel("color2", "title2", "description2", team, project);
@@ -237,7 +237,7 @@ class IssueLabelServiceTest extends IntegrationTestSupport {
         teamRepository.save(team);
 
         Project project = createProject(team);
-        projectJpaRepository.save(project);
+        projectRepository.save(project);
 
         IssueLabel issueLabel = IssueLabel.createIssueLabel("color", "title", "description", team, project);
         issueLabelRepository.save(issueLabel);

@@ -10,7 +10,7 @@ import soon.capstone.domain.issue.entity.IssueType;
 import soon.capstone.domain.issue.repository.issuetemplate.IssueTemplateRepository;
 import soon.capstone.domain.issue.service.dto.response.IssueTemplateDetailResponse;
 import soon.capstone.domain.project.entity.Project;
-import soon.capstone.domain.project.repository.ProjectJpaRepository;
+import soon.capstone.domain.project.repository.ProjectRepository;
 import soon.capstone.domain.team.entity.Team;
 import soon.capstone.domain.team.repository.TeamRepository;
 import soon.capstone.global.exception.common.InvalidRequest;
@@ -31,7 +31,7 @@ class IssueTemplateServiceTest extends IntegrationTestSupport {
     private IssueTemplateService issueTemplateService;
 
     @Autowired
-    private ProjectJpaRepository projectJpaRepository; // TODO: projectRepository 변경
+    private ProjectRepository projectRepository;
 
     @Autowired
     private IssueTemplateRepository issueTemplateRepository;
@@ -42,7 +42,7 @@ class IssueTemplateServiceTest extends IntegrationTestSupport {
     @AfterEach
     void tearDown() {
         issueTemplateRepository.deleteAllInBatch();
-        projectJpaRepository.deleteAllInBatch();
+        projectRepository.deleteAllInBatch();
         teamRepository.deleteAllInBatch();
     }
 
@@ -59,7 +59,7 @@ class IssueTemplateServiceTest extends IntegrationTestSupport {
         teamRepository.save(team);
 
         Project project = createProject(team);
-        projectJpaRepository.save(project);
+        projectRepository.save(project);
 
         // when
         Long issueTemplateId = issueTemplateService.createIssueTemplate(title, description, content, type, project);
@@ -84,7 +84,7 @@ class IssueTemplateServiceTest extends IntegrationTestSupport {
         teamRepository.save(team);
 
         Project project = createProject(team);
-        projectJpaRepository.save(project);
+        projectRepository.save(project);
 
         // expected
         assertThatThrownBy(() -> issueTemplateService.createIssueTemplate(title, description, content, type, project))
@@ -100,7 +100,7 @@ class IssueTemplateServiceTest extends IntegrationTestSupport {
         teamRepository.save(team);
 
         Project project = createProject(team);
-        projectJpaRepository.save(project);
+        projectRepository.save(project);
 
         IssueTemplate template = createIssueTemplate(project, Feature);
         issueTemplateRepository.save(template);
@@ -121,7 +121,7 @@ class IssueTemplateServiceTest extends IntegrationTestSupport {
         teamRepository.save(team);
 
         Project project = createProject(team);
-        projectJpaRepository.save(project);
+        projectRepository.save(project);
 
         IssueTemplate template = createIssueTemplate(project, Feature);
         issueTemplateRepository.save(template);
@@ -149,7 +149,7 @@ class IssueTemplateServiceTest extends IntegrationTestSupport {
         teamRepository.save(team);
 
         Project project = createProject(team);
-        projectJpaRepository.save(project);
+        projectRepository.save(project);
 
         IssueTemplate template = createIssueTemplate(project, Feature);
         issueTemplateRepository.save(template);
@@ -170,7 +170,7 @@ class IssueTemplateServiceTest extends IntegrationTestSupport {
         teamRepository.save(team);
 
         Project project = createProject(team);
-        projectJpaRepository.save(project);
+        projectRepository.save(project);
 
         IssueTemplate template = createIssueTemplate(project, Feature);
         issueTemplateRepository.save(template);
@@ -193,7 +193,7 @@ class IssueTemplateServiceTest extends IntegrationTestSupport {
         teamRepository.save(team);
 
         Project project = createProject(team);
-        projectJpaRepository.save(project);
+        projectRepository.save(project);
 
         IssueTemplate template = createIssueTemplate(project, Feature);
         issueTemplateRepository.save(template);
@@ -215,7 +215,7 @@ class IssueTemplateServiceTest extends IntegrationTestSupport {
         teamRepository.save(team);
 
         Project project = createProject(team);
-        projectJpaRepository.save(project);
+        projectRepository.save(project);
 
         IssueTemplate template1 = createIssueTemplate(project, Feature);
         IssueTemplate template2 = createIssueTemplate(project, Feature);
@@ -242,7 +242,7 @@ class IssueTemplateServiceTest extends IntegrationTestSupport {
         teamRepository.save(team);
 
         Project project = createProject(team);
-        projectJpaRepository.save(project);
+        projectRepository.save(project);
 
         // when
         List<IssueTemplateDetailResponse> responses = issueTemplateService.getIssueTemplates(Feature.name(), project);
@@ -259,7 +259,7 @@ class IssueTemplateServiceTest extends IntegrationTestSupport {
         teamRepository.save(team);
 
         Project project = createProject(team);
-        projectJpaRepository.save(project);
+        projectRepository.save(project);
 
         IssueTemplate template1 = createIssueTemplate(project, Feature);
         IssueTemplate template2 = createIssueTemplate(project, Refactor);
@@ -287,7 +287,7 @@ class IssueTemplateServiceTest extends IntegrationTestSupport {
         teamRepository.save(team);
 
         Project project = createProject(team);
-        projectJpaRepository.save(project);
+        projectRepository.save(project);
 
         IssueTemplate template = createIssueTemplate(project, Feature);
         issueTemplateRepository.save(template);
