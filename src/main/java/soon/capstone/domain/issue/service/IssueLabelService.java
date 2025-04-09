@@ -1,16 +1,26 @@
 package soon.capstone.domain.issue.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import soon.capstone.domain.issue.entity.IssueLabel;
 import soon.capstone.domain.issue.repository.issuelabel.IssueLabelRepository;
+import soon.capstone.domain.issue.service.dto.response.IssueLabelDetailResponse;
 import soon.capstone.domain.project.entity.Project;
 import soon.capstone.domain.team.entity.Team;
 import soon.capstone.global.exception.issue.label.AlreadyIssueLabelException;
 import soon.capstone.infrastructure.github.service.dto.GithubIssueLabelCreateServiceRequest;
+import soon.capstone.infrastructure.github.service.dto.GithubIssueLabelDeleteServiceRequest;
+import soon.capstone.infrastructure.github.service.dto.GithubIssueLabelDetailServiceRequest;
 import soon.capstone.infrastructure.github.service.dto.GithubIssueLabelUpdateServiceRequest;
 import soon.capstone.infrastructure.github.service.issue.GithubIssueLabelService;
+
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -19,6 +29,8 @@ public class IssueLabelService {
     private final IssueLabelRepository issueLabelRepository;
     private final GithubIssueLabelService githubIssueLabelService;
 
+    // repositoryName == project.title
+    @CacheEvict(value = "issueLabels", key = "#team.organizationName + '_' + #project.title")
     public Long createIssueLabel(
         String title,
         String description,
@@ -38,6 +50,7 @@ public class IssueLabelService {
             .getId();
     }
 
+    @CacheEvict(value = "issueLabels", key = "#organizationName + '_' + #project.title")
     @Transactional
     public void updateIssueLabel(
         Long labelId,
@@ -58,6 +71,42 @@ public class IssueLabelService {
 
         IssueLabel issueLabel = issueLabelRepository.findById(labelId);
         issueLabel.update(newTitle, description, color);
+    }
+
+    @CacheEvict(value = "issueLabels", key = "#organizationName + '_' + #repositoryName")
+    @Transactional
+    public void deleteIssueLabel(
+        Long memberId,
+        Long labelId,
+        String organizationName,
+        String repositoryName,
+        String title
+    ) {
+        deleteGithubIssueLabel(memberId, organizationName, repositoryName, title);
+
+        issueLabelRepository.deleteById(labelId);
+    }
+
+    @Cacheable(value = "issueLabels", key = "#team.organizationName + '_' + #project.title")
+    public List<IssueLabelDetailResponse> getIssueLabels(
+        Long memberId,
+        Team team,
+        Project project
+    ) {
+        List<IssueLabelDetailResponse> labelResponse = getGithubIssueLabels(
+            memberId, team.getOrganizationName(), project.getTitle()
+        );
+
+        Map<String, IssueLabel> labelMap = issueLabelRepository.findAllByProject(project)
+            .stream()
+            .collect(Collectors.toMap(IssueLabel::getTitle, Function.identity()));
+
+        return labelResponse.stream()
+            .map(response -> {
+                IssueLabel label = labelMap.get(response.getName());
+                return response.withId(label.getId());
+            })
+            .collect(Collectors.toList());
     }
 
     private void validateLabelNotExists(String title, Project project) {
@@ -106,6 +155,30 @@ public class IssueLabelService {
             .memberId(memberId)
             .build();
         githubIssueLabelService.updateGithubIssueLabel(request);
+    }
+
+    private void deleteGithubIssueLabel(Long memberId, String organizationName, String repositoryName, String title) {
+        GithubIssueLabelDeleteServiceRequest request = GithubIssueLabelDeleteServiceRequest.builder()
+            .memberId(memberId)
+            .organizationName(organizationName)
+            .repositoryName(repositoryName)
+            .title(title)
+            .build();
+        githubIssueLabelService.deleteGithubIssueLabel(request);
+    }
+
+    private List<IssueLabelDetailResponse> getGithubIssueLabels(
+        Long memberId,
+        String organizationName,
+        String repositoryName
+    ) {
+        GithubIssueLabelDetailServiceRequest request = GithubIssueLabelDetailServiceRequest.builder()
+            .memberId(memberId)
+            .organizationName(organizationName)
+            .repositoryName(repositoryName)
+            .build();
+
+        return githubIssueLabelService.getIssueLabels(request);
     }
 
 }
