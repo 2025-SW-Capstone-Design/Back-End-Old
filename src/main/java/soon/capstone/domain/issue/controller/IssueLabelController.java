@@ -6,9 +6,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import soon.capstone.domain.issue.controller.dto.IssueLabelCreateRequest;
 import soon.capstone.domain.issue.controller.dto.IssueLabelDeleteRequest;
+import soon.capstone.domain.issue.controller.dto.IssueLabelDetailRequest;
 import soon.capstone.domain.issue.controller.dto.IssueLabelUpdateRequest;
 import soon.capstone.domain.issue.service.IssueManagementService;
+import soon.capstone.domain.issue.service.dto.response.IssueLabelDetailResponse;
 import soon.capstone.global.anootation.AuthMemberId;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/teams/{teamId}/issue-labels")
@@ -50,6 +54,19 @@ public class IssueLabelController {
         issueManagementService.deleteIssueLabel(request.toServiceRequest(labelId, teamId), memberId);
 
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping
+    public ResponseEntity<List<IssueLabelDetailResponse>> getIssueLabels(
+        @RequestParam Long projectId,
+        @AuthMemberId Long memberId,
+        @PathVariable Long teamId
+    ) {
+        List<IssueLabelDetailResponse> issueLabels = issueManagementService.getIssueLabels(
+            IssueLabelDetailRequest.toServiceRequest(teamId, projectId), memberId
+        );
+
+        return ResponseEntity.ok(issueLabels);
     }
 
 }

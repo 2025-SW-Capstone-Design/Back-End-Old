@@ -6,8 +6,12 @@ import org.springframework.http.MediaType;
 import soon.capstone.ControllerTestSupport;
 import soon.capstone.domain.issue.controller.dto.IssueLabelCreateRequest;
 import soon.capstone.domain.issue.controller.dto.IssueLabelDeleteRequest;
+import soon.capstone.domain.issue.controller.dto.IssueLabelDetailRequest;
 import soon.capstone.domain.issue.controller.dto.IssueLabelUpdateRequest;
+import soon.capstone.domain.issue.service.dto.response.IssueLabelDetailResponse;
 import soon.capstone.global.anootation.TestMember;
+
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -471,6 +475,28 @@ class IssueLabelControllerTest extends ControllerTestSupport {
             .andExpect(jsonPath("$.validation.repositoryName").value("리포지토리명은 필수 입력 값입니다."));
     }
 
+    @TestMember
+    @DisplayName("이슈 라벨 목록을 조회한다.")
+    @Test
+    void getIssueLabels() throws Exception {
+        // given
+        var request = IssueLabelDetailRequest.toServiceRequest(1L, 1L);
+        given(issueManagementService.getIssueLabels(request, 1L))
+            .willReturn(List.of(createIssueLabelDetailResponse()));
+
+        // expected
+        mockMvc.perform(
+                get(BASE_URL, 1L)
+                    .param("projectId", "1")
+            )
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].id").value(1L))
+            .andExpect(jsonPath("$[0].name").value("name"))
+            .andExpect(jsonPath("$[0].color").value("color"))
+            .andExpect(jsonPath("$[0].description").value("description"));
+    }
+
     private IssueLabelCreateRequest createIssueLabelRequest() {
         return IssueLabelCreateRequest.builder()
             .color("color")
@@ -497,6 +523,15 @@ class IssueLabelControllerTest extends ControllerTestSupport {
             .title("title")
             .organizationName("organizationName")
             .repositoryName("repositoryName")
+            .build();
+    }
+
+    private static IssueLabelDetailResponse createIssueLabelDetailResponse() {
+        return IssueLabelDetailResponse.builder()
+            .id(1L)
+            .name("name")
+            .color("color")
+            .description("description")
             .build();
     }
 
