@@ -1,4 +1,4 @@
-package soon.capstone.domain.milestone.controller.dto.response;
+package soon.capstone.domain.milestone.service.dto.response;
 
 import lombok.Builder;
 

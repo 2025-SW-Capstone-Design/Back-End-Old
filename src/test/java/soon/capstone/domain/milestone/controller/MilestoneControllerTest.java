@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import soon.capstone.ControllerTestSupport;
 import soon.capstone.domain.milestone.controller.dto.request.MilestoneCreateRequest;
-import soon.capstone.domain.milestone.controller.dto.response.MilestoneResponse;
+import soon.capstone.domain.milestone.service.dto.response.MilestoneResponse;
 import soon.capstone.global.anootation.TestMember;
 
 import java.time.LocalDateTime;
@@ -255,6 +255,45 @@ class MilestoneControllerTest extends ControllerTestSupport {
         // Expected
         mockMvc.perform(
                         get(BASE_URL + "/{teamId}/{projectId}", teamId, projectId)
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].title").value("Test"))
+                .andExpect(jsonPath("$[0].description").value("Description"))
+                .andExpect(jsonPath("$[0].startDate").exists())
+                .andExpect(jsonPath("$[0].dueDate").exists())
+                .andExpect(jsonPath("$[0].creator").value("nickname"))
+                .andExpect(jsonPath("$[1].title").value("Test"))
+                .andExpect(jsonPath("$[1].description").value("Description"))
+                .andExpect(jsonPath("$[1].startDate").exists())
+                .andExpect(jsonPath("$[1].dueDate").exists())
+                .andExpect(jsonPath("$[1].creator").value("nickname"));
+
+    }
+
+    @TestMember
+    @DisplayName("팀에 속한 마일스톤을 반환한다.")
+    @Test
+    void getMilestonesByTeam() throws Exception {
+        // Given
+        Long memberId = 1L;
+        Long teamId = 1L;
+
+        LocalDateTime startDate = LocalDateTime.now();
+        LocalDateTime dueDate = startDate.plusDays(7);
+
+        List<MilestoneResponse> milestones = List.of(
+                createMilestoneResponse(1L, startDate, dueDate),
+                createMilestoneResponse(2L, startDate, dueDate)
+        );
+
+        given(milestoneService.getMilestonesByTeam(memberId, teamId))
+                .willReturn(milestones);
+
+        // Expected
+        mockMvc.perform(
+                        get(BASE_URL + "/{teamId}", teamId)
                                 .contentType(MediaType.APPLICATION_JSON)
                 )
                 .andDo(print())

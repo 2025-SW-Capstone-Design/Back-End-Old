@@ -9,10 +9,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import soon.capstone.IntegrationTestSupport;
 import soon.capstone.domain.member.entity.Member;
 import soon.capstone.domain.member.repository.MemberRepository;
-import soon.capstone.domain.milestone.controller.dto.response.MilestoneResponse;
+import soon.capstone.domain.milestone.service.dto.response.MilestoneResponse;
 import soon.capstone.domain.milestone.entity.Milestone;
 import soon.capstone.domain.milestone.repository.MilestoneRepository;
-import soon.capstone.domain.milestone.service.dto.MilestoneCreationDto;
 import soon.capstone.domain.milestone.service.dto.request.MilestoneCreateServiceRequest;
 import soon.capstone.domain.project.entity.Project;
 import soon.capstone.domain.project.repository.ProjectRepository;
@@ -22,8 +21,6 @@ import soon.capstone.domain.teammember.entity.TeamMember;
 import soon.capstone.domain.teammember.entity.common.Position;
 import soon.capstone.domain.teammember.entity.common.Role;
 import soon.capstone.domain.teammember.repository.TeamMemberRepository;
-import soon.capstone.global.exception.milestone.MilestoneInvalidDateException;
-import soon.capstone.infrastructure.github.service.milestone.GithubMilestoneCreationService;
 import soon.capstone.infrastructure.redis.oauth2.entity.OAuthToken;
 import soon.capstone.infrastructure.redis.oauth2.repository.OAuthTokenRepository;
 
@@ -33,7 +30,6 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.groups.Tuple.tuple;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
@@ -160,6 +156,51 @@ class MilestoneServiceTest extends IntegrationTestSupport {
                         tuple("Test", "Description", "nickname")
                 );
 
+    }
+
+    @DisplayName("팀에 속한 마일스톤들을 반환한다.")
+    @Test
+    void getMilestonesByTeam() {
+        // Given
+        Member member = createMember();
+        memberRepository.save(member);
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        TeamMember teamMember = createTeamMember(member, team);
+        teamMemberRepository.save(teamMember);
+
+        Project project = createProject(member.getNickname(), team);
+        projectRepository.save(project);
+
+        LocalDateTime startDate = LocalDateTime.now();
+        LocalDateTime dueDate = startDate.plusDays(7);
+
+        milestoneRepository.saveAll(
+                List.of(
+                        createMilestone(project, startDate, dueDate),
+                        createMilestone(project, startDate, dueDate)
+                )
+        );
+
+        given(milestoneReadService.getMilestonesByTeam(any()))
+                .willReturn(List.of(
+                        createMilestoneResponse(1L, startDate, dueDate),
+                        createMilestoneResponse(2L, startDate, dueDate)
+                ));
+
+        // When
+        List<MilestoneResponse> milestones = milestoneService.getMilestonesByTeam(member.getId(), team.getId());
+
+        // Then
+        assertThat(milestones).hasSize(2);
+        assertThat(milestones)
+                .extracting("title", "description", "creator")
+                .containsExactlyInAnyOrder(
+                        tuple("Test", "Description", "nickname"),
+                        tuple("Test", "Description", "nickname")
+                );
     }
 
     private Member createMember() {

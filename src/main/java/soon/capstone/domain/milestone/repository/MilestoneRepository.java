@@ -2,9 +2,10 @@ package soon.capstone.domain.milestone.repository;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
-import soon.capstone.domain.milestone.controller.dto.response.MilestoneResponse;
+import soon.capstone.domain.milestone.service.dto.response.MilestoneResponse;
 import soon.capstone.domain.milestone.entity.Milestone;
 import soon.capstone.domain.project.entity.Project;
+import soon.capstone.domain.team.entity.Team;
 import soon.capstone.global.exception.milestone.MilestoneNotFoundException;
 
 import java.util.List;
@@ -34,5 +35,9 @@ public class MilestoneRepository {
 
     public List<MilestoneResponse> getMilestonesByProject(Project project) {
         return milestoneJpaRepository.getMilestonesByProject(project);
+    }
+
+    public List<MilestoneResponse> getMilestonesByTeam(Team team) {
+        return milestoneJpaRepository.getMilestonesByTeam(team);
     }
 }

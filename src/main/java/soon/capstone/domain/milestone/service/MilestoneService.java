@@ -3,7 +3,7 @@ package soon.capstone.domain.milestone.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import soon.capstone.domain.member.entity.Member;
-import soon.capstone.domain.milestone.controller.dto.response.MilestoneResponse;
+import soon.capstone.domain.milestone.service.dto.response.MilestoneResponse;
 import soon.capstone.domain.milestone.service.dto.MilestoneCreationDto;
 import soon.capstone.domain.milestone.service.dto.request.MilestoneCreateServiceRequest;
 import soon.capstone.domain.milestone.service.port.MilestonePort;
@@ -54,6 +54,15 @@ public class MilestoneService {
         teamMemberValidator.validateTeamMember(member, team);
 
         return milestoneReadService.getMilestonesByProject(project);
+    }
+
+    public List<MilestoneResponse> getMilestonesByTeam(Long memberId, Long teamId) {
+        Member member = milestonePort.getMember(memberId);
+        Team team = milestonePort.getTeam(teamId);
+
+        teamMemberValidator.validateTeamMember(member, team);
+
+        return milestoneReadService.getMilestonesByTeam(team);
     }
 
 }
