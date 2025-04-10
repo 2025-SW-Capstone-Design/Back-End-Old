@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import soon.capstone.domain.readme.controller.dto.request.ReadmeCreateRequest;
+import soon.capstone.domain.readme.controller.dto.request.ReadmeUpdateRequest;
 import soon.capstone.domain.readme.service.ReadmeService;
 import soon.capstone.global.anootation.AuthMemberId;
 
@@ -24,6 +25,20 @@ public class ReadmeController {
     ) {
         Long readmeId = readmeService.create(request.toServiceRequest(memberId, projectId, teamId));
         return ResponseEntity.ok(readmeId);
+    }
+
+    @PatchMapping("/{readmeId}")
+    public ResponseEntity<Long> updateReadme(
+        @Valid @RequestBody ReadmeUpdateRequest request,
+        @AuthMemberId Long memberId,
+        @PathVariable Long readmeId,
+        @PathVariable Long teamId,
+        @PathVariable Long projectId
+    ) {
+        Long updatedReadmeId = readmeService.update(
+            request.toServiceRequest(memberId, readmeId, projectId, teamId)
+        );
+        return ResponseEntity.ok(updatedReadmeId);
     }
 
 }
