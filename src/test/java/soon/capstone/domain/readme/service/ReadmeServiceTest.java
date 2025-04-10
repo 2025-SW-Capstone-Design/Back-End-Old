@@ -12,6 +12,7 @@ import soon.capstone.domain.project.repository.ProjectRepository;
 import soon.capstone.domain.readme.entity.Readme;
 import soon.capstone.domain.readme.repository.ReadmeRepository;
 import soon.capstone.domain.readme.service.dto.request.ReadmeCreateServiceRequest;
+import soon.capstone.domain.readme.service.dto.request.ReadmeDeleteServiceRequest;
 import soon.capstone.domain.readme.service.dto.request.ReadmeUpdateServiceRequest;
 import soon.capstone.domain.team.entity.Team;
 import soon.capstone.domain.team.repository.TeamRepository;
@@ -224,13 +225,17 @@ class ReadmeServiceTest extends IntegrationTestSupport {
         Readme readme = Readme.createNew("title", "content", 1, member, project);
         readmeRepository.save(readme);
 
-        Long readmeId = readme.getId();
+        ReadmeDeleteServiceRequest request = ReadmeDeleteServiceRequest.builder()
+            .readmeId(readme.getId())
+            .teamId(team.getId())
+            .memberId(member.getId())
+            .build();
 
         // when
-        readmeService.delete(readme.getId(), member.getId(), team.getId());
+        readmeService.delete(request);
 
         // expected
-        assertThatThrownBy(() -> readmeRepository.findById(readmeId))
+        assertThatThrownBy(() -> readmeRepository.findById(request.readmeId()))
             .isInstanceOf(ReadmeNotFoundException.class)
             .hasMessage(READEME_NOT_FOUND.getMessage());
     }
@@ -251,8 +256,14 @@ class ReadmeServiceTest extends IntegrationTestSupport {
         Readme readme = Readme.createNew("title", "content", 1, member, project);
         readmeRepository.save(readme);
 
+        ReadmeDeleteServiceRequest request = ReadmeDeleteServiceRequest.builder()
+            .readmeId(readme.getId())
+            .teamId(team.getId())
+            .memberId(member.getId())
+            .build();
+
         // expected
-        assertThatThrownBy(() -> readmeService.delete(readme.getId(), member.getId(), team.getId()))
+        assertThatThrownBy(() -> readmeService.delete(request))
             .isInstanceOf(TeamNotAuthorizedException.class)
             .hasMessage(TEAM_NOT_AUTHORIZED.getMessage());
     }

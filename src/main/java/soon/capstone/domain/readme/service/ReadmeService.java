@@ -10,6 +10,7 @@ import soon.capstone.domain.project.repository.ProjectRepository;
 import soon.capstone.domain.readme.entity.Readme;
 import soon.capstone.domain.readme.repository.ReadmeRepository;
 import soon.capstone.domain.readme.service.dto.request.ReadmeCreateServiceRequest;
+import soon.capstone.domain.readme.service.dto.request.ReadmeDeleteServiceRequest;
 import soon.capstone.domain.readme.service.dto.request.ReadmeUpdateServiceRequest;
 import soon.capstone.domain.team.entity.Team;
 import soon.capstone.domain.team.repository.TeamRepository;
@@ -50,6 +51,17 @@ public class ReadmeService {
         );
     }
 
+    @Transactional
+    public void delete(ReadmeDeleteServiceRequest request) {
+        Readme readme = readmeRepository.findById(request.readmeId());
+        Member member = memberRepository.findById(request.memberId());
+        Team team = teamRepository.findById(request.teamId());
+
+        validateTeamMembership(member, team);
+
+        readmeRepository.delete(readme);
+    }
+
     private Long saveNewReadme(Long teamId, Long memberId, Long projectId, String title, String content) {
         Team team = teamRepository.findById(teamId);
         Member member = memberRepository.findById(memberId);
@@ -68,17 +80,6 @@ public class ReadmeService {
 
         Readme readme = Readme.createNew(title, content, newVersion, member, project);
         return readmeRepository.save(readme);
-    }
-
-    @Transactional
-    public void delete(Long readmeId, Long memberId, Long teamId) {
-        Readme readme = readmeRepository.findById(readmeId);
-        Member member = memberRepository.findById(memberId);
-        Team team = teamRepository.findById(teamId);
-
-        validateTeamMembership(member, team);
-
-        readmeRepository.delete(readme);
     }
 
     private void validateTeamMembership(Member member, Team team) {
