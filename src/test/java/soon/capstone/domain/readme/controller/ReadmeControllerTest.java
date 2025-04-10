@@ -10,8 +10,8 @@ import soon.capstone.global.anootation.TestMember;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.mockito.Mockito.doNothing;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -152,6 +152,24 @@ class ReadmeControllerTest extends ControllerTestSupport {
             .andExpect(jsonPath("$.status").value(400))
             .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
             .andExpect(jsonPath("$.validation.content").value("내용은 필수 입력 값입니다."));
+    }
+
+    @TestMember
+    @DisplayName("리드미를 삭제한다.")
+    @Test
+    void deleteReadme() throws Exception {
+        // given
+        doNothing()
+            .when(readmeService)
+            .delete(any());
+
+        // expected
+        mockMvc.perform(
+                delete(BASE_URL + "/{readmeId}", 1L, 1L, 1L)
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+            .andDo(print())
+            .andExpect(status().isNoContent());
     }
 
 }

@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import soon.capstone.domain.readme.controller.dto.request.ReadmeCreateRequest;
+import soon.capstone.domain.readme.controller.dto.request.ReadmeDeleteRequest;
 import soon.capstone.domain.readme.controller.dto.request.ReadmeUpdateRequest;
 import soon.capstone.domain.readme.service.ReadmeService;
 import soon.capstone.global.anootation.AuthMemberId;
@@ -39,6 +40,19 @@ public class ReadmeController {
             request.toServiceRequest(memberId, readmeId, projectId, teamId)
         );
         return ResponseEntity.ok(updatedReadmeId);
+    }
+
+    @DeleteMapping("/{readmeId}")
+    public ResponseEntity<Void> deleteReadme(
+        @AuthMemberId Long memberId,
+        @PathVariable Long readmeId,
+        @PathVariable Long teamId,
+        @PathVariable Long projectId
+    ) {
+        readmeService.delete(
+            ReadmeDeleteRequest.toServiceRequest(memberId, readmeId, teamId)
+        );
+        return ResponseEntity.noContent().build();
     }
 
 }
