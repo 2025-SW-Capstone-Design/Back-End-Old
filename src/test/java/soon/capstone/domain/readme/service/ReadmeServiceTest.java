@@ -12,6 +12,7 @@ import soon.capstone.domain.project.repository.ProjectRepository;
 import soon.capstone.domain.readme.entity.Readme;
 import soon.capstone.domain.readme.repository.ReadmeRepository;
 import soon.capstone.domain.readme.service.dto.request.ReadmeCreateServiceRequest;
+import soon.capstone.domain.readme.service.dto.request.ReadmeUpdateServiceRequest;
 import soon.capstone.domain.team.entity.Team;
 import soon.capstone.domain.team.repository.TeamRepository;
 import soon.capstone.domain.teammember.entity.TeamMember;
@@ -162,6 +163,44 @@ class ReadmeServiceTest extends IntegrationTestSupport {
         assertThatThrownBy(() -> readmeService.create(request))
             .isInstanceOf(TeamNotAuthorizedException.class)
             .hasMessage(TEAM_NOT_AUTHORIZED.getMessage());
+    }
+
+    @DisplayName("리드미를 수정한다.")
+    @Test
+    void updateReadme() {
+        // given
+        Member member = createMember();
+        memberRepository.save(member);
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        TeamMember teamMember = TeamMember.createMember(member, team);
+        teamMemberRepository.save(teamMember);
+
+        Project project = createProject(team);
+        projectRepository.save(project);
+
+        Readme oldReadme = Readme.createNew("title", "content", 0, member, project);
+        readmeRepository.save(oldReadme);
+
+        ReadmeUpdateServiceRequest request = ReadmeUpdateServiceRequest.builder()
+            .readmeId(oldReadme.getId())
+            .title("new title")
+            .content("new Content")
+            .memberId(member.getId())
+            .teamId(team.getId())
+            .projectId(project.getId())
+            .build();
+
+        // when
+        Long readmeId = readmeService.update(request);
+
+        // then
+        Readme newReadme = readmeRepository.findById(readmeId);
+        assertThat(newReadme)
+            .extracting("title", "content", "version", "isLatest")
+            .containsExactlyInAnyOrder("new title", "new Content", oldReadme.getVersion() + 1, true);
     }
 
     private ReadmeCreateServiceRequest createReadmeCreateServiceRequest(Project project, Team team, Member member) {

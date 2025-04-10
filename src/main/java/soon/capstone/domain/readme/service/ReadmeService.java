@@ -10,6 +10,7 @@ import soon.capstone.domain.project.repository.ProjectRepository;
 import soon.capstone.domain.readme.entity.Readme;
 import soon.capstone.domain.readme.repository.ReadmeRepository;
 import soon.capstone.domain.readme.service.dto.request.ReadmeCreateServiceRequest;
+import soon.capstone.domain.readme.service.dto.request.ReadmeUpdateServiceRequest;
 import soon.capstone.domain.team.entity.Team;
 import soon.capstone.domain.team.repository.TeamRepository;
 import soon.capstone.domain.teammember.repository.TeamMemberRepository;
@@ -29,29 +30,43 @@ public class ReadmeService {
 
     @Transactional
     public Long create(ReadmeCreateServiceRequest request) {
-        Team team = teamRepository.findById(request.teamId());
-        Member member = memberRepository.findById(request.memberId());
-        Project project = projectRepository.findById(request.projectId());
+        return saveNewReadme(
+            request.teamId(),
+            request.memberId(),
+            request.projectId(),
+            request.title(),
+            request.content()
+        );
+    }
+
+    @Transactional
+    public Long update(ReadmeUpdateServiceRequest request) {
+        return saveNewReadme(
+            request.teamId(),
+            request.memberId(),
+            request.projectId(),
+            request.title(),
+            request.content()
+        );
+    }
+
+    private Long saveNewReadme(Long teamId, Long memberId, Long projectId, String title, String content) {
+        Team team = teamRepository.findById(teamId);
+        Member member = memberRepository.findById(memberId);
+        Project project = projectRepository.findById(projectId);
 
         validateTeamMembership(member, team);
 
-        Optional<Readme> latestReadme = readmeRepository.findByProjectIdAndLatestIsTrue(request.projectId());
+        Optional<Readme> latestReadme = readmeRepository.findByProjectIdAndLatestIsTrue(projectId);
 
         int newVersion = 1;
         if (latestReadme.isPresent()) {
-            Readme readme = latestReadme.get();
-            readme.markAsOld();
-
-            newVersion = readme.getVersion() + 1;
+            Readme current = latestReadme.get();
+            current.markAsOld();
+            newVersion = current.getVersion() + 1;
         }
 
-        Readme readme = Readme.createNew(
-            request.title(),
-            request.content(),
-            newVersion,
-            member,
-            project
-        );
+        Readme readme = Readme.createNew(title, content, newVersion, member, project);
         return readmeRepository.save(readme);
     }
 
