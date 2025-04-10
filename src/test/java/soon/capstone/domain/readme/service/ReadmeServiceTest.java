@@ -17,10 +17,12 @@ import soon.capstone.domain.team.entity.Team;
 import soon.capstone.domain.team.repository.TeamRepository;
 import soon.capstone.domain.teammember.entity.TeamMember;
 import soon.capstone.domain.teammember.repository.TeamMemberRepository;
+import soon.capstone.global.exception.readme.ReadmeNotFoundException;
 import soon.capstone.global.exception.team.TeamNotAuthorizedException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static soon.capstone.global.exception.dto.ErrorDetail.READEME_NOT_FOUND;
 import static soon.capstone.global.exception.dto.ErrorDetail.TEAM_NOT_AUTHORIZED;
 
 class ReadmeServiceTest extends IntegrationTestSupport {
@@ -201,6 +203,97 @@ class ReadmeServiceTest extends IntegrationTestSupport {
         assertThat(newReadme)
             .extracting("title", "content", "version", "isLatest")
             .containsExactlyInAnyOrder("new title", "new Content", oldReadme.getVersion() + 1, true);
+    }
+
+    @DisplayName("리드미를 삭제한다.")
+    @Test
+    void deleteReadme() {
+        // given
+        Member member = createMember();
+        memberRepository.save(member);
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        TeamMember teamMember = TeamMember.createMember(member, team);
+        teamMemberRepository.save(teamMember);
+
+        Project project = createProject(team);
+        projectRepository.save(project);
+
+        Readme readme = Readme.createNew("title", "content", 1, member, project);
+        readmeRepository.save(readme);
+
+        Long readmeId = readme.getId();
+
+        // when
+        readmeService.delete(readme.getId(), member.getId(), team.getId());
+
+        // expected
+        assertThatThrownBy(() -> readmeRepository.findById(readmeId))
+            .isInstanceOf(ReadmeNotFoundException.class)
+            .hasMessage(READEME_NOT_FOUND.getMessage());
+    }
+
+    @DisplayName("팀 멤버가 아닌 사용자가 리드미 삭제 시 예외가 발생한다")
+    @Test
+    void throwExceptionWhenNonTeamMemberDeletesReadme() {
+        // given
+        Member member = createMember();
+        memberRepository.save(member);
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        Project project = createProject(team);
+        projectRepository.save(project);
+
+        Readme readme = Readme.createNew("title", "content", 1, member, project);
+        readmeRepository.save(readme);
+
+        // expected
+        assertThatThrownBy(() -> readmeService.delete(readme.getId(), member.getId(), team.getId()))
+            .isInstanceOf(TeamNotAuthorizedException.class)
+            .hasMessage(TEAM_NOT_AUTHORIZED.getMessage());
+    }
+
+    @DisplayName("여러 버전의 리드미가 있을 때 최신 버전만 최신 상태로 표시된다")
+    @Test
+    void onlyLatestReadmeIsMarkedAsLatest() {
+        // given
+        Member member = createMember();
+        memberRepository.save(member);
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        TeamMember teamMember = TeamMember.createMember(member, team);
+        teamMemberRepository.save(teamMember);
+
+        Project project = createProject(team);
+        projectRepository.save(project);
+
+        // when
+        ReadmeCreateServiceRequest request1 = createReadmeCreateServiceRequest(project, team, member);
+        Long firstId = readmeService.create(request1);
+
+        ReadmeCreateServiceRequest request2 = createReadmeCreateServiceRequest(project, team, member);
+        Long secondId = readmeService.create(request2);
+
+        ReadmeCreateServiceRequest request3 = createReadmeCreateServiceRequest(project, team, member);
+        Long thirdId = readmeService.create(request3);
+
+        // then
+        Readme first = readmeRepository.findById(firstId);
+        Readme second = readmeRepository.findById(secondId);
+        Readme third = readmeRepository.findById(thirdId);
+
+        assertThat(first.isLatest())
+            .isFalse();
+        assertThat(second.isLatest())
+            .isFalse();
+        assertThat(third.isLatest())
+            .isTrue();
     }
 
     private ReadmeCreateServiceRequest createReadmeCreateServiceRequest(Project project, Team team, Member member) {

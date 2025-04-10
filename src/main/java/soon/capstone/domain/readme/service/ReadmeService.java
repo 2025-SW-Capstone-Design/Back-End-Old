@@ -70,6 +70,17 @@ public class ReadmeService {
         return readmeRepository.save(readme);
     }
 
+    @Transactional
+    public void delete(Long readmeId, Long memberId, Long teamId) {
+        Readme readme = readmeRepository.findById(readmeId);
+        Member member = memberRepository.findById(memberId);
+        Team team = teamRepository.findById(teamId);
+
+        validateTeamMembership(member, team);
+
+        readmeRepository.delete(readme);
+    }
+
     private void validateTeamMembership(Member member, Team team) {
         if (!teamMemberRepository.existsByMemberAndTeam(member, team)) {
             throw new TeamNotAuthorizedException();

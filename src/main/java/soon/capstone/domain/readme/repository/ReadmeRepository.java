@@ -31,4 +31,8 @@ public class ReadmeRepository {
         readmeJpaRepository.deleteAllInBatch();
     }
 
+    public void delete(Readme readme) {
+        readmeJpaRepository.delete(readme);
+    }
+
 }
