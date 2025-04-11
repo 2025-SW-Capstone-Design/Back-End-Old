@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import soon.capstone.ControllerTestSupport;
 import soon.capstone.domain.milestone.controller.dto.request.MilestoneCreateRequest;
+import soon.capstone.domain.milestone.service.dto.response.MilestoneDetailResponse;
 import soon.capstone.domain.milestone.service.dto.response.MilestoneResponse;
 import soon.capstone.global.anootation.TestMember;
 
@@ -20,32 +21,32 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 class MilestoneControllerTest extends ControllerTestSupport {
 
-    private final static String BASE_URL = "/api/v1/milestones";
+    private static final Long TEAM_ID = 1L;
+    private static final Long PROJECT_ID = 1L;
+    private static final Long MILESTONE_ID = 1L;
+    private static final String BASE_URL = "/api/v1/teams/" + TEAM_ID;
 
     @TestMember
     @DisplayName("마일스톤을 생성한다.")
     @Test
     void createMilestone() throws Exception {
         // given
-
         LocalDateTime startDate = LocalDateTime.now();
         LocalDateTime dueDate = startDate.plusDays(7);
 
         MilestoneCreateRequest request = MilestoneCreateRequest.builder()
-                .teamId(1L)
-                .projectId(1L)
                 .title("Test")
                 .description("Test Description")
                 .startDate(startDate)
                 .dueDate(dueDate)
                 .build();
 
-        given(milestoneService.createMilestone(1L, request.toServiceRequest()))
+        given(milestoneService.createMilestone(1L, TEAM_ID, PROJECT_ID, request.toServiceRequest()))
                 .willReturn(1L);
 
         // expected
         mockMvc.perform(
-                        post(BASE_URL)
+                        post(BASE_URL + "/projects/{projectId}", PROJECT_ID)
                                 .content(objectMapper.writeValueAsString(request))
                                 .contentType(MediaType.APPLICATION_JSON)
                 )
@@ -55,77 +56,14 @@ class MilestoneControllerTest extends ControllerTestSupport {
     }
 
     @TestMember
-    @DisplayName("마일스톤을 생성할 때 팀 아이디는 필수이다.")
-    @Test
-    void createMilestoneWithoutTeamId() throws Exception {
-        // given
-
-        LocalDateTime startDate = LocalDateTime.now();
-        LocalDateTime dueDate = startDate.plusDays(7);
-
-        MilestoneCreateRequest request = MilestoneCreateRequest.builder()
-                .projectId(1L)
-                .title("Test")
-                .description("Test Description")
-                .startDate(startDate)
-                .dueDate(dueDate)
-                .build();
-
-        // expected
-        mockMvc.perform(
-                        post(BASE_URL)
-                                .content(objectMapper.writeValueAsString(request))
-                                .contentType(MediaType.APPLICATION_JSON)
-                )
-                .andDo(print())
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
-                .andExpect(jsonPath("$.validation.teamId").value("팀 아이디를 입력해주세요."));
-    }
-
-    @TestMember
-    @DisplayName("마일스톤을 생성할 때 프로젝트 아이디는 필수이다.")
-    @Test
-    void createMilestoneWithoutProjectId() throws Exception {
-        // given
-
-        LocalDateTime startDate = LocalDateTime.now();
-        LocalDateTime dueDate = startDate.plusDays(7);
-
-        MilestoneCreateRequest request = MilestoneCreateRequest.builder()
-                .teamId(1L)
-                .title("Test")
-                .description("Test Description")
-                .startDate(startDate)
-                .dueDate(dueDate)
-                .build();
-
-        // expected
-        mockMvc.perform(
-                        post(BASE_URL)
-                                .content(objectMapper.writeValueAsString(request))
-                                .contentType(MediaType.APPLICATION_JSON)
-                )
-                .andDo(print())
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
-                .andExpect(jsonPath("$.validation.projectId").value("프로젝트 아이디를 입력해주세요."));
-    }
-
-    @TestMember
     @DisplayName("마일스톤을 생성할 때 마일스톤 이름은 필수이다.")
     @Test
     void createMilestoneWithoutTitle() throws Exception {
         // given
-
         LocalDateTime startDate = LocalDateTime.now();
         LocalDateTime dueDate = startDate.plusDays(7);
 
         MilestoneCreateRequest request = MilestoneCreateRequest.builder()
-                .teamId(1L)
-                .projectId(1L)
                 .description("Test Description")
                 .startDate(startDate)
                 .dueDate(dueDate)
@@ -133,7 +71,7 @@ class MilestoneControllerTest extends ControllerTestSupport {
 
         // expected
         mockMvc.perform(
-                        post(BASE_URL)
+                        post(BASE_URL + "/projects/{projectId}", PROJECT_ID)
                                 .content(objectMapper.writeValueAsString(request))
                                 .contentType(MediaType.APPLICATION_JSON)
                 )
@@ -149,13 +87,10 @@ class MilestoneControllerTest extends ControllerTestSupport {
     @Test
     void createMilestoneWithoutDescription() throws Exception {
         // given
-
         LocalDateTime startDate = LocalDateTime.now();
         LocalDateTime dueDate = startDate.plusDays(7);
 
         MilestoneCreateRequest request = MilestoneCreateRequest.builder()
-                .teamId(1L)
-                .projectId(1L)
                 .title("Test")
                 .startDate(startDate)
                 .dueDate(dueDate)
@@ -163,7 +98,7 @@ class MilestoneControllerTest extends ControllerTestSupport {
 
         // expected
         mockMvc.perform(
-                        post(BASE_URL)
+                        post(BASE_URL + "/projects/{projectId}", PROJECT_ID)
                                 .content(objectMapper.writeValueAsString(request))
                                 .contentType(MediaType.APPLICATION_JSON)
                 )
@@ -179,13 +114,10 @@ class MilestoneControllerTest extends ControllerTestSupport {
     @Test
     void createMilestoneWithoutStartDate() throws Exception {
         // given
-
         LocalDateTime startDate = LocalDateTime.now();
         LocalDateTime dueDate = startDate.plusDays(7);
 
         MilestoneCreateRequest request = MilestoneCreateRequest.builder()
-                .teamId(1L)
-                .projectId(1L)
                 .title("Test")
                 .description("Test Description")
                 .dueDate(dueDate)
@@ -193,7 +125,7 @@ class MilestoneControllerTest extends ControllerTestSupport {
 
         // expected
         mockMvc.perform(
-                        post(BASE_URL)
+                        post(BASE_URL + "/projects/{projectId}", PROJECT_ID)
                                 .content(objectMapper.writeValueAsString(request))
                                 .contentType(MediaType.APPLICATION_JSON)
                 )
@@ -212,8 +144,6 @@ class MilestoneControllerTest extends ControllerTestSupport {
         LocalDateTime startDate = LocalDateTime.now();
 
         MilestoneCreateRequest request = MilestoneCreateRequest.builder()
-                .teamId(1L)
-                .projectId(1L)
                 .title("Test")
                 .description("Test Description")
                 .startDate(startDate)
@@ -221,7 +151,7 @@ class MilestoneControllerTest extends ControllerTestSupport {
 
         // expected
         mockMvc.perform(
-                        post(BASE_URL)
+                        post(BASE_URL + "/projects/{projectId}", PROJECT_ID)
                                 .content(objectMapper.writeValueAsString(request))
                                 .contentType(MediaType.APPLICATION_JSON)
                 )
@@ -238,9 +168,6 @@ class MilestoneControllerTest extends ControllerTestSupport {
     void getMilestonesByProject() throws Exception {
         // Given
         Long memberId = 1L;
-        Long teamId = 1L;
-        Long projectId = 1L;
-
         LocalDateTime startDate = LocalDateTime.now();
         LocalDateTime dueDate = startDate.plusDays(7);
 
@@ -249,12 +176,12 @@ class MilestoneControllerTest extends ControllerTestSupport {
                 createMilestoneResponse(2L, startDate, dueDate)
         );
 
-        given(milestoneService.getMilestonesByProject(memberId, teamId, projectId))
+        given(milestoneService.getMilestonesByProject(memberId, TEAM_ID, PROJECT_ID))
                 .willReturn(milestones);
 
         // Expected
         mockMvc.perform(
-                        get(BASE_URL + "/{teamId}/{projectId}", teamId, projectId)
+                        get(BASE_URL + "/projects/{projectId}", PROJECT_ID)
                                 .contentType(MediaType.APPLICATION_JSON)
                 )
                 .andDo(print())
@@ -269,7 +196,6 @@ class MilestoneControllerTest extends ControllerTestSupport {
                 .andExpect(jsonPath("$[1].startDate").exists())
                 .andExpect(jsonPath("$[1].dueDate").exists())
                 .andExpect(jsonPath("$[1].creator").value("nickname"));
-
     }
 
     @TestMember
@@ -278,8 +204,6 @@ class MilestoneControllerTest extends ControllerTestSupport {
     void getMilestonesByTeam() throws Exception {
         // Given
         Long memberId = 1L;
-        Long teamId = 1L;
-
         LocalDateTime startDate = LocalDateTime.now();
         LocalDateTime dueDate = startDate.plusDays(7);
 
@@ -288,12 +212,12 @@ class MilestoneControllerTest extends ControllerTestSupport {
                 createMilestoneResponse(2L, startDate, dueDate)
         );
 
-        given(milestoneService.getMilestonesByTeam(memberId, teamId))
+        given(milestoneService.getMilestonesByTeam(memberId, TEAM_ID))
                 .willReturn(milestones);
 
         // Expected
         mockMvc.perform(
-                        get(BASE_URL + "/{teamId}", teamId)
+                        get(BASE_URL)
                                 .contentType(MediaType.APPLICATION_JSON)
                 )
                 .andDo(print())
@@ -308,7 +232,45 @@ class MilestoneControllerTest extends ControllerTestSupport {
                 .andExpect(jsonPath("$[1].startDate").exists())
                 .andExpect(jsonPath("$[1].dueDate").exists())
                 .andExpect(jsonPath("$[1].creator").value("nickname"));
+    }
 
+    @TestMember
+    @DisplayName("마일스톤 상세 정보를 반환한다.")
+    @Test
+    void getMilestoneDetail() throws Exception {
+        // Given
+        Long memberId = 1L;
+        LocalDateTime startDate = LocalDateTime.now();
+        LocalDateTime dueDate = startDate.plusDays(7);
+
+        MilestoneDetailResponse milestoneDetail = MilestoneDetailResponse.builder()
+                .milestoneId(MILESTONE_ID)
+                .title("Test")
+                .description("Description")
+                .creator("nickname")
+                .startDate(startDate)
+                .dueDate(dueDate)
+                .isCompleted(false)
+                .issues(List.of())
+                .build();
+
+        given(milestoneService.getMilestoneDetail(memberId, TEAM_ID, MILESTONE_ID))
+                .willReturn(milestoneDetail);
+
+        // Expected
+        mockMvc.perform(
+                        get(BASE_URL + "/milestones/{milestoneId}", MILESTONE_ID)
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.milestoneId").value(MILESTONE_ID))
+                .andExpect(jsonPath("$.title").value("Test"))
+                .andExpect(jsonPath("$.description").value("Description"))
+                .andExpect(jsonPath("$.creator").value("nickname"))
+                .andExpect(jsonPath("$.startDate").exists())
+                .andExpect(jsonPath("$.dueDate").exists())
+                .andExpect(jsonPath("$.isCompleted").value(false));
     }
 
     private MilestoneResponse createMilestoneResponse(Long milestoneId, LocalDateTime startDate, LocalDateTime dueDate) {

@@ -6,8 +6,6 @@ import java.time.LocalDateTime;
 
 @Builder
 public record MilestoneCreateServiceRequest(
-        Long teamId,
-        Long projectId,
         String title,
         String description,
         LocalDateTime startDate,

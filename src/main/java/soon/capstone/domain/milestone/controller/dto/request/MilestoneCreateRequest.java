@@ -8,12 +8,6 @@ import soon.capstone.domain.milestone.service.dto.request.MilestoneCreateService
 import java.time.LocalDateTime;
 @Builder
 public record MilestoneCreateRequest(
-        @NotNull(message = "팀 아이디를 입력해주세요.")
-        Long teamId,
-
-        @NotNull(message = "프로젝트 아이디를 입력해주세요.")
-        Long projectId,
-
         @NotBlank(message = "마일스톤 이름을 입력해주세요.")
         String title,
 
@@ -28,8 +22,6 @@ public record MilestoneCreateRequest(
 ) {
     public MilestoneCreateServiceRequest toServiceRequest() {
         return MilestoneCreateServiceRequest.builder()
-                .teamId(teamId)
-                .projectId(projectId)
                 .title(title)
                 .description(description)
                 .startDate(startDate)

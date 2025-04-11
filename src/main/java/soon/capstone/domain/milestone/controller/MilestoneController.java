@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import soon.capstone.domain.milestone.controller.dto.request.MilestoneCreateRequest;
+import soon.capstone.domain.milestone.service.dto.response.MilestoneDetailResponse;
 import soon.capstone.domain.milestone.service.dto.response.MilestoneResponse;
 import soon.capstone.domain.milestone.service.MilestoneService;
 import soon.capstone.global.anootation.AuthMemberId;
@@ -12,19 +13,13 @@ import soon.capstone.global.anootation.AuthMemberId;
 import java.util.List;
 
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/milestones")
+@RequestMapping("/api/v1/teams/{teamId}")
 @RestController
 public class MilestoneController {
 
     private final MilestoneService milestoneService;
 
-    @PostMapping
-    public ResponseEntity<Long> createMilestone(@AuthMemberId Long memberId, @RequestBody @Valid MilestoneCreateRequest milestoneCreateRequest) {
-        Long milestoneId = milestoneService.createMilestone(memberId, milestoneCreateRequest.toServiceRequest());
-        return ResponseEntity.ok(milestoneId);
-    }
-
-    @GetMapping("/{teamId}")
+    @GetMapping
     public ResponseEntity<List<MilestoneResponse>> getMilestonesByTeam(
             @AuthMemberId Long memberId,
             @PathVariable Long teamId
@@ -33,7 +28,17 @@ public class MilestoneController {
         return ResponseEntity.ok(milestones);
     }
 
-    @GetMapping("/{teamId}/{projectId}")
+    @PostMapping("/projects/{projectId}")
+    public ResponseEntity<Long> createMilestone(
+            @AuthMemberId Long memberId,
+            @PathVariable Long teamId,
+            @PathVariable Long projectId,
+            @RequestBody @Valid MilestoneCreateRequest milestoneCreateRequest) {
+        Long milestoneId = milestoneService.createMilestone(memberId, teamId, projectId, milestoneCreateRequest.toServiceRequest());
+        return ResponseEntity.ok(milestoneId);
+    }
+
+    @GetMapping("/projects/{projectId}")
     public ResponseEntity<List<MilestoneResponse>> getMilestonesByProject(
             @AuthMemberId Long memberId,
             @PathVariable Long teamId,
@@ -41,6 +46,16 @@ public class MilestoneController {
     ) {
         List<MilestoneResponse> milestones = milestoneService.getMilestonesByProject(memberId, teamId, projectId);
         return ResponseEntity.ok(milestones);
+    }
+
+    @GetMapping("/milestones/{milestoneId}")
+    public ResponseEntity<MilestoneDetailResponse> getMilestoneDetail(
+            @AuthMemberId Long memberId,
+            @PathVariable Long teamId,
+            @PathVariable Long milestoneId
+    ) {
+        MilestoneDetailResponse milestoneDetail = milestoneService.getMilestoneDetail(memberId, teamId, milestoneId);
+        return ResponseEntity.ok(milestoneDetail);
     }
 
 }
