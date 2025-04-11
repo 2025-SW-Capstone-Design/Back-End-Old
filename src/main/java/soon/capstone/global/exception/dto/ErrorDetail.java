@@ -55,6 +55,9 @@ public enum ErrorDetail {
     MILESTONE_INVALID_DATE(400, "마일스톤의 시작일과 종료일이 올바르지 않습니다."),
     MILESTONE_DUPLICATE_TITLE(409, "마일스톤 제목이 중복됩니다."),
 
+    // README 관련
+    READEME_NOT_FOUND(404, "해당 README를 찾을 수 없습니다."),
+
     ;
 
     private final int status;
