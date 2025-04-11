@@ -6,8 +6,13 @@ import org.springframework.http.MediaType;
 import soon.capstone.ControllerTestSupport;
 import soon.capstone.domain.readme.controller.dto.request.ReadmeCreateRequest;
 import soon.capstone.domain.readme.controller.dto.request.ReadmeUpdateRequest;
+import soon.capstone.domain.readme.service.dto.response.ReadmeDetailResponse;
+import soon.capstone.domain.readme.service.dto.response.ReadmeListResponse;
 import soon.capstone.global.anootation.TestMember;
 
+import java.util.List;
+
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
@@ -18,7 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 class ReadmeControllerTest extends ControllerTestSupport {
 
-    private static final String BASE_URL = "/api/v1/teams/{teamId}/projects/{projectId}/readme";
+    private static final String BASE_URL = "/api/v1/teams/{teamId}";
 
     @TestMember
     @DisplayName("리드미를 생성한다.")
@@ -34,7 +39,7 @@ class ReadmeControllerTest extends ControllerTestSupport {
 
         // expected
         mockMvc.perform(
-                post(BASE_URL, 1L, 1L)
+                post(BASE_URL + "/projects/{projectId}/readmes", 1L, 1L)
                     .content(objectMapper.writeValueAsString(request))
                     .contentType(MediaType.APPLICATION_JSON)
             )
@@ -54,7 +59,7 @@ class ReadmeControllerTest extends ControllerTestSupport {
 
         // expected
         mockMvc.perform(
-                post(BASE_URL, 1L, 1L)
+                post(BASE_URL + "/projects/{projectId}/readmes", 1L, 1L)
                     .content(objectMapper.writeValueAsString(request))
                     .contentType(MediaType.APPLICATION_JSON)
             )
@@ -76,7 +81,7 @@ class ReadmeControllerTest extends ControllerTestSupport {
 
         // expected
         mockMvc.perform(
-                post(BASE_URL, 1L, 1L)
+                post(BASE_URL + "/projects/{projectId}/readmes", 1L, 1L)
                     .content(objectMapper.writeValueAsString(request))
                     .contentType(MediaType.APPLICATION_JSON)
             )
@@ -101,7 +106,7 @@ class ReadmeControllerTest extends ControllerTestSupport {
 
         // expected
         mockMvc.perform(
-                patch(BASE_URL + "/{readmeId}", 1L, 1L, 1L)
+                patch(BASE_URL + "/projects/{projectId}/readmes/{readmeId}", 1L, 1L, 1L)
                     .content(objectMapper.writeValueAsString(request))
                     .contentType(MediaType.APPLICATION_JSON)
             )
@@ -121,7 +126,7 @@ class ReadmeControllerTest extends ControllerTestSupport {
 
         // expected
         mockMvc.perform(
-                patch(BASE_URL + "/{readmeId}", 1L, 1L, 1L)
+                patch(BASE_URL + "/projects/{projectId}/readmes/{readmeId}", 1L, 1L, 1L)
                     .content(objectMapper.writeValueAsString(request))
                     .contentType(MediaType.APPLICATION_JSON)
             )
@@ -143,7 +148,7 @@ class ReadmeControllerTest extends ControllerTestSupport {
 
         // expected
         mockMvc.perform(
-                patch(BASE_URL + "/{readmeId}", 1L, 1L, 1L)
+                patch(BASE_URL + "/projects/{projectId}/readmes/{readmeId}", 1L, 1L, 1L)
                     .content(objectMapper.writeValueAsString(request))
                     .contentType(MediaType.APPLICATION_JSON)
             )
@@ -165,11 +170,85 @@ class ReadmeControllerTest extends ControllerTestSupport {
 
         // expected
         mockMvc.perform(
-                delete(BASE_URL + "/{readmeId}", 1L, 1L, 1L)
+                delete(BASE_URL + "/readmes/{readmeId}", 1L, 1L)
                     .contentType(MediaType.APPLICATION_JSON)
             )
             .andDo(print())
             .andExpect(status().isNoContent());
+    }
+
+    @TestMember
+    @DisplayName("프로젝트의 리드미 목록을 조회한다.")
+    @Test
+    void getReadmeList() throws Exception {
+        // given
+        List<ReadmeListResponse> responses = List.of(
+            createReadmeListResponse(1L, "Title 1", 1, false),
+            createReadmeListResponse(2L, "Title 2", 2, true)
+        );
+
+        given(readmeService.getReadmes(any()))
+            .willReturn(responses);
+
+        // expected
+        mockMvc.perform(
+                get(BASE_URL + "/projects/{projectId}/readmes", 1L, 1L)
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(2)))
+            .andExpect(jsonPath("$[0].readmeId").value(1))
+            .andExpect(jsonPath("$[0].title").value("Title 1"))
+            .andExpect(jsonPath("$[0].version").value(1))
+            .andExpect(jsonPath("$[0].writer").value("member"))
+            .andExpect(jsonPath("$[0].isLatest").value(false))
+            .andExpect(jsonPath("$[1].readmeId").value(2))
+            .andExpect(jsonPath("$[1].title").value("Title 2"))
+            .andExpect(jsonPath("$[1].version").value(2))
+            .andExpect(jsonPath("$[1].writer").value("member"))
+            .andExpect(jsonPath("$[1].isLatest").value(true));
+    }
+
+    @TestMember
+    @DisplayName("리드미 상세 정보를 조회한다.")
+    @Test
+    void getReadmeDetail() throws Exception {
+        // given
+        ReadmeDetailResponse response = ReadmeDetailResponse.builder()
+            .readmeId(1L)
+            .title("README Title")
+            .content("README Content")
+            .version(1)
+            .writer("member")
+            .isLatest(true)
+            .projectName("projectName")
+            .build();
+
+        given(readmeService.getDetail(any()))
+            .willReturn(response);
+
+        // expected
+        mockMvc.perform(
+                get(BASE_URL + "/readmes/{readmeId}", 1L, 1L)
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.title").value("README Title"))
+            .andExpect(jsonPath("$.content").value("README Content"))
+            .andExpect(jsonPath("$.version").value(1))
+            .andExpect(jsonPath("$.writer").value("member"));
+    }
+
+    private ReadmeListResponse createReadmeListResponse(long readmeId, String title, int version, boolean isLatest) {
+        return ReadmeListResponse.builder()
+            .readmeId(readmeId)
+            .title(title).
+            version(version).
+            writer("member").
+            isLatest(isLatest).
+            build();
     }
 
 }
