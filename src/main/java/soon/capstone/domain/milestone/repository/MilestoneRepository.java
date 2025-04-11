@@ -40,4 +40,12 @@ public class MilestoneRepository {
     public List<MilestoneResponse> getMilestonesByTeam(Team team) {
         return milestoneJpaRepository.getMilestonesByTeam(team);
     }
+
+    public boolean existsByTitle(String title) {
+        return milestoneJpaRepository.existsByTitle(title);
+    }
+
+    public List<Milestone> findAll() {
+        return milestoneJpaRepository.findAll();
+    }
 }

@@ -4,5 +4,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import soon.capstone.domain.milestone.entity.Milestone;
 
 public interface MilestoneJpaRepository extends JpaRepository<Milestone, Long>, MilestoneListRepository {
-
+    boolean existsByTitle(String title);
 }

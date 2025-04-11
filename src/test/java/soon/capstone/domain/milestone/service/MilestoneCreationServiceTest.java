@@ -17,6 +17,7 @@ import soon.capstone.domain.project.repository.ProjectRepository;
 import soon.capstone.domain.team.entity.Team;
 import soon.capstone.domain.team.repository.TeamRepository;
 import soon.capstone.domain.teammember.repository.TeamMemberRepository;
+import soon.capstone.global.exception.milestone.MilestoneDuplicateTitleException;
 import soon.capstone.global.exception.milestone.MilestoneInvalidDateException;
 import soon.capstone.infrastructure.github.service.milestone.GithubMilestoneCreationService;
 import soon.capstone.infrastructure.redis.oauth2.entity.OAuthToken;
@@ -87,9 +88,8 @@ class MilestoneCreationServiceTest extends IntegrationTestSupport {
         // When
         milestoneCreationService.createMilestone(milestoneCreationDto);
 
-        // Then
-        Long milestoneId = 1L;
-        Milestone milestone = milestoneRepository.findById(milestoneId);
+        // Then;
+        Milestone milestone = milestoneRepository.findAll().getFirst();
 
         assertThat(milestone)
                 .extracting(
@@ -127,6 +127,44 @@ class MilestoneCreationServiceTest extends IntegrationTestSupport {
         assertThatThrownBy(() -> milestoneCreationService.createMilestone(milestoneCreationDto))
                 .isInstanceOf(MilestoneInvalidDateException.class)
                 .hasMessage("마일스톤의 시작일과 종료일이 올바르지 않습니다.");
+    }
+
+    @DisplayName("마일스톤 생성 시, 중복되는 제목의 마일스톤이 존재하면 예외가 발생한다.")
+    @Test
+    void createMilestone_WhenTitleIsDuplicate_ThrowsMilestoneDuplicateTitleException() {
+        // Given
+        Member member = createMember();
+        memberRepository.save(member);
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        OAuthToken oauthToken = createOAuthToken(member);
+        oAuthTokenRepository.save(oauthToken);
+
+        Project project = createProject(member.getNickname(), team);
+        projectRepository.save(project);
+
+        LocalDateTime startDate = LocalDateTime.now();
+        LocalDateTime dueDate = startDate.plusDays(7);
+
+        Milestone milestone = Milestone.builder()
+                .title("title")
+                .description("description")
+                .dueDate(dueDate)
+                .creator(member.getNickname())
+                .startDate(startDate)
+                .githubMilestoneId(1)
+                .project(project)
+                .build();
+        milestoneRepository.save(milestone);
+
+        MilestoneCreationDto milestoneCreationDto = createMilestoneCreationDto(team, project, oauthToken, dueDate, startDate, member);
+
+        // Expect
+        assertThatThrownBy(() -> milestoneCreationService.createMilestone(milestoneCreationDto))
+                .isInstanceOf(MilestoneDuplicateTitleException.class)
+                .hasMessage("마일스톤 제목이 중복됩니다.");
     }
 
     private Member createMember() {

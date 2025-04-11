@@ -6,6 +6,7 @@ import soon.capstone.domain.milestone.entity.Milestone;
 import soon.capstone.domain.milestone.repository.MilestoneRepository;
 import soon.capstone.domain.milestone.service.dto.MilestoneCreationDto;
 import soon.capstone.domain.project.entity.Project;
+import soon.capstone.global.exception.milestone.MilestoneDuplicateTitleException;
 import soon.capstone.global.exception.milestone.MilestoneInvalidDateException;
 import soon.capstone.infrastructure.github.service.milestone.GithubMilestoneCreationService;
 
@@ -21,6 +22,7 @@ public class MilestoneCreationService {
     public Long createMilestone(MilestoneCreationDto milestoneCreationDto) {
 
         validateMilestoneDates(milestoneCreationDto.startDate(), milestoneCreationDto.dueDate());
+        isDuplicateMilestoneTitle(milestoneCreationDto.title());
 
         int githubMilestoneId = githubMilestoneCreationService.createMilestone(
                 milestoneCreationDto.owner(),
@@ -49,6 +51,12 @@ public class MilestoneCreationService {
     private void validateMilestoneDates(LocalDateTime startDate, LocalDateTime dueDate) {
         if (startDate != null && dueDate != null && startDate.isAfter(dueDate)) {
             throw new MilestoneInvalidDateException();
+        }
+    }
+
+    private void isDuplicateMilestoneTitle(String title) {
+        if(milestoneRepository.existsByTitle(title)) {
+            throw new MilestoneDuplicateTitleException();
         }
     }
 
