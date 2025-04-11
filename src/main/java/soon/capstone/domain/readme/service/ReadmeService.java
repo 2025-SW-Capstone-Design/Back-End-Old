@@ -9,15 +9,17 @@ import soon.capstone.domain.project.entity.Project;
 import soon.capstone.domain.project.repository.ProjectRepository;
 import soon.capstone.domain.readme.entity.Readme;
 import soon.capstone.domain.readme.repository.ReadmeRepository;
-import soon.capstone.domain.readme.service.dto.request.ReadmeCreateServiceRequest;
-import soon.capstone.domain.readme.service.dto.request.ReadmeDeleteServiceRequest;
-import soon.capstone.domain.readme.service.dto.request.ReadmeUpdateServiceRequest;
+import soon.capstone.domain.readme.service.dto.request.*;
+import soon.capstone.domain.readme.service.dto.response.ReadmeDetailResponse;
+import soon.capstone.domain.readme.service.dto.response.ReadmeListResponse;
 import soon.capstone.domain.team.entity.Team;
 import soon.capstone.domain.team.repository.TeamRepository;
 import soon.capstone.domain.teammember.repository.TeamMemberRepository;
 import soon.capstone.global.exception.team.TeamNotAuthorizedException;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -60,6 +62,30 @@ public class ReadmeService {
         validateTeamMembership(member, team);
 
         readmeRepository.delete(readme);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ReadmeListResponse> getReadmes(ReadmesListServiceRequest request) {
+        Member member = memberRepository.findById(request.memberId());
+        Team team = teamRepository.findById(request.teamId());
+        validateTeamMembership(member, team);
+
+        List<Readme> readmes = readmeRepository.findAllByProjectIdOrderByVersionDesc(request.projectId());
+
+        return readmes.stream()
+            .map(ReadmeListResponse::from)
+            .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public ReadmeDetailResponse getDetail(ReadmeDetailServiceRequest request) {
+        Member member = memberRepository.findById(request.memberId());
+        Team team = teamRepository.findById(request.teamId());
+        Readme readme = readmeRepository.findById(request.readmeId());
+
+        validateTeamMembership(member, team);
+
+        return ReadmeDetailResponse.from(readme);
     }
 
     private Long saveNewReadme(Long teamId, Long memberId, Long projectId, String title, String content) {

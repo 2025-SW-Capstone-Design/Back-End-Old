@@ -11,9 +11,9 @@ import soon.capstone.domain.project.entity.Project;
 import soon.capstone.domain.project.repository.ProjectRepository;
 import soon.capstone.domain.readme.entity.Readme;
 import soon.capstone.domain.readme.repository.ReadmeRepository;
-import soon.capstone.domain.readme.service.dto.request.ReadmeCreateServiceRequest;
-import soon.capstone.domain.readme.service.dto.request.ReadmeDeleteServiceRequest;
-import soon.capstone.domain.readme.service.dto.request.ReadmeUpdateServiceRequest;
+import soon.capstone.domain.readme.service.dto.request.*;
+import soon.capstone.domain.readme.service.dto.response.ReadmeDetailResponse;
+import soon.capstone.domain.readme.service.dto.response.ReadmeListResponse;
 import soon.capstone.domain.team.entity.Team;
 import soon.capstone.domain.team.repository.TeamRepository;
 import soon.capstone.domain.teammember.entity.TeamMember;
@@ -21,8 +21,9 @@ import soon.capstone.domain.teammember.repository.TeamMemberRepository;
 import soon.capstone.global.exception.readme.ReadmeNotFoundException;
 import soon.capstone.global.exception.team.TeamNotAuthorizedException;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.*;
 import static soon.capstone.global.exception.dto.ErrorDetail.READEME_NOT_FOUND;
 import static soon.capstone.global.exception.dto.ErrorDetail.TEAM_NOT_AUTHORIZED;
 
@@ -305,6 +306,81 @@ class ReadmeServiceTest extends IntegrationTestSupport {
             .isFalse();
         assertThat(third.isLatest())
             .isTrue();
+    }
+
+    @DisplayName("리드미 상세 정보를 조회한다.")
+    @Test
+    void getReadmeDetail() {
+        // given
+        Member member = createMember();
+        memberRepository.save(member);
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        TeamMember teamMember = TeamMember.createMember(member, team);
+        teamMemberRepository.save(teamMember);
+
+        Project project = createProject(team);
+        projectRepository.save(project);
+
+        Readme readme = Readme.createNew("title", "content", 1, member, project);
+        readmeRepository.save(readme);
+
+        ReadmeDetailServiceRequest request = ReadmeDetailServiceRequest.builder()
+            .readmeId(readme.getId())
+            .memberId(member.getId())
+            .teamId(team.getId())
+            .build();
+
+        // when
+        ReadmeDetailResponse response = readmeService.getDetail(request);
+
+        // then
+        assertThat(response)
+            .extracting("readmeId", "title", "content", "version", "isLatest", "writer", "projectName")
+            .containsExactlyInAnyOrder(readme.getId(), "title", "content", 1, true, member.getNickname(), project.getTitle());
+    }
+
+    @DisplayName("프로젝트의 모든 리드미 목록을 버전의 내림차순으로 조회한다.")
+    @Test
+    void getReadmes() {
+        // given
+        Member member = createMember();
+        memberRepository.save(member);
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        TeamMember teamMember = TeamMember.createMember(member, team);
+        teamMemberRepository.save(teamMember);
+
+        Project project = createProject(team);
+        projectRepository.save(project);
+
+        Readme readme1 = Readme.createNew("title1", "content1", 1, member, project);
+        readme1.markAsOld();
+        readmeRepository.save(readme1);
+
+        Readme readme2 = Readme.createNew("title2", "content2", 2, member, project);
+        readmeRepository.save(readme2);
+
+        ReadmesListServiceRequest request = ReadmesListServiceRequest.builder()
+            .teamId(team.getId())
+            .memberId(member.getId())
+            .projectId(project.getId())
+            .build();
+
+        // when
+        List<ReadmeListResponse> response = readmeService.getReadmes(request);
+
+        // then
+        assertThat(response).hasSize(2)
+            .extracting("readmeId", "title", "version", "isLatest", "writer")
+            .containsExactlyInAnyOrder(
+                tuple(readme1.getId(), "title1", 1, false, member.getNickname()),
+                tuple(readme2.getId(), "title2", 2, true, member.getNickname())
+            );
     }
 
     private ReadmeCreateServiceRequest createReadmeCreateServiceRequest(Project project, Team team, Member member) {

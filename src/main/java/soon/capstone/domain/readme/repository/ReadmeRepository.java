@@ -5,6 +5,7 @@ import org.springframework.stereotype.Repository;
 import soon.capstone.domain.readme.entity.Readme;
 import soon.capstone.global.exception.readme.ReadmeNotFoundException;
 
+import java.util.List;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -25,6 +26,10 @@ public class ReadmeRepository {
 
     public Optional<Readme> findByProjectIdAndLatestIsTrue(Long projectId) {
         return readmeJpaRepository.findByProjectIdAndIsLatestTrue(projectId);
+    }
+
+    public List<Readme> findAllByProjectIdOrderByVersionDesc(Long projectId) {
+        return readmeJpaRepository.findAllByProjectIdOrderByVersionDesc(projectId);
     }
 
     public void deleteAllInBatch() {
