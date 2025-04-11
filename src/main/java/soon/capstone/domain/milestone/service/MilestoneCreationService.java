@@ -22,7 +22,7 @@ public class MilestoneCreationService {
 
         validateMilestoneDates(milestoneCreationDto.startDate(), milestoneCreationDto.dueDate());
 
-        githubMilestoneCreationService.createMilestone(
+        int githubMilestoneId = githubMilestoneCreationService.createMilestone(
                 milestoneCreationDto.owner(),
                 milestoneCreationDto.repo(),
                 milestoneCreationDto.oauthToken(),
@@ -37,6 +37,7 @@ public class MilestoneCreationService {
                 milestoneCreationDto.creator(),
                 milestoneCreationDto.dueDate(),
                 milestoneCreationDto.startDate(),
+                githubMilestoneId,
                 milestoneCreationDto.project()
         );
 
@@ -51,13 +52,14 @@ public class MilestoneCreationService {
         }
     }
 
-    private Milestone createMilestoneEntity(String title, String description, String creator, LocalDateTime dueDate, LocalDateTime startDate, Project project) {
+    private Milestone createMilestoneEntity(String title, String description, String creator, LocalDateTime dueDate, LocalDateTime startDate, int githubMilestoneId, Project project) {
         return Milestone.builder()
                 .title(title)
                 .description(description)
                 .dueDate(dueDate)
                 .creator(creator)
                 .startDate(startDate)
+                .githubMilestoneId(githubMilestoneId)
                 .project(project)
                 .build();
     }

@@ -39,18 +39,22 @@ public class Milestone extends BaseTimeEntity {
     @Column(nullable = false)
     private boolean isCompleted;
 
+    @Column(nullable = false)
+    private int githubMilestoneId;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_id")
     private Project project;
 
     @Builder
-    private Milestone(String title, String description, String creator, LocalDateTime dueDate, LocalDateTime startDate, Project project) {
+    private Milestone(String title, String description, String creator, LocalDateTime dueDate, LocalDateTime startDate, int githubMilestoneId, Project project) {
         this.title = title;
         this.description = description;
         this.creator = creator;
         this.dueDate = dueDate;
         this.startDate = startDate;
         this.isCompleted = false;
+        this.githubMilestoneId = githubMilestoneId;
         this.project = project;
     }
 }
