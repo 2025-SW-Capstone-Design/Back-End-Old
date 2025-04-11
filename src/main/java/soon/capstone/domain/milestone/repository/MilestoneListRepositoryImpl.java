@@ -22,14 +22,14 @@ public class MilestoneListRepositoryImpl implements MilestoneListRepository {
     @Override
     public List<MilestoneResponse> getMilestonesByProject(Project project) {
         return queryFactory.select(
-                constructor(MilestoneResponse.class,
-                            milestone.id.as("milestoneId"),
-                            milestone.title,
-                            milestone.description,
-                            milestone.creator,
-                            milestone.dueDate,
-                            milestone.startDate,
-                            milestone.isCompleted
+                        constructor(MilestoneResponse.class,
+                                milestone.id.as("milestoneId"),
+                                milestone.title,
+                                milestone.description,
+                                milestone.creator,
+                                milestone.dueDate,
+                                milestone.startDate,
+                                milestone.isCompleted
                         ))
                 .from(milestone)
                 .where(milestone.project.eq(project))

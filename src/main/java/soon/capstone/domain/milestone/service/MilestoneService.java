@@ -3,6 +3,7 @@ package soon.capstone.domain.milestone.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import soon.capstone.domain.member.entity.Member;
+import soon.capstone.domain.milestone.service.dto.response.MilestoneDetailResponse;
 import soon.capstone.domain.milestone.service.dto.response.MilestoneResponse;
 import soon.capstone.domain.milestone.service.dto.MilestoneCreationDto;
 import soon.capstone.domain.milestone.service.dto.request.MilestoneCreateServiceRequest;
@@ -23,10 +24,10 @@ public class MilestoneService {
     private final MilestoneCreationService milestoneCreationService;
     private final MilestoneReadService milestoneReadService;
 
-    public Long createMilestone(Long memberId, MilestoneCreateServiceRequest request) {
+    public Long createMilestone(Long memberId, Long teamId, Long projectId, MilestoneCreateServiceRequest request) {
         Member member = milestonePort.getMember(memberId);
-        Team team = milestonePort.getTeam(request.teamId());
-        Project project = milestonePort.getProject(request.projectId());
+        Team team = milestonePort.getTeam(teamId);
+        Project project = milestonePort.getProject(projectId);
         OAuthToken oAuthToken = milestonePort.getOAuthToken(memberId);
 
         teamMemberValidator.validateTeamMember(member, team);
@@ -63,6 +64,15 @@ public class MilestoneService {
         teamMemberValidator.validateTeamMember(member, team);
 
         return milestoneReadService.getMilestonesByTeam(team);
+    }
+
+    public MilestoneDetailResponse getMilestoneDetail(Long memberId, Long teamId, Long milestoneId) {
+        Member member = milestonePort.getMember(memberId);
+        Team team = milestonePort.getTeam(teamId);
+
+        teamMemberValidator.validateTeamMember(member, team);
+
+        return milestoneReadService.getMilestoneDetail(milestoneId);
     }
 
 }
