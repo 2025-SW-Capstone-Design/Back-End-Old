@@ -241,6 +241,24 @@ class ReadmeControllerTest extends ControllerTestSupport {
             .andExpect(jsonPath("$.writer").value("member"));
     }
 
+    @TestMember
+    @DisplayName("리드미를 이전 버전으로 롤백한다.")
+    @Test
+    void rollbackReadme() throws Exception {
+        // given
+        given(readmeService.rollback(any()))
+            .willReturn(3L);
+
+        // expected
+        mockMvc.perform(
+                post(BASE_URL + "/projects/{projectId}/readmes/{readmeId}/rollback", 1L, 1L, 1L)
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$").value(3));
+    }
+
     private ReadmeListResponse createReadmeListResponse(long readmeId, String title, int version, boolean isLatest) {
         return ReadmeListResponse.builder()
             .readmeId(readmeId)

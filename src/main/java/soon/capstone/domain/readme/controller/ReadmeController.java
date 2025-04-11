@@ -78,4 +78,17 @@ public class ReadmeController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/projects/{projectId}/readmes/{readmeId}/rollback")
+    public ResponseEntity<Long> rollback(
+        @AuthMemberId Long memberId,
+        @PathVariable Long teamId,
+        @PathVariable Long projectId,
+        @PathVariable Long readmeId
+    ) {
+        Long newId = readmeService.rollback(
+            ReadmeRollbackRequest.toServiceRequest(memberId, readmeId, projectId, teamId)
+        );
+        return ResponseEntity.ok(newId);
+    }
+
 }
