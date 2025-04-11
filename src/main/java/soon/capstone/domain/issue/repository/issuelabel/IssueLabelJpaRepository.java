@@ -6,7 +6,7 @@ import soon.capstone.domain.project.entity.Project;
 
 import java.util.List;
 
-public interface IssueLabelJpaRepository extends JpaRepository<IssueLabel, Long> {
+public interface IssueLabelJpaRepository extends JpaRepository<IssueLabel, Long>, IssueLabelListRepository {
 
     boolean existsByTitleAndProject(String title, Project project);
 

@@ -50,6 +50,11 @@ public enum ErrorDetail {
     ISSUE_TEMPLATE_NOT_FOUND(404, "해당 이슈 템플릿을 찾을 수 없습니다."),
     ISSUE_TEMPLATE_ALREADY_EXISTS(409, "해당 이슈 템플릿이 이미 존재합니다."),
 
+    // 마일스톤 관련
+    MILESTONE_NOT_FOUND(404, "해당 마일스톤을 찾을 수 없습니다."),
+    MILESTONE_INVALID_DATE(400, "마일스톤의 시작일과 종료일이 올바르지 않습니다."),
+    MILESTONE_DUPLICATE_TITLE(409, "마일스톤 제목이 중복됩니다."),
+
     // README 관련
     READEME_NOT_FOUND(404, "해당 README를 찾을 수 없습니다."),
 
