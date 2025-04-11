@@ -13,6 +13,8 @@ import soon.capstone.domain.issue.controller.IssueTemplateController;
 import soon.capstone.domain.issue.service.IssueManagementService;
 import soon.capstone.domain.project.controller.ProjectController;
 import soon.capstone.domain.project.service.ProjectService;
+import soon.capstone.domain.readme.controller.ReadmeController;
+import soon.capstone.domain.readme.service.ReadmeService;
 import soon.capstone.domain.team.controller.TeamController;
 import soon.capstone.domain.team.service.team.TeamService;
 import soon.capstone.domain.teammember.controller.TeamMemberController;
@@ -26,7 +28,8 @@ import soon.capstone.domain.teammember.service.TeamMemberService;
         ProjectController.class,
         TeamMemberController.class,
         IssueLabelController.class,
-        IssueTemplateController.class
+        IssueTemplateController.class,
+        ReadmeController.class
     }
 )
 public abstract class ControllerTestSupport {
@@ -51,5 +54,8 @@ public abstract class ControllerTestSupport {
 
     @MockitoBean
     protected IssueManagementService issueManagementService;
+
+    @MockitoBean
+    protected ReadmeService readmeService;
 
 }

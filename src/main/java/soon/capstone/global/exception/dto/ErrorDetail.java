@@ -50,6 +50,9 @@ public enum ErrorDetail {
     ISSUE_TEMPLATE_NOT_FOUND(404, "해당 이슈 템플릿을 찾을 수 없습니다."),
     ISSUE_TEMPLATE_ALREADY_EXISTS(409, "해당 이슈 템플릿이 이미 존재합니다."),
 
+    // README 관련
+    READEME_NOT_FOUND(404, "해당 README를 찾을 수 없습니다."),
+
     ;
 
     private final int status;

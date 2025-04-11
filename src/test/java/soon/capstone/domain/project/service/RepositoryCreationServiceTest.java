@@ -1,5 +1,6 @@
 package soon.capstone.domain.project.service;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +41,14 @@ class RepositoryCreationServiceTest extends IntegrationTestSupport {
 
     @MockitoBean
     private GithubRepositoryCreationService githubRepositoryCreationService;
+
+    @AfterEach
+    void tearDown() {
+        oAuthTokenRepository.deleteAll();
+        projectRepository.deleteAllInBatch();
+        memberRepository.deleteAllInBatch();
+        teamRepository.deleteAllInBatch();
+    }
 
     @DisplayName("팀 생성 후, 해당 팀에 자동으로 Github Repository가 생성된다.")
     @Test
