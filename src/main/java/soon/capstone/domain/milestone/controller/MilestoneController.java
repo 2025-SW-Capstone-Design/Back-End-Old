@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import soon.capstone.domain.milestone.controller.dto.request.MilestoneCreateRequest;
+import soon.capstone.domain.milestone.controller.dto.request.MilestoneUpdateRequest;
 import soon.capstone.domain.milestone.service.dto.response.MilestoneDetailResponse;
 import soon.capstone.domain.milestone.service.dto.response.MilestoneResponse;
 import soon.capstone.domain.milestone.service.MilestoneService;
@@ -56,6 +57,18 @@ public class MilestoneController {
     ) {
         MilestoneDetailResponse milestoneDetail = milestoneService.getMilestoneDetail(memberId, teamId, milestoneId);
         return ResponseEntity.ok(milestoneDetail);
+    }
+
+    @PutMapping("/projects/{projectId}/milestones/{milestoneId}")
+    public ResponseEntity<MilestoneResponse> updateMilestone(
+            @AuthMemberId Long memberId,
+            @PathVariable Long teamId,
+            @PathVariable Long projectId,
+            @PathVariable Long milestoneId,
+            @RequestBody MilestoneUpdateRequest milestoneUpdateRequest
+    ) {
+        MilestoneResponse milestoneResponse = milestoneService.updateMilestone(memberId, teamId, projectId, milestoneId, milestoneUpdateRequest.toServiceRequest());
+        return ResponseEntity.ok(milestoneResponse);
     }
 
 }

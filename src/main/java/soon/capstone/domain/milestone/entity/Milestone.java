@@ -57,4 +57,11 @@ public class Milestone extends BaseTimeEntity {
         this.githubMilestoneId = githubMilestoneId;
         this.project = project;
     }
+
+    public void updateMilestone(String title, String description, LocalDateTime dueDate, LocalDateTime startDate) {
+        this.title = title;
+        this.description = description;
+        this.dueDate = dueDate;
+        this.startDate = startDate;
+    }
 }

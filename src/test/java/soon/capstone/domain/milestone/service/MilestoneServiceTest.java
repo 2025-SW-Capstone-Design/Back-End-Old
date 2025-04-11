@@ -17,6 +17,7 @@ import soon.capstone.domain.issue.service.dto.response.IssueDetailResponse;
 import soon.capstone.domain.issue.service.dto.response.IssueLabelDetailResponse;
 import soon.capstone.domain.member.entity.Member;
 import soon.capstone.domain.member.repository.MemberRepository;
+import soon.capstone.domain.milestone.service.dto.request.MilestoneUpdateServiceRequest;
 import soon.capstone.domain.milestone.service.dto.response.MilestoneDetailResponse;
 import soon.capstone.domain.milestone.service.dto.response.MilestoneResponse;
 import soon.capstone.domain.milestone.entity.Milestone;
@@ -37,9 +38,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.groups.Tuple.tuple;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
@@ -81,6 +82,9 @@ class MilestoneServiceTest extends IntegrationTestSupport {
 
     @MockitoBean
     private MilestoneReadService milestoneReadService;
+
+    @MockitoBean
+    private MilestoneUpdateService milestoneUpdateService;
 
     @AfterEach
     void tearDown() {
@@ -305,6 +309,69 @@ class MilestoneServiceTest extends IntegrationTestSupport {
                             });
                 });
 
+    }
+
+    @DisplayName("사용자로부터 요청값을 받아 마일스톤을 업데이트 한다.")
+    @Test
+    void updateMilestone() {
+        // Given
+        Member member = createMember();
+        memberRepository.save(member);
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        TeamMember teamMember = createTeamMember(member, team);
+        teamMemberRepository.save(teamMember);
+
+        Project project = createProject(member.getNickname(), team);
+        projectRepository.save(project);
+
+        LocalDateTime startDate = LocalDateTime.now();
+        LocalDateTime dueDate = startDate.plusDays(7);
+
+        Milestone milestone = createMilestone(project, startDate, dueDate);
+        milestoneRepository.save(milestone);
+
+        var request = MilestoneUpdateServiceRequest.builder()
+                .title("updatedTitle")
+                .description("updatedDescription")
+                .startDate(startDate)
+                .dueDate(dueDate.plusDays(2))
+                .build();
+
+        given(milestoneUpdateService.updateMilestone(anyLong(), any()))
+                .willReturn(
+                        MilestoneResponse.builder()
+                                .milestoneId(milestone.getId())
+                                .title("updatedTitle")
+                                .description("updatedDescription")
+                                .creator("nickname")
+                                .startDate(startDate)
+                                .dueDate(dueDate.plusDays(2))
+                                .isCompleted(false)
+                                .build()
+                );
+
+        // When
+        MilestoneResponse milestoneResponse = milestoneService.updateMilestone(member.getId(), team.getId(), project.getId(), milestone.getId(), request);
+
+        // Then
+        assertThat(milestoneResponse)
+                .extracting(
+                        MilestoneResponse::milestoneId,
+                        MilestoneResponse::title,
+                        MilestoneResponse::description,
+                        MilestoneResponse::dueDate,
+                        MilestoneResponse::startDate
+                )
+                .containsExactlyInAnyOrder(
+                        milestone.getId(),
+                        "updatedTitle",
+                        "updatedDescription",
+                        dueDate.plusDays(2),
+                        startDate
+                );
     }
 
     private Member createMember() {
