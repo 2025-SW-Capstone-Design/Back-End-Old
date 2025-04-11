@@ -383,6 +383,49 @@ class ReadmeServiceTest extends IntegrationTestSupport {
             );
     }
 
+    @DisplayName("이전 버전의 리드미로 롤백한다.")
+    @Test
+    void rollbackToEarlierReadmeVersion() {
+        // given
+        Member member = createMember();
+        memberRepository.save(member);
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        TeamMember teamMember = TeamMember.createMember(member, team);
+        teamMemberRepository.save(teamMember);
+
+        Project project = createProject(team);
+        projectRepository.save(project);
+
+        Readme readmeV1 = Readme.createNew("title v1", "content v1", 1, member, project);
+        readmeV1.markAsOld();
+        readmeRepository.save(readmeV1);
+
+        Readme readmeV2 = Readme.createNew("title v2", "content v2", 2, member, project);
+        readmeRepository.save(readmeV2);
+
+        ReadmeRollbackServiceRequest request = ReadmeRollbackServiceRequest.builder()
+            .readmeId(readmeV1.getId())
+            .memberId(member.getId())
+            .teamId(team.getId())
+            .projectId(project.getId())
+            .build();
+
+        // when
+        Long rolledBackReadmeId = readmeService.rollback(request);
+
+        // then
+        Readme rolledBackReadme = readmeRepository.findById(rolledBackReadmeId);
+        assertThat(rolledBackReadme)
+            .extracting("title", "content", "version", "isLatest")
+            .containsExactly("title v1", "content v1", 3, true);
+
+        Readme latestAfterRollback = readmeRepository.findById(readmeV2.getId());
+        assertThat(latestAfterRollback.isLatest()).isFalse();
+    }
+
     private ReadmeCreateServiceRequest createReadmeCreateServiceRequest(Project project, Team team, Member member) {
         return ReadmeCreateServiceRequest.builder()
             .title("title")

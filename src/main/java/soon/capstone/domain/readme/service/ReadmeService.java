@@ -55,57 +55,73 @@ public class ReadmeService {
 
     @Transactional
     public void delete(ReadmeDeleteServiceRequest request) {
+        validateTeamMembership(
+            memberRepository.findById(request.memberId()),
+            teamRepository.findById(request.teamId())
+        );
+
         Readme readme = readmeRepository.findById(request.readmeId());
-        Member member = memberRepository.findById(request.memberId());
-        Team team = teamRepository.findById(request.teamId());
-
-        validateTeamMembership(member, team);
-
         readmeRepository.delete(readme);
     }
 
     @Transactional(readOnly = true)
     public List<ReadmeListResponse> getReadmes(ReadmesListServiceRequest request) {
-        Member member = memberRepository.findById(request.memberId());
-        Team team = teamRepository.findById(request.teamId());
-        validateTeamMembership(member, team);
+        validateTeamMembership(
+            memberRepository.findById(request.memberId()),
+            teamRepository.findById(request.teamId())
+        );
 
-        List<Readme> readmes = readmeRepository.findAllByProjectIdOrderByVersionDesc(request.projectId());
-
-        return readmes.stream()
+        return readmeRepository.findAllByProjectIdOrderByVersionDesc(request.projectId())
+            .stream()
             .map(ReadmeListResponse::from)
             .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public ReadmeDetailResponse getDetail(ReadmeDetailServiceRequest request) {
+        validateTeamMembership(
+            memberRepository.findById(request.memberId()),
+            teamRepository.findById(request.teamId())
+        );
+
+        return ReadmeDetailResponse.from(readmeRepository.findById(request.readmeId()));
+    }
+
+    @Transactional
+    public Long rollback(ReadmeRollbackServiceRequest request) {
         Member member = memberRepository.findById(request.memberId());
         Team team = teamRepository.findById(request.teamId());
-        Readme readme = readmeRepository.findById(request.readmeId());
-
         validateTeamMembership(member, team);
 
-        return ReadmeDetailResponse.from(readme);
+        Readme source = readmeRepository.findById(request.readmeId());
+        int newVersion = updateLatestReadme(request.projectId());
+
+        Readme rollbacked = Readme.rollbackFrom(source, newVersion, member);
+        return readmeRepository.save(rollbacked);
     }
 
     private Long saveNewReadme(Long teamId, Long memberId, Long projectId, String title, String content) {
-        Team team = teamRepository.findById(teamId);
         Member member = memberRepository.findById(memberId);
+        Team team = teamRepository.findById(teamId);
         Project project = projectRepository.findById(projectId);
-
         validateTeamMembership(member, team);
 
-        Optional<Readme> latestReadme = readmeRepository.findByProjectIdAndLatestIsTrue(projectId);
-
-        int newVersion = 1;
-        if (latestReadme.isPresent()) {
-            Readme current = latestReadme.get();
-            current.markAsOld();
-            newVersion = current.getVersion() + 1;
-        }
+        int newVersion = updateLatestReadme(projectId);
 
         Readme readme = Readme.createNew(title, content, newVersion, member, project);
         return readmeRepository.save(readme);
+    }
+
+    private int updateLatestReadme(Long projectId) {
+        Optional<Readme> latestReadme = readmeRepository.findByProjectIdAndLatestIsTrue(projectId);
+
+        if (latestReadme.isEmpty()) {
+            return 1;
+        }
+
+        Readme current = latestReadme.get();
+        current.markAsOld();
+        return current.getVersion() + 1;
     }
 
     private void validateTeamMembership(Member member, Team team) {
