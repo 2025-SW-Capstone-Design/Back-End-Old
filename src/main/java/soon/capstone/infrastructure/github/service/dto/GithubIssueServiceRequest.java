@@ -13,7 +13,7 @@ public record GithubIssueServiceRequest(
     String repositoryName,
     String title,
     String body,
-    List<String> assignees,
+    String assignees,
     List<String> labels
 ) {
 

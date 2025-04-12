@@ -9,7 +9,7 @@ public record GithubIssueCreateRequest(
 
     String title,
     String body,
-    List<String> assignees,
+    String assignees,
     List<String> labels
 
 ) {
