@@ -8,6 +8,7 @@ import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import soon.capstone.IntegrationTestSupport;
+import soon.capstone.infrastructure.github.service.dto.GithubAssigneesAppendServiceRequest;
 import soon.capstone.infrastructure.github.service.dto.GithubAssigneesServiceRequest;
 import soon.capstone.infrastructure.github.service.issue.GithubAssigneesService;
 
@@ -99,6 +100,32 @@ class AssigneeServiceTest extends IntegrationTestSupport {
         assertThat(secondCall).isTrue();
         verify(githubAssigneesService, times(1))
             .isAssignee(request);
+    }
+
+    @DisplayName("Assignee가 성공적으로 이슈에 추가된다.")
+    @Test
+    void appendIssueWithValidAssignee() {
+        // given
+        Long memberId = 1L;
+        Long issueNumber = 123L;
+        String organizationName = "org";
+        String repositoryName = "repo";
+        String assignees = "validAssignee";
+
+        GithubAssigneesAppendServiceRequest request = GithubAssigneesAppendServiceRequest.builder()
+            .memberId(memberId)
+            .issueNumber(issueNumber)
+            .organizationName(organizationName)
+            .repositoryName(repositoryName)
+            .assignee(assignees)
+            .build();
+
+        // when
+        assigneeService.appendIssueWithAssignee(memberId, issueNumber, organizationName, repositoryName, assignees);
+
+        // then
+        verify(githubAssigneesService, times(1))
+            .appendIssueWithAssignee(request);
     }
 
     private GithubAssigneesServiceRequest createGithubAssigneeServiceRequest(String organizationName, String repositoryName, String assignees, Long memberId) {
