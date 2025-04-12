@@ -30,6 +30,7 @@ public class TeamMember extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private Position position;
 
+    @Column(nullable = false)
     private boolean isVisible;
 
     @ManyToOne(fetch = FetchType.LAZY)
