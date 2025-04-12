@@ -60,7 +60,6 @@ public class Issue extends BaseTimeEntity {
         String title,
         String content,
         int githubIssueNumber,
-        IssueStatus status,
         TeamMember teamMember,
         Milestone milestone,
         Project project
