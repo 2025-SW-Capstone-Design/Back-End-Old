@@ -8,7 +8,7 @@ import soon.capstone.infrastructure.github.service.issue.GithubAssigneesService;
 
 @RequiredArgsConstructor
 @Service
-public class AssigneeValidationService {
+public class AssigneeService {
 
     private final GithubAssigneesService githubAssigneesService;
 
@@ -27,4 +27,5 @@ public class AssigneeValidationService {
             .build();
         return githubAssigneesService.isAssignee(request);
     }
+
 }

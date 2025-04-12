@@ -69,7 +69,7 @@ class IssueServiceTest extends IntegrationTestSupport {
     private GithubIssueService githubIssueService;
 
     @MockitoBean
-    private AssigneeValidationService assigneeValidationService;
+    private AssigneeService assigneeService;
 
     @AfterEach
     void tearDown() {
@@ -100,7 +100,7 @@ class IssueServiceTest extends IntegrationTestSupport {
         Milestone milestone = createMilestone(project);
         milestoneRepository.save(milestone);
 
-        given(assigneeValidationService.isAssigneeValid(anyLong(), anyString(), anyString(), anyString()))
+        given(assigneeService.isAssigneeValid(anyLong(), anyString(), anyString(), anyString()))
             .willReturn(true);
 
         given(githubIssueService.createGithubIssue(any(GithubIssueCreateServiceRequest.class)))
@@ -139,7 +139,7 @@ class IssueServiceTest extends IntegrationTestSupport {
         String repositoryName = "repo";
         String assignees = "invalidAssignee";
 
-        given(assigneeValidationService.isAssigneeValid(memberId, organizationName, repositoryName, assignees))
+        given(assigneeService.isAssigneeValid(memberId, organizationName, repositoryName, assignees))
             .willReturn(false);
 
         // expected

@@ -16,10 +16,10 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-class AssigneeValidationServiceTest extends IntegrationTestSupport {
+class AssigneeServiceTest extends IntegrationTestSupport {
 
     @Autowired
-    private AssigneeValidationService assigneeValidationService;
+    private AssigneeService assigneeService;
 
     @Autowired
     private CacheManager cacheManager;
@@ -49,7 +49,7 @@ class AssigneeValidationServiceTest extends IntegrationTestSupport {
             .willReturn(true);
 
         // when
-        boolean result = assigneeValidationService.isAssigneeValid(memberId, organizationName, repositoryName, assignees);
+        boolean result = assigneeService.isAssigneeValid(memberId, organizationName, repositoryName, assignees);
 
         // then
         assertThat(result)
@@ -70,7 +70,7 @@ class AssigneeValidationServiceTest extends IntegrationTestSupport {
             .willReturn(false);
 
         // when
-        boolean result = assigneeValidationService.isAssigneeValid(memberId, organizationName, repositoryName, assignees);
+        boolean result = assigneeService.isAssigneeValid(memberId, organizationName, repositoryName, assignees);
 
         // then
         assertThat(result)
@@ -91,8 +91,8 @@ class AssigneeValidationServiceTest extends IntegrationTestSupport {
             .willReturn(true);
 
         // when
-        boolean firstCall = assigneeValidationService.isAssigneeValid(memberId, organizationName, repositoryName, assignees);
-        boolean secondCall = assigneeValidationService.isAssigneeValid(memberId, organizationName, repositoryName, assignees);
+        boolean firstCall = assigneeService.isAssigneeValid(memberId, organizationName, repositoryName, assignees);
+        boolean secondCall = assigneeService.isAssigneeValid(memberId, organizationName, repositoryName, assignees);
 
         // then
         assertThat(firstCall).isTrue();

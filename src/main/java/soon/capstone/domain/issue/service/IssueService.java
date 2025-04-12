@@ -21,7 +21,7 @@ public class IssueService {
 
     private final IssueRepository issueRepository;
     private final GithubIssueService githubIssueService;
-    private final AssigneeValidationService assigneeValidationService;
+    private final AssigneeService assigneeService;
     private final IssueLabelRelationService issueLabelRelationService;
 
     public Long create(
@@ -62,7 +62,7 @@ public class IssueService {
         String repositoryName,
         String assignees
     ) {
-        if (!assigneeValidationService.isAssigneeValid(memberId, organizationName, repositoryName, assignees)) {
+        if (!assigneeService.isAssigneeValid(memberId, organizationName, repositoryName, assignees)) {
             log.warn("유효하지 않은 담당자: memberId={}, assignee={}", memberId, assignees);
             throw new UnauthorizedException();
         }
