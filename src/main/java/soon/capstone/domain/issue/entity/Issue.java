@@ -27,6 +27,12 @@ public class Issue extends BaseTimeEntity {
     @Column(nullable = false)
     private String content;
 
+    @Column(nullable = false)
+    private Long githubIssueNumber;
+
+    @Column(nullable = false)
+    private IssueStatus status;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "team_member_id")
     private TeamMember teamMember;
@@ -40,18 +46,33 @@ public class Issue extends BaseTimeEntity {
     private Project project;
 
     @Builder
-    private Issue(
+    private Issue(String title, String content, Long githubIssueNumber, IssueStatus status, TeamMember teamMember, Milestone milestone, Project project) {
+        this.title = title;
+        this.content = content;
+        this.githubIssueNumber = githubIssueNumber;
+        this.status = status;
+        this.teamMember = teamMember;
+        this.milestone = milestone;
+        this.project = project;
+    }
+
+    public static Issue createNewIssue(
         String title,
         String content,
+        Long githubIssueNumber,
         TeamMember teamMember,
         Milestone milestone,
         Project project
     ) {
-        this.title = title;
-        this.content = content;
-        this.teamMember = teamMember;
-        this.milestone = milestone;
-        this.project = project;
+        return Issue.builder()
+            .title(title)
+            .content(content)
+            .githubIssueNumber(githubIssueNumber)
+            .status(IssueStatus.OPEN)
+            .teamMember(teamMember)
+            .milestone(milestone)
+            .project(project)
+            .build();
     }
 
 }

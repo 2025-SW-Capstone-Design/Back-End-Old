@@ -7,13 +7,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 import soon.capstone.domain.issue.service.dto.response.IssueLabelDetailResponse;
+import soon.capstone.global.exception.github.GithubHttpClientException;
 import soon.capstone.global.exception.github.GithubIssueLabelNotFoundException;
 import soon.capstone.global.exception.issue.label.AlreadyIssueLabelException;
 import soon.capstone.infrastructure.github.dto.GithubIssueLabelDetailDto;
-import soon.capstone.infrastructure.github.service.dto.GithubIssueLabelCreateServiceRequest;
-import soon.capstone.infrastructure.github.service.dto.GithubIssueLabelDeleteServiceRequest;
-import soon.capstone.infrastructure.github.service.dto.GithubIssueLabelDetailServiceRequest;
-import soon.capstone.infrastructure.github.service.dto.GithubIssueLabelUpdateServiceRequest;
+import soon.capstone.infrastructure.github.service.dto.*;
 import soon.capstone.infrastructure.redis.oauth2.repository.OAuthTokenRepository;
 import soon.capstone.infrastructure.restclient.config.RestClientConfig;
 
@@ -29,6 +27,7 @@ import static org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY;
 public class GithubIssueLabelService {
 
     private static final String ISSUE_LABEL_URL = "/repos/{organizationName}/{repositoryName}/labels";
+    private static final String ISSUE_LABEL_APPEND_URL = "/repos/{organizationName}/{repositoryName}/issues/{issueNumber}/labels";
 
     private final RestClientConfig restClientConfig;
     private final OAuthTokenRepository oAuthTokenRepository;
@@ -129,6 +128,30 @@ public class GithubIssueLabelService {
         } catch (Exception e) {
             log.error("이슈 라벨 조회 중 에러 발생", e);
             return Collections.emptyList();
+        }
+    }
+
+    public void appendLabelToIssue(GithubIssueLabelAppendServiceRequest request) {
+        try {
+            String token = oAuthTokenRepository.findByMemberId(request.memberId()).getToken();
+            RestClient restClient = restClientConfig.githubRestClient(token);
+
+            String uri = ISSUE_LABEL_APPEND_URL
+                .replace("{organizationName}", request.organizationName())
+                .replace("{repositoryName}", request.repositoryName())
+                .replace("{issueNumber}", String.valueOf(request.issueNumber()));
+
+            restClient.post()
+                .uri(uri)
+                .body(request.toGithubRequest())
+                .retrieve()
+                .body(Void.class);
+
+        } catch (HttpClientErrorException e) {
+            log.error("GitHub API 호출 중 오류 발생: {}", e.getMessage(), e);
+            throw new GithubHttpClientException();
+        } catch (Exception e) {
+            log.error("issue label 추가 중 에러 발생", e);
         }
     }
 

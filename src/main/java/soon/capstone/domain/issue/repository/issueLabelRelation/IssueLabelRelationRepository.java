@@ -2,6 +2,7 @@ package soon.capstone.domain.issue.repository.issueLabelRelation;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import soon.capstone.domain.issue.entity.Issue;
 import soon.capstone.domain.issue.entity.IssueLabelRelation;
 
 import java.util.List;
@@ -23,4 +24,9 @@ public class IssueLabelRelationRepository {
     public void deleteAllInBatch() {
         issueLabelRelationJpaRepository.deleteAllInBatch();
     }
+
+    public List<IssueLabelRelation> findAllByIssue(Issue issue) {
+        return issueLabelRelationJpaRepository.findAllByIssue(issue);
+    }
+
 }

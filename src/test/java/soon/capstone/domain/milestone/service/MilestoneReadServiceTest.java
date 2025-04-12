@@ -9,6 +9,7 @@ import soon.capstone.IntegrationTestSupport;
 import soon.capstone.domain.issue.entity.Issue;
 import soon.capstone.domain.issue.entity.IssueLabel;
 import soon.capstone.domain.issue.entity.IssueLabelRelation;
+import soon.capstone.domain.issue.entity.IssueStatus;
 import soon.capstone.domain.issue.repository.issue.IssueRepository;
 import soon.capstone.domain.issue.repository.issueLabelRelation.IssueLabelRelationRepository;
 import soon.capstone.domain.issue.repository.issuelabel.IssueLabelRepository;
@@ -261,6 +262,7 @@ class MilestoneReadServiceTest extends IntegrationTestSupport {
                 .title(title)
                 .content(content)
                 .teamMember(teamMember)
+                .status(IssueStatus.OPEN)
                 .milestone(milestone)
                 .project(project)
                 .build();

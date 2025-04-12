@@ -5,7 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
-import soon.capstone.infrastructure.github.service.dto.GithubIssueServiceRequest;
+import soon.capstone.global.exception.github.GithubHttpClientException;
+import soon.capstone.infrastructure.github.service.dto.GithubIssueCreateServiceRequest;
+import soon.capstone.infrastructure.github.service.dto.response.GithubIssueCreateResponse;
 import soon.capstone.infrastructure.redis.oauth2.repository.OAuthTokenRepository;
 import soon.capstone.infrastructure.restclient.config.RestClientConfig;
 
@@ -19,7 +21,7 @@ public class GithubIssueService {
     private final RestClientConfig restClientConfig;
     private final OAuthTokenRepository oAuthTokenRepository;
 
-    public void createGithubIssue(GithubIssueServiceRequest request) {
+    public Long createGithubIssue(GithubIssueCreateServiceRequest request) {
         try {
             String token = oAuthTokenRepository.findByMemberId(request.memberId()).getToken();
             RestClient restClient = restClientConfig.githubRestClient(token);
@@ -28,16 +30,19 @@ public class GithubIssueService {
                 .replace("{organizationName}", request.organizationName())
                 .replace("{repositoryName}", request.repositoryName());
 
-            restClient.post()
+            GithubIssueCreateResponse response = restClient.post()
                 .uri(uri)
                 .body(request.toGithubRequest())
                 .retrieve()
-                .body(Void.class);
+                .body(GithubIssueCreateResponse.class);
 
+            return response.number();
         } catch (HttpClientErrorException e) {
             log.error("GitHub API 호출 중 오류 발생: {}", e.getMessage(), e);
+            throw new GithubHttpClientException();
         } catch (Exception e) {
             log.error("issue 추가 중 에러 발생", e);
+            throw new GithubHttpClientException();
         }
     }
 

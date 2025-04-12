@@ -31,6 +31,11 @@ public class IssueLabelRepository {
         return issueLabelJpaRepository.findAllByProject(project);
     }
 
+    public IssueLabel findByTitle(String title) {
+        return issueLabelJpaRepository.findByTitle(title)
+            .orElseThrow(IssueLabelNotFoundException::new);
+    }
+
     public boolean existsByTitleAndProject(String title, Project project) {
         return issueLabelJpaRepository.existsByTitleAndProject(title, project);
     }

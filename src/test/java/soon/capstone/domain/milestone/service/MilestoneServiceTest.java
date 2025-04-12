@@ -10,6 +10,7 @@ import soon.capstone.IntegrationTestSupport;
 import soon.capstone.domain.issue.entity.Issue;
 import soon.capstone.domain.issue.entity.IssueLabel;
 import soon.capstone.domain.issue.entity.IssueLabelRelation;
+import soon.capstone.domain.issue.entity.IssueStatus;
 import soon.capstone.domain.issue.repository.issue.IssueRepository;
 import soon.capstone.domain.issue.repository.issueLabelRelation.IssueLabelRelationRepository;
 import soon.capstone.domain.issue.repository.issuelabel.IssueLabelRepository;
@@ -318,6 +319,9 @@ class MilestoneServiceTest extends IntegrationTestSupport {
         Member member = createMember();
         memberRepository.save(member);
 
+        OAuthToken oauthToken = createOAuthToken(member);
+        oAuthTokenRepository.save(oauthToken);
+
         Team team = createTeam();
         teamRepository.save(team);
 
@@ -443,6 +447,7 @@ class MilestoneServiceTest extends IntegrationTestSupport {
                 .title(title)
                 .content(content)
                 .teamMember(teamMember)
+                .status(IssueStatus.OPEN)
                 .milestone(milestone)
                 .project(project)
                 .build();
