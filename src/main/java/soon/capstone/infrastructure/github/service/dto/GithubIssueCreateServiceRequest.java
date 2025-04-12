@@ -22,7 +22,7 @@ public record GithubIssueCreateServiceRequest(
         return GithubIssueCreateRequest.builder()
             .title(title)
             .body(body)
-            .assignees(assignees)
+            .assignees(List.of(assignees))
             .labels(labels)
             .build();
     }

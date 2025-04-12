@@ -21,7 +21,7 @@ public class GithubIssueService {
     private final RestClientConfig restClientConfig;
     private final OAuthTokenRepository oAuthTokenRepository;
 
-    public int createGithubIssue(GithubIssueCreateServiceRequest request) {
+    public Long createGithubIssue(GithubIssueCreateServiceRequest request) {
         try {
             String token = oAuthTokenRepository.findByMemberId(request.memberId()).getToken();
             RestClient restClient = restClientConfig.githubRestClient(token);

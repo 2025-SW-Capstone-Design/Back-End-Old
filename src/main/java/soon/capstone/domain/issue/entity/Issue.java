@@ -28,7 +28,7 @@ public class Issue extends BaseTimeEntity {
     private String content;
 
     @Column(nullable = false)
-    private int githubIssueNumber;
+    private Long githubIssueNumber;
 
     @Column(nullable = false)
     private IssueStatus status;
@@ -46,7 +46,7 @@ public class Issue extends BaseTimeEntity {
     private Project project;
 
     @Builder
-    private Issue(String title, String content, int githubIssueNumber, IssueStatus status, TeamMember teamMember, Milestone milestone, Project project) {
+    private Issue(String title, String content, Long githubIssueNumber, IssueStatus status, TeamMember teamMember, Milestone milestone, Project project) {
         this.title = title;
         this.content = content;
         this.githubIssueNumber = githubIssueNumber;
@@ -59,7 +59,7 @@ public class Issue extends BaseTimeEntity {
     public static Issue createNewIssue(
         String title,
         String content,
-        int githubIssueNumber,
+        Long githubIssueNumber,
         TeamMember teamMember,
         Milestone milestone,
         Project project

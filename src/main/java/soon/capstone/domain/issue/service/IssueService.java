@@ -38,7 +38,7 @@ public class IssueService {
     ) {
         validateAssignee(memberId, organizationName, repositoryName, assignees);
 
-        int githubIssueNumber = createGithubIssue(
+        Long githubIssueNumber = createGithubIssue(
             memberId,
             organizationName,
             repositoryName,
@@ -51,7 +51,7 @@ public class IssueService {
         Issue newIssue = Issue.createNewIssue(title, content, githubIssueNumber, teamMember, milestone, project);
         Long savedIssueNumber = issueRepository.save(newIssue);
 
-        issueLabelRelationService.linkIssueWithLabels(newIssue, labels);
+        issueLabelRelationService.linkIssueWithLabels(newIssue, labels, memberId, organizationName, repositoryName);
 
         return savedIssueNumber;
     }
@@ -68,7 +68,7 @@ public class IssueService {
         }
     }
 
-    private int createGithubIssue(
+    private Long createGithubIssue(
         Long memberId,
         String organizationName,
         String repositoryName,

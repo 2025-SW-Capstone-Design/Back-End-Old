@@ -104,7 +104,7 @@ class IssueServiceTest extends IntegrationTestSupport {
             .willReturn(true);
 
         given(githubIssueService.createGithubIssue(any(GithubIssueCreateServiceRequest.class)))
-            .willReturn(1);
+            .willReturn(1L);
 
         // when
         Long issueId = issueService.create(
@@ -127,7 +127,13 @@ class IssueServiceTest extends IntegrationTestSupport {
             .contains("title", "content", 1, IssueStatus.OPEN);
 
         verify(issueLabelRelationService, times(1))
-            .linkIssueWithLabels(any(Issue.class), anyList());
+            .linkIssueWithLabels(
+                any(Issue.class),
+                anyList(),
+                anyLong(),
+                anyString(),
+                anyString()
+            );
     }
 
     @Test

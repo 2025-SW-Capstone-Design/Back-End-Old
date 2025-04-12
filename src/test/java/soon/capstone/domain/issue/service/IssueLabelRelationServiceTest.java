@@ -98,7 +98,13 @@ class IssueLabelRelationServiceTest extends IntegrationTestSupport {
         issueLabelRepository.saveAll(List.of(issueLabel1, issueLabel2));
 
         // when
-        issueLabelRelationService.linkIssueWithLabels(issue, List.of("title1", "title2"));
+        issueLabelRelationService.linkIssueWithLabels(
+            issue,
+            List.of("title1", "title2"),
+            member.getId(),
+            "organizationName",
+            "repositoryName"
+        );
 
         // then
         List<IssueLabelRelation> relations = issueLabelRelationRepository.findAllByIssue(issue);
@@ -128,7 +134,13 @@ class IssueLabelRelationServiceTest extends IntegrationTestSupport {
         issueRepository.save(issue);
 
         // when
-        issueLabelRelationService.linkIssueWithLabels(issue, List.of());
+        issueLabelRelationService.linkIssueWithLabels(
+            issue,
+            List.of(),
+            member.getId(),
+            "organizationName",
+            "repositoryName"
+        );
 
         // then
         List<IssueLabelRelation> relations = issueLabelRelationRepository.findAllByIssue(issue);
@@ -185,7 +197,7 @@ class IssueLabelRelationServiceTest extends IntegrationTestSupport {
         return Issue.builder()
             .title("title")
             .content("content")
-            .githubIssueNumber(1)
+            .githubIssueNumber(1L)
             .status(IssueStatus.OPEN)
             .milestone(milestone)
             .build();

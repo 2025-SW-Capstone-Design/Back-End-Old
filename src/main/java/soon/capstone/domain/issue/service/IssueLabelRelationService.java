@@ -9,6 +9,8 @@ import soon.capstone.domain.issue.entity.IssueLabel;
 import soon.capstone.domain.issue.entity.IssueLabelRelation;
 import soon.capstone.domain.issue.repository.issueLabelRelation.IssueLabelRelationRepository;
 import soon.capstone.domain.issue.repository.issuelabel.IssueLabelRepository;
+import soon.capstone.infrastructure.github.service.dto.GithubIssueLabelAppendServiceRequest;
+import soon.capstone.infrastructure.github.service.issue.GithubIssueLabelService;
 
 import java.util.List;
 
@@ -17,11 +19,26 @@ import java.util.List;
 @Service
 public class IssueLabelRelationService {
 
+    private final GithubIssueLabelService githubIssueLabelService;
     private final IssueLabelRelationRepository issueLabelRelationRepository;
     private final IssueLabelRepository issueLabelRepository;
 
     @Transactional
-    public void linkIssueWithLabels(Issue issue, List<String> labels) {
+    public void linkIssueWithLabels(
+        Issue issue,
+        List<String> labels,
+        Long memberId,
+        String organizationName,
+        String repositoryName
+    ) {
+        appendLabelsToGithub(
+            issue,
+            labels,
+            memberId,
+            organizationName,
+            repositoryName
+        );
+
         List<IssueLabelRelation> relations = labels.stream()
             .map(label -> {
                 IssueLabel issueLabel = issueLabelRepository.findByTitle(label);
@@ -29,6 +46,17 @@ public class IssueLabelRelationService {
             })
             .toList();
         issueLabelRelationRepository.saveAll(relations);
+    }
+
+    private void appendLabelsToGithub(Issue issue, List<String> labels, Long memberId, String organizationName, String repositoryName) {
+        GithubIssueLabelAppendServiceRequest githubRequest = GithubIssueLabelAppendServiceRequest.builder()
+            .labels(labels)
+            .issueNumber(issue.getGithubIssueNumber())
+            .memberId(memberId)
+            .repositoryName(repositoryName)
+            .organizationName(organizationName)
+            .build();
+        githubIssueLabelService.appendLabelToIssue(githubRequest);
     }
 
 }
