@@ -6,7 +6,7 @@ import soon.capstone.infrastructure.github.dto.request.GithubIssueCreateRequest;
 import java.util.List;
 
 @Builder
-public record GithubIssueServiceRequest(
+public record GithubIssueCreateServiceRequest(
 
     Long memberId,
     String organizationName,
@@ -15,6 +15,7 @@ public record GithubIssueServiceRequest(
     String body,
     String assignees,
     List<String> labels
+
 ) {
 
     public GithubIssueCreateRequest toGithubRequest() {
