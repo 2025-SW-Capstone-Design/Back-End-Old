@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
+import soon.capstone.infrastructure.github.service.dto.GithubAssigneesAppendServiceRequest;
 import soon.capstone.infrastructure.github.service.dto.GithubAssigneesServiceRequest;
 import soon.capstone.infrastructure.redis.oauth2.repository.OAuthTokenRepository;
 import soon.capstone.infrastructure.restclient.config.RestClientConfig;
@@ -16,6 +17,7 @@ import soon.capstone.infrastructure.restclient.config.RestClientConfig;
 public class GithubAssigneesService {
 
     private static final String ASSIGN_URL = "/repos/{organizationName}/{repositoryName}/assignees/{assignee}";
+    private static final String ISSUE_ASSIGNEES_URL = "/repos/{organizationName}/{repositoryName}/issues/{issueNumber}/assignees";
 
     private final RestClientConfig restClientConfig;
     private final OAuthTokenRepository oAuthTokenRepository;
@@ -46,6 +48,28 @@ public class GithubAssigneesService {
         }
 
         return false;
+    }
+
+    public void appendIssueWithAssignee(GithubAssigneesAppendServiceRequest request) {
+        try {
+            String token = oAuthTokenRepository.findByMemberId(request.memberId()).getToken();
+            RestClient restClient = restClientConfig.githubRestClient(token);
+
+            String uri = ISSUE_ASSIGNEES_URL
+                .replace("{organizationName}", request.organizationName())
+                .replace("{repositoryName}", request.repositoryName())
+                .replace("{issueNumber}", String.valueOf(request.issueNumber()));
+
+            restClient.post()
+                .uri(uri)
+                .body(request.toGithubRequest())
+                .retrieve()
+                .body(Void.class);
+        } catch (HttpClientErrorException e) {
+            log.error("GitHub API 호출 중 오류 발생: {}", e.getMessage(), e);
+        } catch (Exception e) {
+            log.error("assignee 추가 중 오류 발생: {}", e.getMessage(), e);
+        }
     }
 
 }
