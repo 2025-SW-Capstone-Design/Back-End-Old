@@ -15,6 +15,8 @@ import soon.capstone.domain.issue.service.dto.response.IssueLabelDetailResponse;
 import soon.capstone.domain.issue.service.dto.response.IssueTemplateDetailResponse;
 import soon.capstone.domain.member.entity.Member;
 import soon.capstone.domain.member.repository.MemberRepository;
+import soon.capstone.domain.milestone.entity.Milestone;
+import soon.capstone.domain.milestone.repository.MilestoneRepository;
 import soon.capstone.domain.project.entity.Project;
 import soon.capstone.domain.project.repository.ProjectRepository;
 import soon.capstone.domain.team.entity.Team;
@@ -23,6 +25,7 @@ import soon.capstone.domain.teammember.entity.TeamMember;
 import soon.capstone.domain.teammember.repository.TeamMemberRepository;
 import soon.capstone.global.exception.team.TeamNotAuthorizedException;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
@@ -56,20 +59,27 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
     @Autowired
     private TeamMemberRepository teamMemberRepository;
 
+    @Autowired
+    private MilestoneRepository milestoneRepository;
+
     @MockitoBean
     private IssueLabelService issueLabelService;
 
     @MockitoBean
     private IssueTemplateService issueTemplateService;
 
+    @MockitoBean
+    private IssueService issueService;
+
     @AfterEach
     void tearDown() {
         issueLabelRepository.deleteAllInBatch();
         issueTemplateRepository.deleteAllInBatch();
+        milestoneRepository.deleteAllInBatch();
         projectRepository.deleteAllInBatch();
         teamMemberRepository.deleteAllInBatch();
-        memberRepository.deleteAllInBatch();
         teamRepository.deleteAllInBatch();
+        memberRepository.deleteAllInBatch();
     }
 
     @DisplayName("이슈 라벨을 생성한다.")
@@ -603,6 +613,59 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
             .hasMessage(TEAM_NOT_AUTHORIZED.getMessage());
     }
 
+    @DisplayName("이슈를 생성한다")
+    @Test
+    void createIssue() {
+        // given
+        Member member = createMember();
+        memberRepository.save(member);
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        TeamMember teamMember = TeamMember.createMember(member, team);
+        teamMemberRepository.save(teamMember);
+
+        Project project = createProject(team);
+        projectRepository.save(project);
+
+        Milestone milestone = createMilestone(project);
+        milestoneRepository.save(milestone);
+
+        var request = IssueCreateServiceRequest.builder()
+            .teamId(team.getId())
+            .memberId(member.getId())
+            .organizationName("organizationName")
+            .repositoryName("repositoryName")
+            .title("title")
+            .content("content")
+            .assignees("assignee")
+            .labels(List.of("label1"))
+            .milestoneId(milestone.getId())
+            .projectId(project.getId())
+            .build();
+
+        given(issueService.create(
+            anyLong(),
+            anyString(),
+            anyString(),
+            anyString(),
+            anyString(),
+            anyString(),
+            anyList(),
+            any(Milestone.class),
+            any(Project.class),
+            any(TeamMember.class)
+        )).willReturn(1L);
+
+        // when
+        Long issueId = issueManagementService.createIssue(request);
+
+        // then
+        assertThat(issueId)
+            .isEqualTo(1L);
+    }
+
     private Member createMember() {
         return Member.builder()
             .email("email")
@@ -625,6 +688,18 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
             .title("title")
             .team(team)
             .repositoryId("repositoryId")
+            .build();
+    }
+
+    private Milestone createMilestone(Project project) {
+        return Milestone.builder()
+            .title("title")
+            .description("description")
+            .creator("creator")
+            .dueDate(LocalDateTime.of(2025, 4, 12, 0, 0))
+            .startDate(LocalDateTime.of(2025, 4, 11, 0, 0))
+            .githubMilestoneId(1)
+            .project(project)
             .build();
     }
 

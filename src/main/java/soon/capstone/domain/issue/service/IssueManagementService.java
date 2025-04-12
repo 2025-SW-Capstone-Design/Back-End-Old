@@ -7,10 +7,13 @@ import soon.capstone.domain.issue.service.dto.response.IssueLabelDetailResponse;
 import soon.capstone.domain.issue.service.dto.response.IssueTemplateDetailResponse;
 import soon.capstone.domain.member.entity.Member;
 import soon.capstone.domain.member.repository.MemberRepository;
+import soon.capstone.domain.milestone.entity.Milestone;
+import soon.capstone.domain.milestone.repository.MilestoneRepository;
 import soon.capstone.domain.project.entity.Project;
 import soon.capstone.domain.project.repository.ProjectRepository;
 import soon.capstone.domain.team.entity.Team;
 import soon.capstone.domain.team.repository.TeamRepository;
+import soon.capstone.domain.teammember.entity.TeamMember;
 import soon.capstone.domain.teammember.repository.TeamMemberRepository;
 import soon.capstone.global.exception.team.TeamNotAuthorizedException;
 
@@ -20,6 +23,7 @@ import java.util.List;
 @Service
 public class IssueManagementService {
 
+    private final IssueService issueService;
     private final IssueLabelService issueLabelService;
     private final IssueTemplateService issueTemplateService;
 
@@ -27,6 +31,30 @@ public class IssueManagementService {
     private final TeamMemberRepository teamMemberRepository;
     private final TeamRepository teamRepository;
     private final ProjectRepository projectRepository;
+    private final MilestoneRepository milestoneRepository;
+
+    public Long createIssue(IssueCreateServiceRequest request) {
+        Team team = teamRepository.findById(request.teamId());
+        Member member = memberRepository.findById(request.memberId());
+        TeamMember teamMember = teamMemberRepository.findByTeamIdAndMemberId(team.getId(), member.getId());
+        Project project = projectRepository.findById(request.projectId());
+        Milestone milestone = milestoneRepository.findById(request.milestoneId());
+
+        validateTeamMembership(member, team);
+
+        return issueService.create(
+            member.getId(),
+            request.organizationName(),
+            request.repositoryName(),
+            request.title(),
+            request.content(),
+            request.assignees(),
+            request.labels(),
+            milestone,
+            project,
+            teamMember
+        );
+    }
 
     public Long createIssueLabel(IssueLabelCreateServiceRequest request, Long memberId) {
         Team team = teamRepository.findById(request.teamId());
