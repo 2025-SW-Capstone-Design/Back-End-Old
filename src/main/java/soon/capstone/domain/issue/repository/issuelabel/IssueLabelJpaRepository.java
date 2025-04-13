@@ -15,4 +15,6 @@ public interface IssueLabelJpaRepository extends JpaRepository<IssueLabel, Long>
 
     Optional<IssueLabel> findByTitle(String title);
 
+    List<IssueLabel> findAllByTitleIn(List<String> titles);
+
 }

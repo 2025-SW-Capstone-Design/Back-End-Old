@@ -147,6 +147,47 @@ class IssueLabelRelationServiceTest extends IntegrationTestSupport {
         assertThat(relations).isEmpty();
     }
 
+    @DisplayName("이슈 라벨 업데이트 시 기존 관계를 삭제하고 새로운 관계를 추가한다.")
+    @Test
+    void updateIssueRelation() {
+        // given
+        Member member = createMember();
+        memberRepository.save(member);
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        TeamMember teamMember = createTeamMember(member, team);
+        teamMemberRepository.save(teamMember);
+
+        Project project = createProject(team);
+        projectRepository.save(project);
+
+        Milestone milestone = createMilestone(project);
+        milestoneRepository.save(milestone);
+
+        Issue issue = createIssue(milestone);
+        issueRepository.save(issue);
+
+        IssueLabel issueLabel1 = createIssueLabel(project, team, "label1");
+        IssueLabel issueLabel2 = createIssueLabel(project, team, "label2");
+        IssueLabel issueLabel3 = createIssueLabel(project, team, "label3");
+        issueLabelRepository.saveAll(List.of(issueLabel1, issueLabel2, issueLabel3));
+
+        IssueLabelRelation relation = IssueLabelRelation.createMapping(issue, issueLabel1);
+        issueLabelRelationRepository.save(relation);
+
+        // when
+        issueLabelRelationService.updateIssueRelation(issue, List.of("label2", "label3"));
+
+        // then
+        List<IssueLabelRelation> relations = issueLabelRelationRepository.findAllByIssue(issue);
+        assertThat(relations)
+            .hasSize(2)
+            .extracting(r -> r.getIssueLabel().getTitle())
+            .containsExactlyInAnyOrder("label2", "label3");
+    }
+
     private Member createMember() {
         return Member.builder()
             .email("email")

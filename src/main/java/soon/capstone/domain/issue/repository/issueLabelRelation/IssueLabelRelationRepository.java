@@ -25,6 +25,10 @@ public class IssueLabelRelationRepository {
         issueLabelRelationJpaRepository.deleteAllInBatch();
     }
 
+    public void deleteAllInBatch(List<IssueLabelRelation> relations) {
+        issueLabelRelationJpaRepository.deleteAllInBatch(relations);
+    }
+
     public List<IssueLabelRelation> findAllByIssue(Issue issue) {
         return issueLabelRelationJpaRepository.findAllByIssue(issue);
     }
