@@ -4,6 +4,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import soon.capstone.IntegrationTestSupport;
 import soon.capstone.domain.issue.entity.Issue;
 import soon.capstone.domain.issue.entity.IssueLabel;
@@ -24,6 +25,7 @@ import soon.capstone.domain.teammember.entity.TeamMember;
 import soon.capstone.domain.teammember.entity.common.Position;
 import soon.capstone.domain.teammember.entity.common.Role;
 import soon.capstone.domain.teammember.repository.TeamMemberRepository;
+import soon.capstone.infrastructure.github.service.issue.GithubIssueLabelService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -58,6 +60,9 @@ class IssueLabelRelationServiceTest extends IntegrationTestSupport {
 
     @Autowired
     private IssueLabelRepository issueLabelRepository;
+
+    @MockitoBean
+    private GithubIssueLabelService githubIssueLabelService;
 
     @AfterEach
     void tearDown() {

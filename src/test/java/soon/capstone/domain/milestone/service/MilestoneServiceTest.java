@@ -448,6 +448,7 @@ class MilestoneServiceTest extends IntegrationTestSupport {
                 .content(content)
                 .teamMember(teamMember)
                 .status(IssueStatus.OPEN)
+                .githubIssueNumber(1L)
                 .milestone(milestone)
                 .project(project)
                 .build();

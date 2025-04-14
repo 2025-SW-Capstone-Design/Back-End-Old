@@ -24,6 +24,7 @@ import soon.capstone.domain.teammember.entity.common.Role;
 import soon.capstone.domain.teammember.repository.TeamMemberRepository;
 import soon.capstone.global.exception.common.UnauthorizedException;
 import soon.capstone.infrastructure.github.service.dto.GithubIssueCreateServiceRequest;
+import soon.capstone.infrastructure.github.service.dto.GithubIssueUpdateServiceRequest;
 import soon.capstone.infrastructure.github.service.issue.GithubIssueService;
 
 import java.time.LocalDateTime;
@@ -124,7 +125,7 @@ class IssueServiceTest extends IntegrationTestSupport {
         Issue issue = issueRepository.findById(issueId);
         assertThat(issue)
             .extracting("title", "content", "githubIssueNumber", "status")
-            .contains("title", "content", 1, IssueStatus.OPEN);
+            .contains("title", "content", 1L, IssueStatus.OPEN);
 
         verify(issueLabelRelationService, times(1))
             .linkIssueWithLabels(
@@ -158,6 +159,41 @@ class IssueServiceTest extends IntegrationTestSupport {
             .hasMessage(UNAUTHORIZED.getMessage());
 
         verifyNoInteractions(githubIssueService, issueLabelRelationService);
+    }
+
+    @DisplayName("이슈의 상태를 CLOSED로 변경한다")
+    @Test
+    void closedIssue() {
+        // given
+        Member member = createMember();
+        memberRepository.save(member);
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        TeamMember teamMember = createTeamMember(member, team);
+        teamMemberRepository.save(teamMember);
+
+        Project project = createProject(team);
+        projectRepository.save(project);
+
+        Milestone milestone = createMilestone(project);
+        milestoneRepository.save(milestone);
+
+        Issue issue = Issue.createNewIssue("title", "content", 1L, teamMember, milestone, project);
+        issueRepository.save(issue);
+
+        // when
+        issueService.closedIssue(member.getId(), issue.getId(), team.getOrganizationName(), project.getTitle());
+
+        // then
+        Issue closedIssue = issueRepository.findById(issue.getId());
+        assertThat(closedIssue.getStatus())
+            .isEqualTo(IssueStatus.CLOSED);
+
+        verify(githubIssueService, times(1))
+            .updateGithubIssue(any(GithubIssueUpdateServiceRequest.class));
+
     }
 
     private Member createMember() {

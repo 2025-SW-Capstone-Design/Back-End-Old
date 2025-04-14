@@ -265,6 +265,7 @@ class MilestoneReadServiceTest extends IntegrationTestSupport {
                 .status(IssueStatus.OPEN)
                 .milestone(milestone)
                 .project(project)
+                .githubIssueNumber(1L)
                 .build();
     }
 

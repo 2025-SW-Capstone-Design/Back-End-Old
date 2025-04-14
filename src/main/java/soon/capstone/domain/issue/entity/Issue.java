@@ -83,4 +83,8 @@ public class Issue extends BaseTimeEntity {
         this.teamMember = teamMember;
     }
 
+    public void closed() {
+        this.status = IssueStatus.CLOSED;
+    }
+
 }

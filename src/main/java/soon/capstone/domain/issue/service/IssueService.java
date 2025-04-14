@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import soon.capstone.domain.issue.entity.Issue;
+import soon.capstone.domain.issue.entity.IssueStatus;
 import soon.capstone.domain.issue.repository.issue.IssueRepository;
 import soon.capstone.domain.milestone.entity.Milestone;
 import soon.capstone.domain.project.entity.Project;
@@ -92,6 +93,19 @@ public class IssueService {
         issueLabelRelationService.updateIssueRelation(issue, labels);
     }
 
+    @Transactional
+    public void closedIssue(
+        Long memberId,
+        Long issueId,
+        String organizationName,
+        String repositoryName
+    ) {
+        Issue issue = issueRepository.findById(issueId);
+        issue.closed();
+
+        closedGithubIssue(memberId, issue, organizationName, repositoryName);
+    }
+
     private void validateAssignee(
         Long memberId,
         String organizationName,
@@ -146,6 +160,22 @@ public class IssueService {
             .labels(labels)
             .assignees(assignees)
             .state(state)
+            .build();
+        githubIssueService.updateGithubIssue(request);
+    }
+
+    private void closedGithubIssue(
+        Long memberId,
+        Issue issue,
+        String organizationName,
+        String repositoryName
+    ) {
+        GithubIssueUpdateServiceRequest request = GithubIssueUpdateServiceRequest.builder()
+            .memberId(memberId)
+            .organizationName(organizationName)
+            .repositoryName(repositoryName)
+            .issueNumber(issue.getGithubIssueNumber())
+            .state(IssueStatus.CLOSED.name())
             .build();
         githubIssueService.updateGithubIssue(request);
     }
