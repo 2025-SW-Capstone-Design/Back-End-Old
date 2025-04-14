@@ -2,17 +2,18 @@ package soon.capstone.infrastructure.github.service.issue;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 import soon.capstone.global.exception.github.GithubHttpClientException;
-import soon.capstone.infrastructure.github.service.dto.GithubIssueCreateServiceRequest;
-import soon.capstone.infrastructure.github.service.dto.GithubIssueDetailServiceRequest;
-import soon.capstone.infrastructure.github.service.dto.GithubIssueUpdateServiceRequest;
+import soon.capstone.infrastructure.github.service.dto.*;
 import soon.capstone.infrastructure.github.service.dto.response.GithubIssueCreateResponse;
 import soon.capstone.infrastructure.github.service.dto.response.GithubIssueDetailResponse;
 import soon.capstone.infrastructure.redis.oauth2.repository.OAuthTokenRepository;
 import soon.capstone.infrastructure.restclient.config.RestClientConfig;
+
+import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -95,6 +96,30 @@ public class GithubIssueService {
                 .uri(uri)
                 .retrieve()
                 .body(GithubIssueDetailResponse.class);
+
+        } catch (HttpClientErrorException e) {
+            log.error("GitHub API 호출 중 오류 발생: {}", e.getMessage(), e);
+            throw new GithubHttpClientException();
+        } catch (Exception e) {
+            log.error("issue 조회 중 에러 발생", e);
+            throw new GithubHttpClientException();
+        }
+    }
+
+    public List<GithubIssueDetailResponse> getIssuesWithRepository(GithubIssueDetailListServiceRequest request) {
+        try {
+            String token = oAuthTokenRepository.findByMemberId(request.memberId()).getToken();
+            RestClient restClient = restClientConfig.githubRestClient(token);
+
+            String uri = ISSUE_URL
+                .replace("{organizationName}", request.organizationName())
+                .replace("{repositoryName}", request.repositoryName()) + "?state=all";
+
+            return restClient.get()
+                .uri(uri)
+                .retrieve()
+                .body(new ParameterizedTypeReference<>() {
+                });
 
         } catch (HttpClientErrorException e) {
             log.error("GitHub API 호출 중 오류 발생: {}", e.getMessage(), e);

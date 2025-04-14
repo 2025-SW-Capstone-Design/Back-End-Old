@@ -181,7 +181,7 @@ class IssueControllerTest extends ControllerTestSupport {
     }
 
     @TestMember
-    @DisplayName("이슈 상세 정보를 정상적으로 반환한다.")
+    @DisplayName("이슈 상세 정보를 조회한다.")
     @Test
     void getIssueDetail() throws Exception {
         // given
