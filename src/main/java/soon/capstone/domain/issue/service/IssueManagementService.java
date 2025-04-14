@@ -3,6 +3,7 @@ package soon.capstone.domain.issue.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import soon.capstone.domain.issue.service.dto.request.*;
+import soon.capstone.domain.issue.service.dto.response.IssueDetailResponse;
 import soon.capstone.domain.issue.service.dto.response.IssueLabelDetailResponse;
 import soon.capstone.domain.issue.service.dto.response.IssueTemplateDetailResponse;
 import soon.capstone.domain.member.entity.Member;
@@ -90,6 +91,21 @@ public class IssueManagementService {
             request.issueId(),
             request.organizationName(),
             request.repositoryName()
+        );
+    }
+
+    public IssueDetailResponse getIssueDetail(IssueDetailServiceRequest request) {
+        Member member = memberRepository.findById(request.memberId());
+        Team team = teamRepository.findById(request.teamId());
+        Project project = projectRepository.findById(request.projectId());
+
+        validateTeamMembership(member, team);
+
+        return issueService.getIssueDetail(
+            member.getId(),
+            request.issueId(),
+            team.getOrganizationName(),
+            project.getTitle()
         );
     }
 

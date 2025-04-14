@@ -7,14 +7,15 @@ import soon.capstone.ControllerTestSupport;
 import soon.capstone.domain.issue.controller.dto.IssueClosedRequest;
 import soon.capstone.domain.issue.controller.dto.IssueCreateRequest;
 import soon.capstone.domain.issue.controller.dto.IssueUpdateRequest;
+import soon.capstone.domain.issue.service.dto.response.IssueDetailResponse;
+import soon.capstone.domain.issue.service.dto.response.IssueLabelDetailResponse;
 import soon.capstone.global.anootation.TestMember;
 
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -177,6 +178,54 @@ class IssueControllerTest extends ControllerTestSupport {
             )
             .andDo(print())
             .andExpect(status().isNoContent());
+    }
+
+    @TestMember
+    @DisplayName("이슈 상세 정보를 정상적으로 반환한다.")
+    @Test
+    void getIssueDetail() throws Exception {
+        // given
+        var labelResponse = List.of(
+            createIssueLabelDetailResponse(1L),
+            createIssueLabelDetailResponse(2L)
+        );
+
+        var response = IssueDetailResponse.builder()
+            .issueId(1L)
+            .title("title")
+            .content("content")
+            .creator("creator")
+            .status("open")
+            .labels(labelResponse)
+            .build();
+
+        given(issueManagementService.getIssueDetail(any()))
+            .willReturn(response);
+
+        // expected
+        mockMvc.perform(
+                get(BASE_URL + "/projects/{projectId}/issues/{issueId}", 1L, 1L, 1L)
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.issueId").value(1L))
+            .andExpect(jsonPath("$.title").value("title"))
+            .andExpect(jsonPath("$.content").value("content"))
+            .andExpect(jsonPath("$.creator").value("creator"))
+            .andExpect(jsonPath("$.status").value("open"))
+            .andExpect(jsonPath("$.labels").isArray())
+            .andExpect(jsonPath("$.labels[0].labelId").value(1L))
+            .andExpect(jsonPath("$.labels[1].labelId").value(2L));
+    }
+
+    public IssueLabelDetailResponse createIssueLabelDetailResponse(Long id) {
+        return IssueLabelDetailResponse.builder()
+            .labelId(id)
+            .description("description")
+            .color("color")
+            .name("name")
+            .build();
     }
 
 }

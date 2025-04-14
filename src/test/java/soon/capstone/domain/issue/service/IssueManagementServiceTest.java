@@ -14,6 +14,7 @@ import soon.capstone.domain.issue.repository.issue.IssueRepository;
 import soon.capstone.domain.issue.repository.issuelabel.IssueLabelRepository;
 import soon.capstone.domain.issue.repository.issuetemplate.IssueTemplateRepository;
 import soon.capstone.domain.issue.service.dto.request.*;
+import soon.capstone.domain.issue.service.dto.response.IssueDetailResponse;
 import soon.capstone.domain.issue.service.dto.response.IssueLabelDetailResponse;
 import soon.capstone.domain.issue.service.dto.response.IssueTemplateDetailResponse;
 import soon.capstone.domain.member.entity.Member;
@@ -765,6 +766,60 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
             anyString(),
             anyString()
         );
+    }
+
+    @DisplayName("이슈의 상세 정보를 조회한다")
+    @Test
+    void getIssueDetail() {
+        // given
+        Member member = createMember();
+        memberRepository.save(member);
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        TeamMember teamMember = TeamMember.createMember(member, team);
+        teamMemberRepository.save(teamMember);
+
+        Project project = createProject(team);
+        projectRepository.save(project);
+
+        Milestone milestone = createMilestone(project);
+        milestoneRepository.save(milestone);
+
+        Issue issue = createIssue(project, teamMember, milestone);
+        issueRepository.save(issue);
+
+        IssueDetailServiceRequest request = IssueDetailServiceRequest.builder()
+            .memberId(member.getId())
+            .teamId(team.getId())
+            .projectId(project.getId())
+            .issueId(issue.getId())
+            .build();
+
+        IssueDetailResponse mockResponse = IssueDetailResponse.builder()
+            .issueId(issue.getId())
+            .title("title")
+            .content("content")
+            .creator("creator")
+            .status("open")
+            .labels(List.of())
+            .build();
+
+        given(issueService.getIssueDetail(
+            member.getId(),
+            issue.getId(),
+            team.getOrganizationName(),
+            project.getTitle()
+        )).willReturn(mockResponse);
+
+        // when
+        IssueDetailResponse response = issueManagementService.getIssueDetail(request);
+
+        // then
+        assertThat(response)
+            .extracting("issueId", "title", "content", "creator", "status")
+            .containsExactly(issue.getId(), "title", "content", "creator", "open");
     }
 
     private Member createMember() {

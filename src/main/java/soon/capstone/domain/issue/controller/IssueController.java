@@ -6,8 +6,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import soon.capstone.domain.issue.controller.dto.IssueClosedRequest;
 import soon.capstone.domain.issue.controller.dto.IssueCreateRequest;
+import soon.capstone.domain.issue.controller.dto.IssueDetailRequest;
 import soon.capstone.domain.issue.controller.dto.IssueUpdateRequest;
 import soon.capstone.domain.issue.service.IssueManagementService;
+import soon.capstone.domain.issue.service.dto.response.IssueDetailResponse;
 import soon.capstone.global.anootation.AuthMemberId;
 
 @RequiredArgsConstructor
@@ -53,6 +55,20 @@ public class IssueController {
 
         return ResponseEntity.noContent()
             .build();
+    }
+
+    @GetMapping("/projects/{projectId}/issues/{issueId}")
+    public ResponseEntity<IssueDetailResponse> getIssueDetail(
+        @AuthMemberId Long memberId,
+        @PathVariable Long teamId,
+        @PathVariable Long issueId,
+        @PathVariable Long projectId
+    ) {
+        IssueDetailResponse response = issueManagementService.getIssueDetail(
+            IssueDetailRequest.toServiceRequest(memberId, teamId, issueId, projectId)
+        );
+
+        return ResponseEntity.ok(response);
     }
 
 }
