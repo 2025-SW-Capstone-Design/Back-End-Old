@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import soon.capstone.domain.issue.controller.dto.IssueClosedRequest;
 import soon.capstone.domain.issue.controller.dto.IssueCreateRequest;
 import soon.capstone.domain.issue.controller.dto.IssueUpdateRequest;
 import soon.capstone.domain.issue.service.IssueManagementService;
@@ -36,6 +37,19 @@ public class IssueController {
         @PathVariable Long issueId
     ) {
         issueManagementService.updateIssue(request.toServiceRequest(memberId, teamId, issueId));
+
+        return ResponseEntity.noContent()
+            .build();
+    }
+
+    @PatchMapping("/issues/{issueId}/closed")
+    public ResponseEntity<Void> closedIssue(
+        @Valid @RequestBody IssueClosedRequest request,
+        @AuthMemberId Long memberId,
+        @PathVariable Long teamId,
+        @PathVariable Long issueId
+    ) {
+        issueManagementService.closedIssue(request.toServiceRequest(memberId, teamId, issueId));
 
         return ResponseEntity.noContent()
             .build();

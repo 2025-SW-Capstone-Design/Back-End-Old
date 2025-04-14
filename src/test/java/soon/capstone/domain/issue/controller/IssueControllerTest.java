@@ -4,6 +4,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import soon.capstone.ControllerTestSupport;
+import soon.capstone.domain.issue.controller.dto.IssueClosedRequest;
 import soon.capstone.domain.issue.controller.dto.IssueCreateRequest;
 import soon.capstone.domain.issue.controller.dto.IssueUpdateRequest;
 import soon.capstone.global.anootation.TestMember;
@@ -151,6 +152,26 @@ class IssueControllerTest extends ControllerTestSupport {
         // expected
         mockMvc.perform(
                 patch(BASE_URL + "/issues/{issueId}", 1L, 1L)
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+            .andDo(print())
+            .andExpect(status().isNoContent());
+    }
+
+    @TestMember
+    @DisplayName("이슈의 상태를 CLOSED로 수정한다.")
+    @Test
+    void closedIssue() throws Exception {
+        // given
+        var request = IssueClosedRequest.builder()
+            .organizationName("organizationName")
+            .repositoryName("repositoryName")
+            .build();
+
+        // expected
+        mockMvc.perform(
+                patch(BASE_URL + "/issues/{issueId}/closed", 1L, 1L)
                     .content(objectMapper.writeValueAsString(request))
                     .contentType(MediaType.APPLICATION_JSON)
             )
