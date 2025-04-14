@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
-import soon.capstone.domain.issue.service.dto.response.IssueDetailResponse;
 import soon.capstone.global.exception.github.GithubHttpClientException;
 import soon.capstone.infrastructure.github.service.dto.GithubIssueCreateServiceRequest;
 import soon.capstone.infrastructure.github.service.dto.GithubIssueDetailServiceRequest;
@@ -82,7 +81,7 @@ public class GithubIssueService {
         }
     }
 
-    public IssueDetailResponse getIssueDetail(GithubIssueDetailServiceRequest request) {
+    public GithubIssueDetailResponse getIssueDetail(GithubIssueDetailServiceRequest request) {
         try {
             String token = oAuthTokenRepository.findByMemberId(request.memberId()).getToken();
             RestClient restClient = restClientConfig.githubRestClient(token);
@@ -92,12 +91,10 @@ public class GithubIssueService {
                 .replace("{repositoryName}", request.repositoryName())
                 .replace("{issueNumber}", String.valueOf(request.issueNumber()));
 
-            GithubIssueDetailResponse response = restClient.get()
+            return restClient.get()
                 .uri(uri)
                 .retrieve()
                 .body(GithubIssueDetailResponse.class);
-
-            return response.toIssueDetailResponse();
 
         } catch (HttpClientErrorException e) {
             log.error("GitHub API 호출 중 오류 발생: {}", e.getMessage(), e);

@@ -2,17 +2,23 @@ package soon.capstone.domain.issue.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import soon.capstone.domain.issue.entity.Issue;
 import soon.capstone.domain.issue.entity.IssueStatus;
 import soon.capstone.domain.issue.repository.issue.IssueRepository;
+import soon.capstone.domain.issue.service.dto.response.IssueDetailResponse;
+import soon.capstone.domain.issue.service.dto.response.IssueLabelDetailResponse;
 import soon.capstone.domain.milestone.entity.Milestone;
 import soon.capstone.domain.project.entity.Project;
 import soon.capstone.domain.teammember.entity.TeamMember;
 import soon.capstone.global.exception.common.UnauthorizedException;
 import soon.capstone.infrastructure.github.service.dto.GithubIssueCreateServiceRequest;
+import soon.capstone.infrastructure.github.service.dto.GithubIssueDetailServiceRequest;
 import soon.capstone.infrastructure.github.service.dto.GithubIssueUpdateServiceRequest;
+import soon.capstone.infrastructure.github.service.dto.response.GithubIssueDetailResponse;
 import soon.capstone.infrastructure.github.service.issue.GithubIssueService;
 
 import java.util.List;
@@ -27,6 +33,7 @@ public class IssueService {
     private final AssigneeService assigneeService;
     private final IssueLabelRelationService issueLabelRelationService;
 
+    @CacheEvict(value = "issueDetail", key = "#result + #organizationName + #repositoryName")
     public Long create(
         Long memberId,
         String organizationName,
@@ -59,6 +66,7 @@ public class IssueService {
         return savedIssueNumber;
     }
 
+    @CacheEvict(value = "issueDetail", key = "#issueId + #organizationName + #repositoryName")
     @Transactional
     public void update(
         Long memberId,
@@ -93,6 +101,7 @@ public class IssueService {
         issueLabelRelationService.updateIssueRelation(issue, labels);
     }
 
+    @CacheEvict(value = "issueDetail", key = "#issueId + #organizationName + #repositoryName")
     @Transactional
     public void closedIssue(
         Long memberId,
@@ -104,6 +113,33 @@ public class IssueService {
         issue.closed();
 
         closedGithubIssue(memberId, issue, organizationName, repositoryName);
+    }
+
+    @Cacheable(value = "issueDetail", key = "#issueId + #organizationName + #repositoryName")
+    public IssueDetailResponse getIssueDetail(
+        Long memberId,
+        Long issueId,
+        String organizationName,
+        String repositoryName
+    ) {
+        Issue issue = issueRepository.findById(issueId);
+
+        GithubIssueDetailResponse githubResponse = getGithubIssueDetail(
+            memberId,
+            issue.getGithubIssueNumber(),
+            organizationName,
+            repositoryName
+        );
+        List<IssueLabelDetailResponse> labels = issueLabelRelationService.findByLabelsByIssueId(issue);
+
+        return IssueDetailResponse.builder()
+            .issueId(issue.getId())
+            .title(githubResponse.title())
+            .content(githubResponse.body())
+            .creator(githubResponse.getCreator())
+            .status(githubResponse.state())
+            .labels(labels)
+            .build();
     }
 
     private void validateAssignee(
@@ -178,6 +214,21 @@ public class IssueService {
             .state(IssueStatus.CLOSED.name())
             .build();
         githubIssueService.updateGithubIssue(request);
+    }
+
+    private GithubIssueDetailResponse getGithubIssueDetail(
+        Long memberId,
+        Long issueNumber,
+        String organizationName,
+        String repositoryName
+    ) {
+        GithubIssueDetailServiceRequest request = GithubIssueDetailServiceRequest.builder()
+            .memberId(memberId)
+            .issueNumber(issueNumber)
+            .organizationName(organizationName)
+            .repositoryName(repositoryName)
+            .build();
+        return githubIssueService.getIssueDetail(request);
     }
 
 }
