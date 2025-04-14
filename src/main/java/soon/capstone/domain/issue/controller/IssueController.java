@@ -5,17 +5,18 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import soon.capstone.domain.issue.controller.dto.IssueCreateRequest;
+import soon.capstone.domain.issue.controller.dto.IssueUpdateRequest;
 import soon.capstone.domain.issue.service.IssueManagementService;
 import soon.capstone.global.anootation.AuthMemberId;
 
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/teams/{teamId}/projects/{projectId}/issues")
+@RequestMapping("/api/v1/teams/{teamId}")
 @RestController
 public class IssueController {
 
     private final IssueManagementService issueManagementService;
 
-    @PostMapping
+    @PostMapping("/projects/{projectId}/issues")
     public ResponseEntity<Long> createIssue(
         @Valid @RequestBody IssueCreateRequest request,
         @AuthMemberId Long memberId,
@@ -25,6 +26,19 @@ public class IssueController {
         Long issueId = issueManagementService.createIssue(request.toServiceRequest(memberId, teamId, projectId));
 
         return ResponseEntity.ok(issueId);
+    }
+
+    @PatchMapping("/issues/{issueId}")
+    public ResponseEntity<Void> updateIssue(
+        @Valid @RequestBody IssueUpdateRequest request,
+        @AuthMemberId Long memberId,
+        @PathVariable Long teamId,
+        @PathVariable Long issueId
+    ) {
+        issueManagementService.updateIssue(request.toServiceRequest(memberId, teamId, issueId));
+
+        return ResponseEntity.noContent()
+            .build();
     }
 
 }

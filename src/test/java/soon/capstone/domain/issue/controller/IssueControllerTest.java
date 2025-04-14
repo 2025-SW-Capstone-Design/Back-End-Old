@@ -5,12 +5,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import soon.capstone.ControllerTestSupport;
 import soon.capstone.domain.issue.controller.dto.IssueCreateRequest;
+import soon.capstone.domain.issue.controller.dto.IssueUpdateRequest;
 import soon.capstone.global.anootation.TestMember;
 
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -18,7 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 class IssueControllerTest extends ControllerTestSupport {
 
-    private static final String BASE_URL = "/api/v1/teams/{teamId}/projects/{projectId}/issues";
+    private static final String BASE_URL = "/api/v1/teams/{teamId}";
 
     @TestMember
     @DisplayName("이슈를 생성한다.")
@@ -40,7 +42,7 @@ class IssueControllerTest extends ControllerTestSupport {
 
         // expected
         mockMvc.perform(
-                post(BASE_URL, 1L, 1L)
+                post(BASE_URL + "/projects/{projectId}/issues", 1L, 1L)
                     .content(objectMapper.writeValueAsString(request))
                     .contentType(MediaType.APPLICATION_JSON)
             )
@@ -64,7 +66,7 @@ class IssueControllerTest extends ControllerTestSupport {
 
         // expected
         mockMvc.perform(
-                post(BASE_URL, 1L, 1L)
+                post(BASE_URL + "/projects/{projectId}/issues", 1L, 1L)
                     .content(objectMapper.writeValueAsString(request))
                     .contentType(MediaType.APPLICATION_JSON)
             )
@@ -90,7 +92,7 @@ class IssueControllerTest extends ControllerTestSupport {
 
         // expected
         mockMvc.perform(
-                post(BASE_URL, 1L, 1L)
+                post(BASE_URL + "/projects/{projectId}/issues", 1L, 1L)
                     .content(objectMapper.writeValueAsString(request))
                     .contentType(MediaType.APPLICATION_JSON)
             )
@@ -118,7 +120,7 @@ class IssueControllerTest extends ControllerTestSupport {
 
         // expected
         mockMvc.perform(
-                post(BASE_URL, 1L, 1L)
+                post(BASE_URL + "/projects/{projectId}/issues", 1L, 1L)
                     .content(objectMapper.writeValueAsString(request))
                     .contentType(MediaType.APPLICATION_JSON)
             )
@@ -127,6 +129,33 @@ class IssueControllerTest extends ControllerTestSupport {
             .andExpect(jsonPath("$.status").value(400))
             .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
             .andExpect(jsonPath("$.validation['labels[0]']").value("라벨은 필수 입력 값입니다."));
+    }
+
+    @TestMember
+    @DisplayName("이슈를 수정한다.")
+    @Test
+    void updateIssue() throws Exception {
+        // given
+        var request = IssueUpdateRequest.builder()
+            .organizationName("organizationName")
+            .repositoryName("repositoryName")
+            .title("title")
+            .content("content")
+            .labels(List.of("label1", "label2"))
+            .assignees("assignee")
+            .state("close")
+            .teamMemberId(1L)
+            .milestoneId(1L)
+            .build();
+
+        // expected
+        mockMvc.perform(
+                patch(BASE_URL + "/issues/{issueId}", 1L, 1L)
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+            .andDo(print())
+            .andExpect(status().isNoContent());
     }
 
 }

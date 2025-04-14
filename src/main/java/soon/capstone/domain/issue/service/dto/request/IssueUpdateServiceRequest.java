@@ -17,7 +17,6 @@ public record IssueUpdateServiceRequest(
     List<String> labels,
     String assignees,
     String state,
-    Long teamMemberId,
     Long milestoneId
 
 ) {
