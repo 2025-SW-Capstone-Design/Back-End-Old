@@ -303,7 +303,7 @@ class MilestoneServiceTest extends IntegrationTestSupport {
                             .hasSize(1)
                             .first()
                             .satisfies(l -> {
-                                assertThat(l.getId()).isEqualTo(label.getId());
+                                assertThat(l.getLabelId()).isEqualTo(label.getId());
                                 assertThat(l.getName()).isEqualTo(label.getTitle());
                                 assertThat(l.getColor()).isEqualTo(label.getColor());
                                 assertThat(l.getDescription()).isEqualTo(label.getDescription());
@@ -484,7 +484,7 @@ class MilestoneServiceTest extends IntegrationTestSupport {
     private List<IssueLabelDetailResponse> createIssueLabels(IssueLabel label) {
         return List.of(
                 IssueLabelDetailResponse.builder()
-                        .id(label.getId())
+                        .labelId(label.getId())
                         .name(label.getTitle())
                         .color(label.getColor())
                         .description(label.getDescription())

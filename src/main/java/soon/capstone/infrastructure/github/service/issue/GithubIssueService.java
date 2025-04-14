@@ -5,8 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
+import soon.capstone.domain.issue.service.dto.response.IssueDetailResponse;
 import soon.capstone.global.exception.github.GithubHttpClientException;
 import soon.capstone.infrastructure.github.service.dto.GithubIssueCreateServiceRequest;
+import soon.capstone.infrastructure.github.service.dto.GithubIssueDetailServiceRequest;
 import soon.capstone.infrastructure.github.service.dto.GithubIssueUpdateServiceRequest;
 import soon.capstone.infrastructure.github.service.dto.response.GithubIssueCreateResponse;
 import soon.capstone.infrastructure.redis.oauth2.repository.OAuthTokenRepository;
@@ -75,6 +77,30 @@ public class GithubIssueService {
             throw new GithubHttpClientException();
         } catch (Exception e) {
             log.error("issue 수정 중 에러 발생", e);
+            throw new GithubHttpClientException();
+        }
+    }
+
+    public IssueDetailResponse getIssueDetail(GithubIssueDetailServiceRequest request) {
+        try {
+            String token = oAuthTokenRepository.findByMemberId(request.memberId()).getToken();
+            RestClient restClient = restClientConfig.githubRestClient(token);
+
+            String uri = (ISSUE_URL + "/{issueNumber}")
+                .replace("{organizationName}", request.organizationName())
+                .replace("{repositoryName}", request.repositoryName())
+                .replace("{issueNumber}", String.valueOf(request.issueNumber()));
+
+            return restClient.get()
+                .uri(uri)
+                .retrieve()
+                .body(IssueDetailResponse.class);
+
+        } catch (HttpClientErrorException e) {
+            log.error("GitHub API 호출 중 오류 발생: {}", e.getMessage(), e);
+            throw new GithubHttpClientException();
+        } catch (Exception e) {
+            log.error("issue 조회 중 에러 발생", e);
             throw new GithubHttpClientException();
         }
     }

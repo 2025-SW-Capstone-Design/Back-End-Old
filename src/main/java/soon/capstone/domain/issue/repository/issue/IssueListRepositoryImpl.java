@@ -73,7 +73,7 @@ public class IssueListRepositoryImpl implements IssueListRepository {
     private IssueLabelDetailResponse mapToLabelResponse(Tuple tuple) {
         IssueLabel label = tuple.get(issueLabel);
         return IssueLabelDetailResponse.builder()
-                .id(label.getId())
+                .labelId(label.getId())
                 .name(label.getTitle())
                 .color(label.getColor())
                 .description(label.getDescription())

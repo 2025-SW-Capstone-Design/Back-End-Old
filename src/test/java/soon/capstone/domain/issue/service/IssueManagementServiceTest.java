@@ -561,14 +561,14 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
         projectRepository.save(project);
 
         var label1 = IssueLabelDetailResponse.builder()
-            .id(1L)
+            .labelId(1L)
             .name("bug")
             .color("#ff0000")
             .description("버그 라벨")
             .build();
 
         var label2 = IssueLabelDetailResponse.builder()
-            .id(2L)
+            .labelId(2L)
             .name("enhancement")
             .color("#0000ff")
             .description("기능 개선 라벨")
@@ -588,10 +588,10 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
         // then
         assertThat(response)
             .hasSize(2)
-            .extracting("id", "name", "color")
+            .extracting("labelId", "name", "color")
             .containsExactlyInAnyOrder(
-                tuple(label1.getId(), "bug", "#ff0000"),
-                tuple(label2.getId(), "enhancement", "#0000ff")
+                tuple(label1.getLabelId(), "bug", "#ff0000"),
+                tuple(label2.getLabelId(), "enhancement", "#0000ff")
             );
     }
 
