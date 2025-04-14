@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import soon.capstone.IntegrationTestSupport;
 import soon.capstone.domain.issue.entity.IssueLabel;
+import soon.capstone.domain.issue.entity.IssueStatus;
 import soon.capstone.domain.issue.entity.IssueTemplate;
 import soon.capstone.domain.issue.repository.issuelabel.IssueLabelRepository;
 import soon.capstone.domain.issue.repository.issuetemplate.IssueTemplateRepository;
@@ -664,6 +665,58 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
         // then
         assertThat(issueId)
             .isEqualTo(1L);
+    }
+
+    @DisplayName("이슈를 수정한다")
+    @Test
+    void updateIssue() {
+        // given
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        Member member = createMember();
+        memberRepository.save(member);
+
+        TeamMember teamMember = TeamMember.createMember(member, team);
+        teamMemberRepository.save(teamMember);
+
+        Project project = createProject(team);
+        projectRepository.save(project);
+
+        Milestone milestone = createMilestone(project);
+        milestoneRepository.save(milestone);
+
+        var request = IssueUpdateServiceRequest.builder()
+            .teamId(team.getId())
+            .memberId(member.getId())
+            .milestoneId(milestone.getId())
+            .issueId(1L)
+            .organizationName("org")
+            .repositoryName("repo")
+            .title("Updated Title")
+            .content("Updated Content")
+            .labels(List.of("label1", "label2"))
+            .assignees("assignee")
+            .state(IssueStatus.CLOSED.name())
+            .build();
+
+        // when
+        issueManagementService.updateIssue(request);
+
+        // then
+        verify(issueService).update(
+            anyLong(),
+            anyLong(),
+            anyString(),
+            anyString(),
+            anyString(),
+            anyString(),
+            anyList(),
+            anyString(),
+            anyString(),
+            any(TeamMember.class),
+            any(Milestone.class)
+        );
     }
 
     private Member createMember() {

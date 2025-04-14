@@ -61,7 +61,7 @@ public class IssueService {
     @Transactional
     public void update(
         Long memberId,
-        Issue issue,
+        Long issueId,
         String organizationName,
         String repositoryName,
         String title,
@@ -73,6 +73,8 @@ public class IssueService {
         Milestone milestone
     ) {
         validateAssignee(memberId, organizationName, repositoryName, assignees);
+
+        Issue issue = issueRepository.findById(issueId);
 
         updateGithubIssue(
             memberId,

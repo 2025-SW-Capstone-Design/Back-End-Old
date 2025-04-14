@@ -56,6 +56,29 @@ public class IssueManagementService {
         );
     }
 
+    public void updateIssue(IssueUpdateServiceRequest request) {
+        Team team = teamRepository.findById(request.teamId());
+        Member member = memberRepository.findById(request.memberId());
+        TeamMember teamMember = teamMemberRepository.findByTeamIdAndMemberId(team.getId(), member.getId());
+        Milestone milestone = milestoneRepository.findById(request.milestoneId());
+
+        validateTeamMembership(member, team);
+
+        issueService.update(
+            member.getId(),
+            request.issueId(),
+            request.organizationName(),
+            request.repositoryName(),
+            request.title(),
+            request.content(),
+            request.labels(),
+            request.assignees(),
+            request.state(),
+            teamMember,
+            milestone
+        );
+    }
+
     public Long createIssueLabel(IssueLabelCreateServiceRequest request, Long memberId) {
         Team team = teamRepository.findById(request.teamId());
         Member member = memberRepository.findById(memberId);
