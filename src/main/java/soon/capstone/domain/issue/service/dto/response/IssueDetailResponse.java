@@ -10,6 +10,7 @@ public record IssueDetailResponse(
         String title,
         String content,
         String creator,
+        String status,
         List<IssueLabelDetailResponse> labels
 ) {
 }

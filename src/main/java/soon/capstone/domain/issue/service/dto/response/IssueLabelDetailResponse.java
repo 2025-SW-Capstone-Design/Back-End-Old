@@ -1,8 +1,10 @@
 package soon.capstone.domain.issue.service.dto.response;
 
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-@ToString
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 public class IssueLabelDetailResponse {

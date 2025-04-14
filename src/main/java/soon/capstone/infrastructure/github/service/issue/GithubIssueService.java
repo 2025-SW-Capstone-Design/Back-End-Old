@@ -11,6 +11,7 @@ import soon.capstone.infrastructure.github.service.dto.GithubIssueCreateServiceR
 import soon.capstone.infrastructure.github.service.dto.GithubIssueDetailServiceRequest;
 import soon.capstone.infrastructure.github.service.dto.GithubIssueUpdateServiceRequest;
 import soon.capstone.infrastructure.github.service.dto.response.GithubIssueCreateResponse;
+import soon.capstone.infrastructure.github.service.dto.response.GithubIssueDetailResponse;
 import soon.capstone.infrastructure.redis.oauth2.repository.OAuthTokenRepository;
 import soon.capstone.infrastructure.restclient.config.RestClientConfig;
 
@@ -91,10 +92,12 @@ public class GithubIssueService {
                 .replace("{repositoryName}", request.repositoryName())
                 .replace("{issueNumber}", String.valueOf(request.issueNumber()));
 
-            return restClient.get()
+            GithubIssueDetailResponse response = restClient.get()
                 .uri(uri)
                 .retrieve()
-                .body(IssueDetailResponse.class);
+                .body(GithubIssueDetailResponse.class);
+
+            return response.toIssueDetailResponse();
 
         } catch (HttpClientErrorException e) {
             log.error("GitHub API 호출 중 오류 발생: {}", e.getMessage(), e);

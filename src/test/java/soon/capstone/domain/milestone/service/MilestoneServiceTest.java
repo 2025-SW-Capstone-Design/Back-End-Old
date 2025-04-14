@@ -475,6 +475,7 @@ class MilestoneServiceTest extends IntegrationTestSupport {
         return IssueDetailResponse.builder()
                 .issueId(issue.getId())
                 .title(issue.getTitle())
+                .status(issue.getStatus().name())
                 .content(issue.getContent())
                 .creator(issue.getTeamMember().getMember().getNickname())
                 .labels(createIssueLabels(label))

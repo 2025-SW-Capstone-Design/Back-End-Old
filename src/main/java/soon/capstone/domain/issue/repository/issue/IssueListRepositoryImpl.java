@@ -65,6 +65,7 @@ public class IssueListRepositoryImpl implements IssueListRepository {
                 .issueId(currentIssue.getId())
                 .title(currentIssue.getTitle())
                 .content(currentIssue.getContent())
+                .status(currentIssue.getStatus().name())
                 .creator(nickname)
                 .labels(labels)
                 .build();
