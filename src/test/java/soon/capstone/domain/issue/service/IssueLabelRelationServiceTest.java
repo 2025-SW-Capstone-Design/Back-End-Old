@@ -13,6 +13,7 @@ import soon.capstone.domain.issue.entity.IssueStatus;
 import soon.capstone.domain.issue.repository.issue.IssueRepository;
 import soon.capstone.domain.issue.repository.issueLabelRelation.IssueLabelRelationRepository;
 import soon.capstone.domain.issue.repository.issuelabel.IssueLabelRepository;
+import soon.capstone.domain.issue.service.dto.response.IssueLabelDetailResponse;
 import soon.capstone.domain.member.entity.Member;
 import soon.capstone.domain.member.repository.MemberRepository;
 import soon.capstone.domain.milestone.entity.Milestone;
@@ -191,6 +192,46 @@ class IssueLabelRelationServiceTest extends IntegrationTestSupport {
             .hasSize(2)
             .extracting(r -> r.getIssueLabel().getTitle())
             .containsExactlyInAnyOrder("label2", "label3");
+    }
+
+    @DisplayName("이슈에 연결된 라벨을 정상적으로 조회한다.")
+    @Test
+    void retrievesLabelsLinkedToIssue() {
+        // given
+        Member member = createMember();
+        memberRepository.save(member);
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        TeamMember teamMember = createTeamMember(member, team);
+        teamMemberRepository.save(teamMember);
+
+        Project project = createProject(team);
+        projectRepository.save(project);
+
+        Milestone milestone = createMilestone(project);
+        milestoneRepository.save(milestone);
+
+        Issue issue = createIssue(milestone);
+        issueRepository.save(issue);
+
+        IssueLabel issueLabel1 = createIssueLabel(project, team, "label1");
+        IssueLabel issueLabel2 = createIssueLabel(project, team, "label2");
+        issueLabelRepository.saveAll(List.of(issueLabel1, issueLabel2));
+
+        IssueLabelRelation relation1 = IssueLabelRelation.createMapping(issue, issueLabel1);
+        IssueLabelRelation relation2 = IssueLabelRelation.createMapping(issue, issueLabel2);
+        issueLabelRelationRepository.saveAll(List.of(relation1, relation2));
+
+        // when
+        List<IssueLabelDetailResponse> labels = issueLabelRelationService.findByLabelsByIssueId(issue);
+
+        // then
+        assertThat(labels)
+            .hasSize(2)
+            .extracting(IssueLabelDetailResponse::getName)
+            .containsExactlyInAnyOrder("label1", "label2");
     }
 
     private Member createMember() {

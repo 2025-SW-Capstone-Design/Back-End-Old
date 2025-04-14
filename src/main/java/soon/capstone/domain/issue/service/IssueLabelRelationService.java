@@ -9,6 +9,7 @@ import soon.capstone.domain.issue.entity.IssueLabel;
 import soon.capstone.domain.issue.entity.IssueLabelRelation;
 import soon.capstone.domain.issue.repository.issueLabelRelation.IssueLabelRelationRepository;
 import soon.capstone.domain.issue.repository.issuelabel.IssueLabelRepository;
+import soon.capstone.domain.issue.service.dto.response.IssueLabelDetailResponse;
 import soon.capstone.infrastructure.github.service.dto.GithubIssueLabelAppendServiceRequest;
 import soon.capstone.infrastructure.github.service.issue.GithubIssueLabelService;
 
@@ -65,6 +66,13 @@ public class IssueLabelRelationService {
         if (!relationsToAdd.isEmpty()) {
             issueLabelRelationRepository.saveAll(relationsToAdd);
         }
+    }
+
+    public List<IssueLabelDetailResponse> findByLabelsByIssueId(Issue issue) {
+        List<IssueLabelRelation> relations = issueLabelRelationRepository.findAllByIssue(issue);
+        return relations.stream()
+            .map(relation -> IssueLabelDetailResponse.of(relation.getIssueLabel()))
+            .collect(Collectors.toList());
     }
 
     private void appendLabelsToGithub(Issue issue, List<String> labels, Long memberId, String organizationName, String repositoryName) {
