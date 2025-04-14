@@ -6,9 +6,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import soon.capstone.IntegrationTestSupport;
+import soon.capstone.domain.issue.entity.Issue;
 import soon.capstone.domain.issue.entity.IssueLabel;
 import soon.capstone.domain.issue.entity.IssueStatus;
 import soon.capstone.domain.issue.entity.IssueTemplate;
+import soon.capstone.domain.issue.repository.issue.IssueRepository;
 import soon.capstone.domain.issue.repository.issuelabel.IssueLabelRepository;
 import soon.capstone.domain.issue.repository.issuetemplate.IssueTemplateRepository;
 import soon.capstone.domain.issue.service.dto.request.*;
@@ -63,6 +65,9 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
     @Autowired
     private MilestoneRepository milestoneRepository;
 
+    @Autowired
+    private IssueRepository issueRepository;
+
     @MockitoBean
     private IssueLabelService issueLabelService;
 
@@ -76,6 +81,7 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
     void tearDown() {
         issueLabelRepository.deleteAllInBatch();
         issueTemplateRepository.deleteAllInBatch();
+        issueRepository.deleteAllInBatch();
         milestoneRepository.deleteAllInBatch();
         projectRepository.deleteAllInBatch();
         teamMemberRepository.deleteAllInBatch();
@@ -719,6 +725,48 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
         );
     }
 
+    @DisplayName("이슈의 상태를 CLOSED로 변경 한다.")
+    @Test
+    void closedIssue() {
+        // given
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        Member member = createMember();
+        memberRepository.save(member);
+
+        TeamMember teamMember = TeamMember.createMember(member, team);
+        teamMemberRepository.save(teamMember);
+
+        Project project = createProject(team);
+        projectRepository.save(project);
+
+        Milestone milestone = createMilestone(project);
+        milestoneRepository.save(milestone);
+
+        Issue issue = createIssue(project, teamMember, milestone);
+        issueRepository.save(issue);
+
+        var request = IssueClosedServiceRequest.builder()
+            .memberId(member.getId())
+            .teamId(team.getId())
+            .issueId(issue.getId())
+            .organizationName("organizationName")
+            .repositoryName("repositoryName")
+            .build();
+
+        // when
+        issueManagementService.closedIssue(request);
+
+        // then
+        verify(issueService).closedIssue(
+            anyLong(),
+            anyLong(),
+            anyString(),
+            anyString()
+        );
+    }
+
     private Member createMember() {
         return Member.builder()
             .email("email")
@@ -753,6 +801,18 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
             .startDate(LocalDateTime.of(2025, 4, 11, 0, 0))
             .githubMilestoneId(1)
             .project(project)
+            .build();
+    }
+
+    private Issue createIssue(Project project, TeamMember teamMember, Milestone milestone) {
+        return Issue.builder()
+            .title("title")
+            .githubIssueNumber(1L)
+            .status(IssueStatus.OPEN)
+            .content("content")
+            .project(project)
+            .teamMember(teamMember)
+            .milestone(milestone)
             .build();
     }
 

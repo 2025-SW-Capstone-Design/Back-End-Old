@@ -79,6 +79,20 @@ public class IssueManagementService {
         );
     }
 
+    public void closedIssue(IssueClosedServiceRequest request) {
+        Member member = memberRepository.findById(request.memberId());
+        Team team = teamRepository.findById(request.teamId());
+
+        validateTeamMembership(member, team);
+
+        issueService.closedIssue(
+            member.getId(),
+            request.issueId(),
+            request.organizationName(),
+            request.repositoryName()
+        );
+    }
+
     public Long createIssueLabel(IssueLabelCreateServiceRequest request, Long memberId) {
         Team team = teamRepository.findById(request.teamId());
         Member member = memberRepository.findById(memberId);
