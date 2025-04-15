@@ -27,6 +27,7 @@ import soon.capstone.domain.teammember.entity.common.Role;
 import soon.capstone.domain.teammember.repository.TeamMemberRepository;
 import soon.capstone.global.exception.common.UnauthorizedException;
 import soon.capstone.infrastructure.github.service.dto.GithubIssueCreateServiceRequest;
+import soon.capstone.infrastructure.github.service.dto.GithubIssueDetailListServiceRequest;
 import soon.capstone.infrastructure.github.service.dto.GithubIssueDetailServiceRequest;
 import soon.capstone.infrastructure.github.service.dto.GithubIssueUpdateServiceRequest;
 import soon.capstone.infrastructure.github.service.dto.response.GithubIssueDetailResponse;
@@ -229,12 +230,7 @@ class IssueServiceTest extends IntegrationTestSupport {
         Issue issue = Issue.createNewIssue("title", "content", 1L, teamMember, milestone, project);
         issueRepository.save(issue);
 
-        GithubIssueDetailResponse githubResponse = GithubIssueDetailResponse.builder()
-            .assignee(Map.of("login", "assignee"))
-            .body("body")
-            .state("open")
-            .title("title")
-            .build();
+        GithubIssueDetailResponse githubResponse = createGithubIssueDetailResponse("title");
 
         given(githubIssueService.getIssueDetail(any(GithubIssueDetailServiceRequest.class)))
             .willReturn(githubResponse);
@@ -268,6 +264,42 @@ class IssueServiceTest extends IntegrationTestSupport {
 
         verify(issueLabelRelationService, times(1))
             .findByLabelsByIssueId(any(Issue.class));
+    }
+
+    @DisplayName("프로젝트의 모든 이슈를 조회한다.")
+    @Test
+    void getIssuesWithRepository() {
+        // given
+        Long memberId = 1L;
+        String organizationName = "org";
+        String repositoryName = "repo";
+
+        given(githubIssueService.getIssuesWithRepository(any(GithubIssueDetailListServiceRequest.class)))
+            .willReturn(List.of(
+                createGithubIssueDetailResponse("title1"),
+                createGithubIssueDetailResponse("title2")
+            ));
+
+        // when
+        List<IssueDetailResponse> responses = issueService.getIssuesWithRepository(
+            memberId,
+            organizationName,
+            repositoryName
+        );
+
+        // then
+        assertThat(responses)
+            .extracting("title")
+            .containsExactlyInAnyOrder("title1", "title2");
+    }
+
+    private static GithubIssueDetailResponse createGithubIssueDetailResponse(String title) {
+        return GithubIssueDetailResponse.builder()
+            .assignee(Map.of("login", "assignee"))
+            .body("body")
+            .state("open")
+            .title(title)
+            .build();
     }
 
     private Member createMember() {

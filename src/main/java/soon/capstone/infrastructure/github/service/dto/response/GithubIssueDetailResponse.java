@@ -14,6 +14,7 @@ public record GithubIssueDetailResponse(
     String title,
     String body,
     Map<String, Object> assignee,
+    Long number,
     String state
 
 ) {
