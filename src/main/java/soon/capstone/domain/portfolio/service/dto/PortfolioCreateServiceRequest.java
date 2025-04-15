@@ -1,0 +1,10 @@
+package soon.capstone.domain.portfolio.service.dto;
+
+import lombok.Builder;
+
+@Builder
+public record PortfolioCreateServiceRequest(
+    String title,
+    String content
+) {
+}
