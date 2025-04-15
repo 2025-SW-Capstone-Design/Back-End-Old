@@ -59,6 +59,12 @@ public enum ErrorDetail {
     // README 관련
     READEME_NOT_FOUND(404, "해당 README를 찾을 수 없습니다."),
 
+    // 포트폴리오 관련
+    PORTFOLIO_BAD_REQUEST(400, "제목과 내용이 비어있습니다."),
+    PORTFOLIO_IS_NOT_OWNER(403, "해당 포트폴리오의 소유자가 아닙니다."),
+    PORTFOLIO_NOT_FOUND(404, "해당 포트폴리오를 찾을 수 없습니다."),
+    PORTFOLIO_DUPLICATE_TITLE(409, "포트폴리오 제목이 중복됩니다."),
+
     ;
 
     private final int status;
