@@ -293,15 +293,6 @@ class IssueServiceTest extends IntegrationTestSupport {
             .containsExactlyInAnyOrder("title1", "title2");
     }
 
-    private static GithubIssueDetailResponse createGithubIssueDetailResponse(String title) {
-        return GithubIssueDetailResponse.builder()
-            .assignee(Map.of("login", "assignee"))
-            .body("body")
-            .state("open")
-            .title(title)
-            .build();
-    }
-
     private Member createMember() {
         return Member.builder()
             .email("email")
@@ -354,6 +345,15 @@ class IssueServiceTest extends IntegrationTestSupport {
             .color("color")
             .name(name)
             .description("description")
+            .build();
+    }
+
+    private GithubIssueDetailResponse createGithubIssueDetailResponse(String title) {
+        return GithubIssueDetailResponse.builder()
+            .assignee(Map.of("login", "assignee"))
+            .body("body")
+            .state("open")
+            .title(title)
             .build();
     }
 

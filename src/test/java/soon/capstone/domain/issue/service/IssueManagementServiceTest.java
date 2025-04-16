@@ -822,6 +822,106 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
             .containsExactly(issue.getId(), "title", "content", "creator", "open");
     }
 
+    @DisplayName("scope가 project인 경우 프로젝트의 모든 이슈 목록을 조회한다. ")
+    @Test
+    void getIssuesWithProject() {
+        // given
+        Member member = createMember();
+        memberRepository.save(member);
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        TeamMember teamMember = TeamMember.createMember(member, team);
+        teamMemberRepository.save(teamMember);
+
+        Project project = createProject(team);
+        projectRepository.save(project);
+
+        var request = IssueDetailListServiceRequest.builder()
+            .memberId(member.getId())
+            .teamId(team.getId())
+            .projectId(project.getId())
+            .scope("project")
+            .build();
+
+        given(issueService.getIssuesWithRepository(
+            anyLong(),
+            anyString(),
+            anyString()
+        )).willReturn(List.of(
+            createIssueDetailResponse(1L, "title1"),
+            createIssueDetailResponse(2L, "title2")
+        ));
+
+        // when
+        List<IssueDetailResponse> responses = issueManagementService.getIssues(request);
+
+        // then
+        assertThat(responses).hasSize(2)
+            .extracting("issueId", "title")
+            .containsExactlyInAnyOrder(
+                tuple(1L, "title1"),
+                tuple(2L, "title2")
+            );
+
+        verify(issueService).getIssuesWithRepository(
+            anyLong(),
+            anyString(),
+            anyString()
+        );
+    }
+
+    @DisplayName("scope가 team인 경우 팀의 모든 이슈 목록을 조회한다. ")
+    @Test
+    void getIssuesWithTeam() {
+        // given
+        Member member = createMember();
+        memberRepository.save(member);
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        TeamMember teamMember = TeamMember.createMember(member, team);
+        teamMemberRepository.save(teamMember);
+
+        Project project = createProject(team);
+        projectRepository.save(project);
+
+        var request = IssueDetailListServiceRequest.builder()
+            .memberId(member.getId())
+            .teamId(team.getId())
+            .projectId(project.getId())
+            .scope("team")
+            .build();
+
+        given(issueService.getIssuesWithOrganization(
+            anyLong(),
+            anyString(),
+            anyString()
+        )).willReturn(List.of(
+            createIssueDetailResponse(1L, "title1"),
+            createIssueDetailResponse(2L, "title2")
+        ));
+
+        // when
+        List<IssueDetailResponse> responses = issueManagementService.getIssues(request);
+
+        // then
+        assertThat(responses).hasSize(2)
+            .extracting("issueId", "title")
+            .containsExactlyInAnyOrder(
+                tuple(1L, "title1"),
+                tuple(2L, "title2")
+            );
+
+        verify(issueService).getIssuesWithOrganization(
+            anyLong(),
+            anyString(),
+            anyString()
+        );
+    }
+
     private Member createMember() {
         return Member.builder()
             .email("email")
@@ -957,6 +1057,17 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
             .description("description")
             .content("content")
             .type(feature)
+            .build();
+    }
+
+    private IssueDetailResponse createIssueDetailResponse(long id, String title) {
+        return IssueDetailResponse.builder()
+            .issueId(id)
+            .title(title)
+            .content("content")
+            .creator("creator")
+            .status("status")
+            .labels(List.of())
             .build();
     }
 
