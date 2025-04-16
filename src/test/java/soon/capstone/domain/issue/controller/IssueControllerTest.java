@@ -219,12 +219,49 @@ class IssueControllerTest extends ControllerTestSupport {
             .andExpect(jsonPath("$.labels[1].labelId").value(2L));
     }
 
+    @TestMember
+    @DisplayName("이슈 목록을 조회한다")
+    @Test
+    void getIssues() throws Exception {
+        // given
+        var response = List.of(
+            createIssueDetailResponse(1L, "title1"),
+            createIssueDetailResponse(2L, "title2")
+        );
+
+        given(issueManagementService.getIssues(any()))
+            .willReturn(response);
+
+        // expected
+        mockMvc.perform(
+                get(BASE_URL + "/projects/{projectId}/issues", 1L, 1L)
+                    .queryParam("scope", "team")
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].issueId").value(1L))
+            .andExpect(jsonPath("$[0].title").value("title1"))
+            .andExpect(jsonPath("$[1].issueId").value(2L))
+            .andExpect(jsonPath("$[1].title").value("title2"));
+    }
+
     public IssueLabelDetailResponse createIssueLabelDetailResponse(Long id) {
         return IssueLabelDetailResponse.builder()
             .labelId(id)
             .description("description")
             .color("color")
             .name("name")
+            .build();
+    }
+
+    private IssueDetailResponse createIssueDetailResponse(Long id, String title) {
+        return IssueDetailResponse.builder()
+            .issueId(id)
+            .title(title)
+            .content("content")
+            .creator("creator")
+            .status("close")
             .build();
     }
 

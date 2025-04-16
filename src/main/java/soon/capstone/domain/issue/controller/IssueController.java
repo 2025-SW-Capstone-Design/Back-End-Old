@@ -4,13 +4,12 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import soon.capstone.domain.issue.controller.dto.IssueClosedRequest;
-import soon.capstone.domain.issue.controller.dto.IssueCreateRequest;
-import soon.capstone.domain.issue.controller.dto.IssueDetailRequest;
-import soon.capstone.domain.issue.controller.dto.IssueUpdateRequest;
+import soon.capstone.domain.issue.controller.dto.*;
 import soon.capstone.domain.issue.service.IssueManagementService;
 import soon.capstone.domain.issue.service.dto.response.IssueDetailResponse;
 import soon.capstone.global.anootation.AuthMemberId;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/teams/{teamId}")
@@ -66,6 +65,20 @@ public class IssueController {
     ) {
         IssueDetailResponse response = issueManagementService.getIssueDetail(
             IssueDetailRequest.toServiceRequest(memberId, teamId, issueId, projectId)
+        );
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/projects/{projectId}/issues")
+    public ResponseEntity<List<IssueDetailResponse>> getIssues(
+        @AuthMemberId Long memberId,
+        @PathVariable Long teamId,
+        @PathVariable Long projectId,
+        @RequestParam(value = "scope") String scope
+    ) {
+        List<IssueDetailResponse> response = issueManagementService.getIssues(
+            IssueDetailListRequest.toServiceRequest(memberId, teamId, projectId, scope)
         );
 
         return ResponseEntity.ok(response);
