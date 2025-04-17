@@ -34,4 +34,8 @@ public class ProjectRepository {
     public void deleteAllInBatch() {
         projectJpaRepository.deleteAllInBatch();
     }
+
+    public void saveAll(List<Project> projects) {
+        projectJpaRepository.saveAll(projects);
+    }
 }

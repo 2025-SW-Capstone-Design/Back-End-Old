@@ -2,6 +2,7 @@ package soon.capstone.domain.milestone.repository;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import soon.capstone.domain.milestone.service.dto.MilestoneMailDto;
 import soon.capstone.domain.milestone.service.dto.response.MilestoneResponse;
 import soon.capstone.domain.milestone.entity.Milestone;
 import soon.capstone.domain.project.entity.Project;
@@ -47,5 +48,9 @@ public class MilestoneRepository {
 
     public List<Milestone> findAll() {
         return milestoneJpaRepository.findAll();
+    }
+
+    public List<MilestoneMailDto> getEmailsByMilestones() {
+        return milestoneJpaRepository.getEmailsByMilestones();
     }
 }
