@@ -5,6 +5,8 @@ import org.springframework.stereotype.Repository;
 import soon.capstone.domain.team.entity.Team;
 import soon.capstone.global.exception.team.TeamNotFoundException;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 @Repository
 public class TeamRepository {
@@ -28,4 +30,7 @@ public class TeamRepository {
         return teamJpaRepository.existsByNameOrOrganizationName(name, organizationName);
     }
 
+    public void saveAll(List<Team> teams) {
+        teamJpaRepository.saveAll(teams);
+    }
 }

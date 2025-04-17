@@ -39,6 +39,22 @@ class EmailSendServiceTest extends IntegrationTestSupport {
         verify(mailSender, times(1)).send(any(MimeMessage.class));
     }
 
+    @DisplayName("마감일이 하루 남은 마일스톤에 대하여 이메일을 전송한다.")
+    @Test
+    void sendMilestoneEmail() {
+        // given
+        String email = "test@example.com";
+        String milestoneTitle = "마일스톤 제목";
+        String teamName = "팀 이름";
+        MimeMessage mimeMessage = mock(MimeMessage.class);
+        given(mailSender.createMimeMessage()).willReturn(mimeMessage);
+
+        // expected
+        assertThatCode(() -> emailSendService.sendMilestoneEmail(email, milestoneTitle, teamName))
+            .doesNotThrowAnyException();
+        verify(mailSender, times(1)).send(any(MimeMessage.class));
+    }
+
     @DisplayName("이메일을 전송 하는 중 실패한다면 예외가 발생한다")
     @Test
     void sendInvitationCodeEmailException() {
