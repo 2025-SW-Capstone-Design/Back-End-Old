@@ -104,7 +104,7 @@ public class IssueLabelService {
         return labelResponse.stream()
             .map(response -> {
                 IssueLabel label = labelMap.get(response.getName());
-                return response.withId(label.getId());
+                return response.withLabelId(label.getId());
             })
             .collect(Collectors.toList());
     }

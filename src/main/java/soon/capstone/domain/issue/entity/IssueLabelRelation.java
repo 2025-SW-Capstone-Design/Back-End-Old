@@ -32,6 +32,10 @@ public class IssueLabelRelation extends BaseTimeEntity {
         this.issueLabel = issueLabel;
     }
 
+    public void updateIssueLabel(IssueLabel issueLabel) {
+        this.issueLabel = issueLabel;
+    }
+
     public static IssueLabelRelation createMapping(Issue issue, IssueLabel issueLabel) {
         return IssueLabelRelation.builder()
             .issue(issue)

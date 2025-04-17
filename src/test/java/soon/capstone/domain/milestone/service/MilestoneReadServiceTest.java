@@ -194,10 +194,10 @@ class MilestoneReadServiceTest extends IntegrationTestSupport {
         assertThat(response.issues()).hasSize(2);
 
         assertThat(response.issues())
-                .extracting("title", "content", "creator")
+                .extracting("title", "content", "creator", "status")
                 .containsExactlyInAnyOrder(
-                        tuple("Issue 1", "Content 1", "nickname"),
-                        tuple("Issue 2", "Content 2", "nickname")
+                        tuple("Issue 1", "Content 1", "nickname", "OPEN"),
+                        tuple("Issue 2", "Content 2", "nickname", "OPEN")
                 );
 
         IssueDetailResponse issueWithTwoLabels = response.issues().stream()
@@ -265,6 +265,7 @@ class MilestoneReadServiceTest extends IntegrationTestSupport {
                 .status(IssueStatus.OPEN)
                 .milestone(milestone)
                 .project(project)
+                .githubIssueNumber(1L)
                 .build();
     }
 

@@ -27,6 +27,7 @@ public class RedisCacheConfig {
         Map<String, RedisCacheConfiguration> cacheConfigs = new HashMap<>();
         cacheConfigs.put("issueLabels", defaultConfig);
         cacheConfigs.put("assignee", defaultConfig);
+        cacheConfigs.put("issueDetail", defaultConfig);
 
         return RedisCacheManager.builder(cf)
             .cacheDefaults(defaultConfig)

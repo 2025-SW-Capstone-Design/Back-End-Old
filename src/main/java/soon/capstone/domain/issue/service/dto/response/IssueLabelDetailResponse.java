@@ -1,28 +1,35 @@
 package soon.capstone.domain.issue.service.dto.response;
 
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import soon.capstone.domain.issue.entity.IssueLabel;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 public class IssueLabelDetailResponse {
-    private Long id;
+    private Long labelId;
     private String name;
     private String color;
     private String description;
 
     @Builder(toBuilder = true)
-    private IssueLabelDetailResponse(Long id, String name, String color, String description) {
-        this.id = id;
+    private IssueLabelDetailResponse(Long labelId, String name, String color, String description) {
+        this.labelId = labelId;
         this.name = name;
         this.color = color;
         this.description = description;
     }
 
-    public IssueLabelDetailResponse withId(Long newId) {
-        return toBuilder().id(newId).build();
+    public IssueLabelDetailResponse withLabelId(Long newId) {
+        return toBuilder().labelId(newId).build();
+    }
+
+    public static IssueLabelDetailResponse of(IssueLabel issueLabel) {
+        return IssueLabelDetailResponse.builder()
+            .labelId(issueLabel.getId())
+            .name(issueLabel.getTitle())
+            .color(issueLabel.getColor())
+            .description(issueLabel.getDescription())
+            .build();
     }
 
 }

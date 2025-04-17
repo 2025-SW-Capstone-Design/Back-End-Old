@@ -6,11 +6,15 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import soon.capstone.IntegrationTestSupport;
+import soon.capstone.domain.issue.entity.Issue;
 import soon.capstone.domain.issue.entity.IssueLabel;
+import soon.capstone.domain.issue.entity.IssueStatus;
 import soon.capstone.domain.issue.entity.IssueTemplate;
+import soon.capstone.domain.issue.repository.issue.IssueRepository;
 import soon.capstone.domain.issue.repository.issuelabel.IssueLabelRepository;
 import soon.capstone.domain.issue.repository.issuetemplate.IssueTemplateRepository;
 import soon.capstone.domain.issue.service.dto.request.*;
+import soon.capstone.domain.issue.service.dto.response.IssueDetailResponse;
 import soon.capstone.domain.issue.service.dto.response.IssueLabelDetailResponse;
 import soon.capstone.domain.issue.service.dto.response.IssueTemplateDetailResponse;
 import soon.capstone.domain.member.entity.Member;
@@ -62,6 +66,9 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
     @Autowired
     private MilestoneRepository milestoneRepository;
 
+    @Autowired
+    private IssueRepository issueRepository;
+
     @MockitoBean
     private IssueLabelService issueLabelService;
 
@@ -75,6 +82,7 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
     void tearDown() {
         issueLabelRepository.deleteAllInBatch();
         issueTemplateRepository.deleteAllInBatch();
+        issueRepository.deleteAllInBatch();
         milestoneRepository.deleteAllInBatch();
         projectRepository.deleteAllInBatch();
         teamMemberRepository.deleteAllInBatch();
@@ -554,14 +562,14 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
         projectRepository.save(project);
 
         var label1 = IssueLabelDetailResponse.builder()
-            .id(1L)
+            .labelId(1L)
             .name("bug")
             .color("#ff0000")
             .description("버그 라벨")
             .build();
 
         var label2 = IssueLabelDetailResponse.builder()
-            .id(2L)
+            .labelId(2L)
             .name("enhancement")
             .color("#0000ff")
             .description("기능 개선 라벨")
@@ -581,10 +589,10 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
         // then
         assertThat(response)
             .hasSize(2)
-            .extracting("id", "name", "color")
+            .extracting("labelId", "name", "color")
             .containsExactlyInAnyOrder(
-                tuple(label1.getId(), "bug", "#ff0000"),
-                tuple(label2.getId(), "enhancement", "#0000ff")
+                tuple(label1.getLabelId(), "bug", "#ff0000"),
+                tuple(label2.getLabelId(), "enhancement", "#0000ff")
             );
     }
 
@@ -666,6 +674,254 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
             .isEqualTo(1L);
     }
 
+    @DisplayName("이슈를 수정한다")
+    @Test
+    void updateIssue() {
+        // given
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        Member member = createMember();
+        memberRepository.save(member);
+
+        TeamMember teamMember = TeamMember.createMember(member, team);
+        teamMemberRepository.save(teamMember);
+
+        Project project = createProject(team);
+        projectRepository.save(project);
+
+        Milestone milestone = createMilestone(project);
+        milestoneRepository.save(milestone);
+
+        var request = IssueUpdateServiceRequest.builder()
+            .teamId(team.getId())
+            .memberId(member.getId())
+            .milestoneId(milestone.getId())
+            .issueId(1L)
+            .organizationName("org")
+            .repositoryName("repo")
+            .title("Updated Title")
+            .content("Updated Content")
+            .labels(List.of("label1", "label2"))
+            .assignees("assignee")
+            .state(IssueStatus.CLOSED.name())
+            .build();
+
+        // when
+        issueManagementService.updateIssue(request);
+
+        // then
+        verify(issueService).update(
+            anyLong(),
+            anyLong(),
+            anyString(),
+            anyString(),
+            anyString(),
+            anyString(),
+            anyList(),
+            anyString(),
+            anyString(),
+            any(TeamMember.class),
+            any(Milestone.class)
+        );
+    }
+
+    @DisplayName("이슈의 상태를 CLOSED로 변경 한다.")
+    @Test
+    void closedIssue() {
+        // given
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        Member member = createMember();
+        memberRepository.save(member);
+
+        TeamMember teamMember = TeamMember.createMember(member, team);
+        teamMemberRepository.save(teamMember);
+
+        Project project = createProject(team);
+        projectRepository.save(project);
+
+        Milestone milestone = createMilestone(project);
+        milestoneRepository.save(milestone);
+
+        Issue issue = createIssue(project, teamMember, milestone);
+        issueRepository.save(issue);
+
+        var request = IssueClosedServiceRequest.builder()
+            .memberId(member.getId())
+            .teamId(team.getId())
+            .issueId(issue.getId())
+            .organizationName("organizationName")
+            .repositoryName("repositoryName")
+            .build();
+
+        // when
+        issueManagementService.closedIssue(request);
+
+        // then
+        verify(issueService).closedIssue(
+            anyLong(),
+            anyLong(),
+            anyString(),
+            anyString()
+        );
+    }
+
+    @DisplayName("이슈의 상세 정보를 조회한다")
+    @Test
+    void getIssueDetail() {
+        // given
+        Member member = createMember();
+        memberRepository.save(member);
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        TeamMember teamMember = TeamMember.createMember(member, team);
+        teamMemberRepository.save(teamMember);
+
+        Project project = createProject(team);
+        projectRepository.save(project);
+
+        Milestone milestone = createMilestone(project);
+        milestoneRepository.save(milestone);
+
+        Issue issue = createIssue(project, teamMember, milestone);
+        issueRepository.save(issue);
+
+        IssueDetailServiceRequest request = IssueDetailServiceRequest.builder()
+            .memberId(member.getId())
+            .teamId(team.getId())
+            .projectId(project.getId())
+            .issueId(issue.getId())
+            .build();
+
+        IssueDetailResponse mockResponse = IssueDetailResponse.builder()
+            .issueId(issue.getId())
+            .title("title")
+            .content("content")
+            .creator("creator")
+            .status("open")
+            .labels(List.of())
+            .build();
+
+        given(issueService.getIssueDetail(
+            member.getId(),
+            issue.getId(),
+            team.getOrganizationName(),
+            project.getTitle()
+        )).willReturn(mockResponse);
+
+        // when
+        IssueDetailResponse response = issueManagementService.getIssueDetail(request);
+
+        // then
+        assertThat(response)
+            .extracting("issueId", "title", "content", "creator", "status")
+            .containsExactly(issue.getId(), "title", "content", "creator", "open");
+    }
+
+    @DisplayName("scope가 project인 경우 프로젝트의 모든 이슈 목록을 조회한다. ")
+    @Test
+    void getIssuesWithProject() {
+        // given
+        Member member = createMember();
+        memberRepository.save(member);
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        TeamMember teamMember = TeamMember.createMember(member, team);
+        teamMemberRepository.save(teamMember);
+
+        Project project = createProject(team);
+        projectRepository.save(project);
+
+        var request = IssueDetailListServiceRequest.builder()
+            .memberId(member.getId())
+            .teamId(team.getId())
+            .projectId(project.getId())
+            .scope("project")
+            .build();
+
+        given(issueService.getIssuesWithRepository(
+            anyLong(),
+            anyString(),
+            anyString()
+        )).willReturn(List.of(
+            createIssueDetailResponse(1L, "title1"),
+            createIssueDetailResponse(2L, "title2")
+        ));
+
+        // when
+        List<IssueDetailResponse> responses = issueManagementService.getIssues(request);
+
+        // then
+        assertThat(responses).hasSize(2)
+            .extracting("issueId", "title")
+            .containsExactlyInAnyOrder(
+                tuple(1L, "title1"),
+                tuple(2L, "title2")
+            );
+
+        verify(issueService).getIssuesWithRepository(
+            anyLong(),
+            anyString(),
+            anyString()
+        );
+    }
+
+    @DisplayName("scope가 team인 경우 팀의 모든 이슈 목록을 조회한다. ")
+    @Test
+    void getIssuesWithTeam() {
+        // given
+        Member member = createMember();
+        memberRepository.save(member);
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        TeamMember teamMember = TeamMember.createMember(member, team);
+        teamMemberRepository.save(teamMember);
+
+        Project project = createProject(team);
+        projectRepository.save(project);
+
+        var request = IssueDetailListServiceRequest.builder()
+            .memberId(member.getId())
+            .teamId(team.getId())
+            .projectId(project.getId())
+            .scope("team")
+            .build();
+
+        given(issueService.getIssuesWithOrganization(
+            anyLong(),
+            anyString(),
+            anyString()
+        )).willReturn(List.of(
+            createIssueDetailResponse(1L, "title1"),
+            createIssueDetailResponse(2L, "title2")
+        ));
+
+        // when
+        List<IssueDetailResponse> responses = issueManagementService.getIssues(request);
+
+        // then
+        assertThat(responses).hasSize(2)
+            .extracting("issueId", "title")
+            .containsExactlyInAnyOrder(
+                tuple(1L, "title1"),
+                tuple(2L, "title2")
+            );
+
+        verify(issueService).getIssuesWithOrganization(
+            anyLong(),
+            anyString(),
+            anyString()
+        );
+    }
+
     private Member createMember() {
         return Member.builder()
             .email("email")
@@ -700,6 +956,18 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
             .startDate(LocalDateTime.of(2025, 4, 11, 0, 0))
             .githubMilestoneId(1)
             .project(project)
+            .build();
+    }
+
+    private Issue createIssue(Project project, TeamMember teamMember, Milestone milestone) {
+        return Issue.builder()
+            .title("title")
+            .githubIssueNumber(1L)
+            .status(IssueStatus.OPEN)
+            .content("content")
+            .project(project)
+            .teamMember(teamMember)
+            .milestone(milestone)
             .build();
     }
 
@@ -789,6 +1057,17 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
             .description("description")
             .content("content")
             .type(feature)
+            .build();
+    }
+
+    private IssueDetailResponse createIssueDetailResponse(long id, String title) {
+        return IssueDetailResponse.builder()
+            .issueId(id)
+            .title(title)
+            .content("content")
+            .creator("creator")
+            .status("status")
+            .labels(List.of())
             .build();
     }
 

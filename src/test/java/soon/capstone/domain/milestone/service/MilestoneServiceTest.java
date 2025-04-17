@@ -303,7 +303,7 @@ class MilestoneServiceTest extends IntegrationTestSupport {
                             .hasSize(1)
                             .first()
                             .satisfies(l -> {
-                                assertThat(l.getId()).isEqualTo(label.getId());
+                                assertThat(l.getLabelId()).isEqualTo(label.getId());
                                 assertThat(l.getName()).isEqualTo(label.getTitle());
                                 assertThat(l.getColor()).isEqualTo(label.getColor());
                                 assertThat(l.getDescription()).isEqualTo(label.getDescription());
@@ -448,6 +448,7 @@ class MilestoneServiceTest extends IntegrationTestSupport {
                 .content(content)
                 .teamMember(teamMember)
                 .status(IssueStatus.OPEN)
+                .githubIssueNumber(1L)
                 .milestone(milestone)
                 .project(project)
                 .build();
@@ -474,6 +475,7 @@ class MilestoneServiceTest extends IntegrationTestSupport {
         return IssueDetailResponse.builder()
                 .issueId(issue.getId())
                 .title(issue.getTitle())
+                .status(issue.getStatus().name())
                 .content(issue.getContent())
                 .creator(issue.getTeamMember().getMember().getNickname())
                 .labels(createIssueLabels(label))
@@ -483,7 +485,7 @@ class MilestoneServiceTest extends IntegrationTestSupport {
     private List<IssueLabelDetailResponse> createIssueLabels(IssueLabel label) {
         return List.of(
                 IssueLabelDetailResponse.builder()
-                        .id(label.getId())
+                        .labelId(label.getId())
                         .name(label.getTitle())
                         .color(label.getColor())
                         .description(label.getDescription())

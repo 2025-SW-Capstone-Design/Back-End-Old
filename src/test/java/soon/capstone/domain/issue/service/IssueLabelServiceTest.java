@@ -220,7 +220,7 @@ class IssueLabelServiceTest extends IntegrationTestSupport {
         // then
         assertThat(result)
             .hasSize(2)
-            .extracting("id", "name", "description", "color")
+            .extracting("labelId", "name", "description", "color")
             .containsExactlyInAnyOrder(
                 tuple(issueLabel1.getId(), "title1", "description1", "color1"),
                 tuple(issueLabel2.getId(), "title2", "description2", "color2")
@@ -277,7 +277,7 @@ class IssueLabelServiceTest extends IntegrationTestSupport {
 
     private IssueLabelDetailResponse createIssueLabelDetailResponse(Long id, String title, String description, String color) {
         return IssueLabelDetailResponse.builder()
-            .id(id)
+            .labelId(id)
             .name(title)
             .description(description)
             .color(color)

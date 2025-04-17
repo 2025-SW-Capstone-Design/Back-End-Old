@@ -491,7 +491,7 @@ class IssueLabelControllerTest extends ControllerTestSupport {
             )
             .andDo(print())
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$[0].id").value(1L))
+            .andExpect(jsonPath("$[0].labelId").value(1L))
             .andExpect(jsonPath("$[0].name").value("name"))
             .andExpect(jsonPath("$[0].color").value("color"))
             .andExpect(jsonPath("$[0].description").value("description"));
@@ -528,7 +528,7 @@ class IssueLabelControllerTest extends ControllerTestSupport {
 
     private static IssueLabelDetailResponse createIssueLabelDetailResponse() {
         return IssueLabelDetailResponse.builder()
-            .id(1L)
+            .labelId(1L)
             .name("name")
             .color("color")
             .description("description")

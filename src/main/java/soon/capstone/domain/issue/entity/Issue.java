@@ -75,4 +75,16 @@ public class Issue extends BaseTimeEntity {
             .build();
     }
 
+    public void updateIssue(String title, String content, String state, Milestone milestone, TeamMember teamMember) {
+        this.title = title;
+        this.content = content;
+        this.status = IssueStatus.valueOf(state);
+        this.milestone = milestone;
+        this.teamMember = teamMember;
+    }
+
+    public void closed() {
+        this.status = IssueStatus.CLOSED;
+    }
+
 }

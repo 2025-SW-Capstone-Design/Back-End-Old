@@ -2,7 +2,9 @@ package soon.capstone.domain.issue.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import soon.capstone.domain.issue.service.dto.ScopeType;
 import soon.capstone.domain.issue.service.dto.request.*;
+import soon.capstone.domain.issue.service.dto.response.IssueDetailResponse;
 import soon.capstone.domain.issue.service.dto.response.IssueLabelDetailResponse;
 import soon.capstone.domain.issue.service.dto.response.IssueTemplateDetailResponse;
 import soon.capstone.domain.member.entity.Member;
@@ -54,6 +56,79 @@ public class IssueManagementService {
             project,
             teamMember
         );
+    }
+
+    public void updateIssue(IssueUpdateServiceRequest request) {
+        Team team = teamRepository.findById(request.teamId());
+        Member member = memberRepository.findById(request.memberId());
+        TeamMember teamMember = teamMemberRepository.findByTeamIdAndMemberId(team.getId(), member.getId());
+        Milestone milestone = milestoneRepository.findById(request.milestoneId());
+
+        validateTeamMembership(member, team);
+
+        issueService.update(
+            member.getId(),
+            request.issueId(),
+            request.organizationName(),
+            request.repositoryName(),
+            request.title(),
+            request.content(),
+            request.labels(),
+            request.assignees(),
+            request.state(),
+            teamMember,
+            milestone
+        );
+    }
+
+    public void closedIssue(IssueClosedServiceRequest request) {
+        Member member = memberRepository.findById(request.memberId());
+        Team team = teamRepository.findById(request.teamId());
+
+        validateTeamMembership(member, team);
+
+        issueService.closedIssue(
+            member.getId(),
+            request.issueId(),
+            request.organizationName(),
+            request.repositoryName()
+        );
+    }
+
+    public IssueDetailResponse getIssueDetail(IssueDetailServiceRequest request) {
+        Member member = memberRepository.findById(request.memberId());
+        Team team = teamRepository.findById(request.teamId());
+        Project project = projectRepository.findById(request.projectId());
+
+        validateTeamMembership(member, team);
+
+        return issueService.getIssueDetail(
+            member.getId(),
+            request.issueId(),
+            team.getOrganizationName(),
+            project.getTitle()
+        );
+    }
+
+    public List<IssueDetailResponse> getIssues(IssueDetailListServiceRequest request) {
+        Member member = memberRepository.findById(request.memberId());
+        Team team = teamRepository.findById(request.teamId());
+        Project project = projectRepository.findById(request.projectId());
+
+        validateTeamMembership(member, team);
+
+        return switch (ScopeType.from(request.scope())) {
+            case TEAM -> issueService.getIssuesWithOrganization(
+                member.getId(),
+                team.getOrganizationName(),
+                project.getTitle()
+            );
+            case PROJECT -> issueService.getIssuesWithRepository(
+                member.getId(),
+                team.getOrganizationName(),
+                project.getTitle()
+            );
+        };
     }
 
     public Long createIssueLabel(IssueLabelCreateServiceRequest request, Long memberId) {

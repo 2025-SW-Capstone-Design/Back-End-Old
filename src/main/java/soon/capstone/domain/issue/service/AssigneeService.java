@@ -1,6 +1,7 @@
 package soon.capstone.domain.issue.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import soon.capstone.infrastructure.github.service.dto.GithubAssigneesAppendServiceRequest;
@@ -29,6 +30,7 @@ public class AssigneeService {
         return githubAssigneesService.isAssignee(request);
     }
 
+    @CacheEvict(value = "assignee", key = "#memberId + #organizationName + #repositoryName + #assignees")
     public void appendIssueWithAssignee(
         Long memberId,
         Long issueNumber,

@@ -28,6 +28,10 @@ public class IssueRepository {
             .orElseThrow(IssueNotFoundException::new);
     }
 
+    public List<Issue> findByGithubIssueNumberIn(List<Long> githubIssueNumber) {
+        return issueJpaRepository.findByGithubIssueNumberIn(githubIssueNumber);
+    }
+
     public void deleteAllInBatch() {
         issueJpaRepository.deleteAllInBatch();
     }

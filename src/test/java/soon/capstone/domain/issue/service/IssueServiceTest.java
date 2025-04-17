@@ -4,12 +4,15 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import soon.capstone.IntegrationTestSupport;
 import soon.capstone.domain.issue.entity.Issue;
 import soon.capstone.domain.issue.entity.IssueStatus;
 import soon.capstone.domain.issue.repository.issue.IssueRepository;
+import soon.capstone.domain.issue.service.dto.response.IssueDetailResponse;
+import soon.capstone.domain.issue.service.dto.response.IssueLabelDetailResponse;
 import soon.capstone.domain.member.entity.Member;
 import soon.capstone.domain.member.repository.MemberRepository;
 import soon.capstone.domain.milestone.entity.Milestone;
@@ -24,13 +27,19 @@ import soon.capstone.domain.teammember.entity.common.Role;
 import soon.capstone.domain.teammember.repository.TeamMemberRepository;
 import soon.capstone.global.exception.common.UnauthorizedException;
 import soon.capstone.infrastructure.github.service.dto.GithubIssueCreateServiceRequest;
+import soon.capstone.infrastructure.github.service.dto.GithubIssueDetailListServiceRequest;
+import soon.capstone.infrastructure.github.service.dto.GithubIssueDetailServiceRequest;
+import soon.capstone.infrastructure.github.service.dto.GithubIssueUpdateServiceRequest;
+import soon.capstone.infrastructure.github.service.dto.response.GithubIssueDetailResponse;
 import soon.capstone.infrastructure.github.service.issue.GithubIssueService;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.groups.Tuple.tuple;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
@@ -73,6 +82,11 @@ class IssueServiceTest extends IntegrationTestSupport {
 
     @AfterEach
     void tearDown() {
+        Cache cache = cacheManager.getCache("issueDetail");
+        if (cache != null) {
+            cache.clear();
+        }
+
         issueRepository.deleteAllInBatch();
         milestoneRepository.deleteAllInBatch();
         projectRepository.deleteAllInBatch();
@@ -124,7 +138,7 @@ class IssueServiceTest extends IntegrationTestSupport {
         Issue issue = issueRepository.findById(issueId);
         assertThat(issue)
             .extracting("title", "content", "githubIssueNumber", "status")
-            .contains("title", "content", 1, IssueStatus.OPEN);
+            .contains("title", "content", 1L, IssueStatus.OPEN);
 
         verify(issueLabelRelationService, times(1))
             .linkIssueWithLabels(
@@ -158,6 +172,125 @@ class IssueServiceTest extends IntegrationTestSupport {
             .hasMessage(UNAUTHORIZED.getMessage());
 
         verifyNoInteractions(githubIssueService, issueLabelRelationService);
+    }
+
+    @DisplayName("이슈의 상태를 CLOSED로 변경한다")
+    @Test
+    void closedIssue() {
+        // given
+        Member member = createMember();
+        memberRepository.save(member);
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        TeamMember teamMember = createTeamMember(member, team);
+        teamMemberRepository.save(teamMember);
+
+        Project project = createProject(team);
+        projectRepository.save(project);
+
+        Milestone milestone = createMilestone(project);
+        milestoneRepository.save(milestone);
+
+        Issue issue = Issue.createNewIssue("title", "content", 1L, teamMember, milestone, project);
+        issueRepository.save(issue);
+
+        // when
+        issueService.closedIssue(member.getId(), issue.getId(), team.getOrganizationName(), project.getTitle());
+
+        // then
+        Issue closedIssue = issueRepository.findById(issue.getId());
+        assertThat(closedIssue.getStatus())
+            .isEqualTo(IssueStatus.CLOSED);
+
+        verify(githubIssueService, times(1))
+            .updateGithubIssue(any(GithubIssueUpdateServiceRequest.class));
+    }
+
+    @DisplayName("이슈 상세 정보를 정상적으로 반환한다.")
+    @Test
+    void retrievesIssueDetailSuccessfully() {
+        // given
+        Member member = createMember();
+        memberRepository.save(member);
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        TeamMember teamMember = createTeamMember(member, team);
+        teamMemberRepository.save(teamMember);
+
+        Project project = createProject(team);
+        projectRepository.save(project);
+
+        Milestone milestone = createMilestone(project);
+        milestoneRepository.save(milestone);
+
+        Issue issue = Issue.createNewIssue("title", "content", 1L, teamMember, milestone, project);
+        issueRepository.save(issue);
+
+        GithubIssueDetailResponse githubResponse = createGithubIssueDetailResponse("title");
+
+        given(githubIssueService.getIssueDetail(any(GithubIssueDetailServiceRequest.class)))
+            .willReturn(githubResponse);
+
+        List<IssueLabelDetailResponse> labels = List.of(
+            createIssueLabelDetailResponse(1L, "label1"),
+            createIssueLabelDetailResponse(2L, "label2")
+        );
+        given(issueLabelRelationService.findByLabelsByIssueId(any(Issue.class)))
+            .willReturn(labels);
+
+        // when
+        IssueDetailResponse response = issueService.getIssueDetail(
+            member.getId(),
+            issue.getId(),
+            team.getOrganizationName(),
+            project.getTitle()
+        );
+
+        // then
+        assertThat(response)
+            .extracting("issueId", "title", "content", "creator", "status")
+            .containsExactly(issue.getId(), "title", "body", "assignee", "open");
+
+        assertThat(response.labels()).hasSize(2)
+            .extracting("labelId", "name")
+            .containsExactlyInAnyOrder(
+                tuple(1L, "label1"),
+                tuple(2L, "label2")
+            );
+
+        verify(issueLabelRelationService, times(1))
+            .findByLabelsByIssueId(any(Issue.class));
+    }
+
+    @DisplayName("프로젝트의 모든 이슈를 조회한다.")
+    @Test
+    void getIssuesWithRepository() {
+        // given
+        Long memberId = 1L;
+        String organizationName = "org";
+        String repositoryName = "repo";
+
+        given(githubIssueService.getIssuesWithRepository(any(GithubIssueDetailListServiceRequest.class)))
+            .willReturn(List.of(
+                createGithubIssueDetailResponse("title1"),
+                createGithubIssueDetailResponse("title2")
+            ));
+
+        // when
+        List<IssueDetailResponse> responses = issueService.getIssuesWithRepository(
+            memberId,
+            organizationName,
+            repositoryName
+        );
+
+        // then
+        assertThat(responses)
+            .extracting("title")
+            .containsExactlyInAnyOrder("title1", "title2");
     }
 
     private Member createMember() {
@@ -203,6 +336,24 @@ class IssueServiceTest extends IntegrationTestSupport {
             .startDate(LocalDateTime.of(2025, 4, 11, 0, 0))
             .githubMilestoneId(1)
             .project(project)
+            .build();
+    }
+
+    private IssueLabelDetailResponse createIssueLabelDetailResponse(long labelId, String name) {
+        return IssueLabelDetailResponse.builder()
+            .labelId(labelId)
+            .color("color")
+            .name(name)
+            .description("description")
+            .build();
+    }
+
+    private GithubIssueDetailResponse createGithubIssueDetailResponse(String title) {
+        return GithubIssueDetailResponse.builder()
+            .assignee(Map.of("login", "assignee"))
+            .body("body")
+            .state("open")
+            .title(title)
             .build();
     }
 
