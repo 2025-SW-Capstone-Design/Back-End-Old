@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import soon.capstone.domain.auth.controller.docs.AuthControllerDocs;
 import soon.capstone.domain.auth.controller.dto.ReissueTokenRequest;
 import soon.capstone.domain.auth.service.AuthService;
 import soon.capstone.domain.auth.service.dto.request.ReissueTokenServiceRequest;
@@ -15,7 +16,7 @@ import soon.capstone.global.security.jwt.dto.response.TokenResponse;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/auth")
 @RestController
-public class AuthController {
+public class AuthController implements AuthControllerDocs {
 
     private final AuthService authService;
 
