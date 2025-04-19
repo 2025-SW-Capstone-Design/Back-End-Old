@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import soon.capstone.domain.portfolio.controller.docs.PortfolioControllerDocs;
 import soon.capstone.domain.portfolio.controller.dto.request.PortfolioCreateRequest;
 import soon.capstone.domain.portfolio.controller.dto.request.PortfolioUpdateRequest;
 import soon.capstone.domain.portfolio.controller.dto.response.PortfolioDetailResponse;
@@ -16,7 +17,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/portfolios")
 @RestController
-public class PortfolioController {
+public class PortfolioController implements PortfolioControllerDocs {
 
     private final PortfolioService portfolioService;
 
