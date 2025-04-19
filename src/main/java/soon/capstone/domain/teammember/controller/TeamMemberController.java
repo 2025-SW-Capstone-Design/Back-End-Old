@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import soon.capstone.domain.teammember.controller.docs.TeamMemberControllerDocs;
 import soon.capstone.domain.teammember.controller.dto.TeamMemberUpdateRoleRequest;
 import soon.capstone.domain.teammember.service.TeamMemberService;
 import soon.capstone.domain.teammember.service.dto.response.TeamMemberDetailResponse;
@@ -14,7 +15,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/teams/{teamId}/members")
 @RestController
-public class TeamMemberController {
+public class TeamMemberController implements TeamMemberControllerDocs {
 
     private final TeamMemberService teamMemberService;
 

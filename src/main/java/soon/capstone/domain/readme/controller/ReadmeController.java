@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import soon.capstone.domain.readme.controller.docs.ReadmeControllerDocs;
 import soon.capstone.domain.readme.controller.dto.request.*;
 import soon.capstone.domain.readme.service.ReadmeService;
 import soon.capstone.domain.readme.service.dto.response.ReadmeDetailResponse;
@@ -15,7 +16,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/v1/teams/{teamId}")
-public class ReadmeController {
+public class ReadmeController implements ReadmeControllerDocs {
 
     private final ReadmeService readmeService;
 

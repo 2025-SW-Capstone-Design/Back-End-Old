@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import soon.capstone.domain.issue.controller.docs.IssueLabelControllerDocs;
 import soon.capstone.domain.issue.controller.dto.IssueLabelCreateRequest;
 import soon.capstone.domain.issue.controller.dto.IssueLabelDeleteRequest;
 import soon.capstone.domain.issue.controller.dto.IssueLabelDetailRequest;
@@ -17,7 +18,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/teams/{teamId}/issue-labels")
 @RestController
-public class IssueLabelController {
+public class IssueLabelController implements IssueLabelControllerDocs {
 
     private final IssueManagementService issueManagementService;
 

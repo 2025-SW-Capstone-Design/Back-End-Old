@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import soon.capstone.domain.team.controller.docs.TeamControllerDocs;
 import soon.capstone.domain.team.controller.dto.TeamCreateRequest;
 import soon.capstone.domain.team.controller.dto.TeamInvitationRequest;
 import soon.capstone.domain.team.controller.dto.TeamJoinRequest;
@@ -13,7 +14,7 @@ import soon.capstone.global.anootation.AuthMemberId;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/teams")
 @RestController
-public class TeamController {
+public class TeamController implements TeamControllerDocs {
 
     private final TeamService teamService;
 

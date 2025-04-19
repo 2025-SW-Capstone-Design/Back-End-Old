@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import soon.capstone.domain.issue.controller.docs.IssueControllerDocs;
 import soon.capstone.domain.issue.controller.dto.*;
 import soon.capstone.domain.issue.service.IssueManagementService;
 import soon.capstone.domain.issue.service.dto.response.IssueDetailResponse;
@@ -14,7 +15,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/teams/{teamId}")
 @RestController
-public class IssueController {
+public class IssueController implements IssueControllerDocs {
 
     private final IssueManagementService issueManagementService;
 

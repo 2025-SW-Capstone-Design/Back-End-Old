@@ -1,0 +1,185 @@
+package soon.capstone.domain.issue.controller.docs;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.ResponseEntity;
+import soon.capstone.domain.issue.controller.dto.IssueLabelCreateRequest;
+import soon.capstone.domain.issue.controller.dto.IssueLabelDeleteRequest;
+import soon.capstone.domain.issue.controller.dto.IssueLabelUpdateRequest;
+import soon.capstone.domain.issue.service.dto.response.IssueLabelDetailResponse;
+import soon.capstone.global.exception.dto.ErrorDetail;
+import soon.capstone.global.swagger.annotation.ApiExceptions;
+
+import java.util.List;
+
+import static soon.capstone.global.exception.dto.ErrorDetail.*;
+
+@Tag(name = "IssueLabel API", description = "이슈 라벨 관련 API")
+public interface IssueLabelControllerDocs {
+
+    @Operation(
+        summary = "이슈 라벨 생성",
+        description = """
+            **사용 목적**:
+            - 새로운 이슈 라벨을 생성합니다.
+            
+            **요청 방법**:
+            - HTTP `POST` 메서드 사용
+            - 요청 URL: `/api/v1/teams/{teamId}/issue-labels`
+            
+            **주요 사항**:
+            - 요청 본문에 이슈 라벨 생성 정보를 포함해야 합니다.
+            - 요청 URL의 `{teamId}`는 팀 ID를 나타냅니다.
+            """
+    )
+    @RequestBody(
+        description = "이슈 라벨 생성 요청 정보",
+        required = true,
+        content = @Content(schema = @Schema(implementation = IssueLabelCreateRequest.class))
+    )
+    @Parameters({
+        @Parameter(name = "teamId", description = "팀 ID", in = ParameterIn.PATH)
+    })
+    @ApiResponse(responseCode = "200", description = "이슈 라벨 생성 성공", content = @Content(schema = @Schema(implementation = Long.class)))
+    @ApiExceptions({
+        TEAM_NOT_FOUND,
+        MEMBER_NOT_FOUND,
+        PROJECT_NOT_FOUND,
+        TEAM_NOT_AUTHORIZED,
+        ISSUE_LABEL_ALREADY_EXISTS,
+        GITHUB_HTTP_CLIENT_ERROR
+    })
+    ResponseEntity<Long> createIssueLabel(
+        IssueLabelCreateRequest request,
+        Long memberId,
+        Long teamId
+    );
+
+    @Operation(
+        summary = "이슈 라벨 수정",
+        description = """
+            **사용 목적**:
+            - 기존 이슈 라벨을 수정합니다.
+            
+            **요청 방법**:
+            - HTTP `PATCH` 메서드 사용
+            - 요청 URL: `/api/v1/teams/{teamId}/issue-labels/{labelId}`
+            
+            **주요 사항**:
+            - 요청 본문에 이슈 라벨 수정 정보를 포함해야 합니다.
+            - 요청 URL의 `{teamId}`는 팀 ID를 나타내며, `{labelId}`는 수정할 라벨의 ID를 나타냅니다.
+            """
+    )
+    @RequestBody(
+        description = "이슈 라벨 수정 요청 정보",
+        required = true,
+        content = @Content(schema = @Schema(implementation = IssueLabelUpdateRequest.class))
+    )
+    @Parameters({
+        @Parameter(name = "teamId", description = "팀 ID", in = ParameterIn.PATH),
+        @Parameter(name = "labelId", description = "라벨 ID", in = ParameterIn.PATH)
+    })
+    @ApiExceptions({
+        TEAM_NOT_FOUND,
+        MEMBER_NOT_FOUND,
+        PROJECT_NOT_FOUND,
+        TEAM_NOT_AUTHORIZED,
+        ISSUE_LABEL_ALREADY_EXISTS,
+        GITHUB_ISSUE_LABEL_NOT_FOUND,
+        GITHUB_HTTP_CLIENT_ERROR
+    })
+    ResponseEntity<Void> updateIssueLabel(
+        IssueLabelUpdateRequest request,
+        Long memberId,
+        Long teamId,
+        Long labelId
+    );
+
+    @Operation(
+        summary = "이슈 라벨 삭제",
+        description = """
+            **사용 목적**:
+            - 기존 이슈 라벨을 삭제합니다.
+            
+            **요청 방법**:
+            - HTTP `DELETE` 메서드 사용
+            - 요청 URL: `/api/v1/teams/{teamId}/issue-labels/{labelId}`
+            
+            **주요 사항**:
+            - 요청 본문에 이슈 라벨 삭제 정보를 포함해야 합니다.
+            - 요청 URL의 `{teamId}`는 팀 ID를 나타내며, `{labelId}`는 삭제할 라벨의 ID를 나타냅니다.
+            """
+    )
+    @RequestBody(
+        description = "이슈 라벨 삭제 요청 정보",
+        required = true,
+        content = @Content(schema = @Schema(implementation = IssueLabelDeleteRequest.class))
+    )
+    @Parameters({
+        @Parameter(name = "teamId", description = "팀 ID", in = ParameterIn.PATH),
+        @Parameter(name = "labelId", description = "라벨 ID", in = ParameterIn.PATH)
+    })
+    @ApiResponse(responseCode = "200", description = "이슈 라벨 삭제 성공", content = @Content(schema = @Schema(implementation = Void.class)))
+    @ApiExceptions({
+        TEAM_NOT_FOUND,
+        MEMBER_NOT_FOUND,
+        TEAM_NOT_AUTHORIZED,
+        ISSUE_LABEL_NOT_FOUND,
+        GITHUB_ISSUE_LABEL_NOT_FOUND,
+        GITHUB_HTTP_CLIENT_ERROR
+    })
+    ResponseEntity<Void> deleteIssueLabel(
+        IssueLabelDeleteRequest request,
+        Long memberId,
+        Long teamId,
+        Long labelId
+    );
+
+    @Operation(
+        summary = "이슈 라벨 조회",
+        description = """
+            **사용 목적**:
+            - 팀에 속한 이슈 라벨 목록을 조회합니다.
+            
+            **요청 방법**:
+            - HTTP `GET` 메서드 사용
+            - 요청 URL: `/api/v1/teams/{teamId}/issue-labels?projectId={projectId}`
+            
+            **주요 사항**:
+            - 요청 URL의 `{teamId}`는 팀 ID를 나타냅니다.
+            - 쿼리 파라미터 `projectId`는 프로젝트 ID를 나타냅니다.
+            """
+    )
+    @Parameters({
+        @Parameter(name = "teamId", description = "팀 ID", in = ParameterIn.PATH),
+        @Parameter(name = "projectId", description = "프로젝트 ID", in = ParameterIn.QUERY)
+    })
+    @ApiResponse(
+        responseCode = "200",
+        description = "이슈 라벨 조회 성공",
+        content = @Content(
+            array = @ArraySchema(
+                schema = @Schema(implementation = IssueLabelDetailResponse.class)
+            )
+        ))
+    @ApiExceptions({
+        TEAM_NOT_FOUND,
+        MEMBER_NOT_FOUND,
+        PROJECT_NOT_FOUND,
+        TEAM_NOT_AUTHORIZED,
+        GITHUB_HTTP_CLIENT_ERROR
+    })
+    ResponseEntity<List<IssueLabelDetailResponse>> getIssueLabels(
+        Long projectId,
+        Long memberId,
+        Long teamId
+    );
+}

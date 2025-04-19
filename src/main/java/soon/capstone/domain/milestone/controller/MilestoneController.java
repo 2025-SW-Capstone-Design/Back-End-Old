@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import soon.capstone.domain.milestone.controller.docs.MilestoneControllerDocs;
 import soon.capstone.domain.milestone.controller.dto.request.MilestoneCreateRequest;
 import soon.capstone.domain.milestone.controller.dto.request.MilestoneUpdateRequest;
 import soon.capstone.domain.milestone.service.dto.response.MilestoneDetailResponse;
@@ -16,7 +17,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/teams/{teamId}")
 @RestController
-public class MilestoneController {
+public class MilestoneController implements MilestoneControllerDocs {
 
     private final MilestoneService milestoneService;
 

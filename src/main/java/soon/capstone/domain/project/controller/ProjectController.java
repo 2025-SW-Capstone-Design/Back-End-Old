@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import soon.capstone.domain.project.entity.Project;
+import soon.capstone.domain.project.controller.docs.ProjectControllerDocs;
 import soon.capstone.domain.project.service.ProjectService;
 import soon.capstone.domain.project.service.dto.response.ProjectDetailResponse;
 import soon.capstone.global.anootation.AuthMemberId;
@@ -16,7 +16,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/projects")
 @RestController
-public class ProjectController {
+public class ProjectController implements ProjectControllerDocs {
 
     private final ProjectService projectService;
 
