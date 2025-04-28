@@ -13,16 +13,16 @@ jobs:
 
     steps:
       - name: docker pull
-        run: sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/planHub
+        run: sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/planhub
 
       - name: docker stop container
         run: |
-          if [ $(sudo docker ps -a -q -f name=planHub) ]; then
-            sudo docker stop planHub
+          if [ $(sudo docker ps -a -q -f name=planhub) ]; then
+            sudo docker stop planhub
           fi
 
       - name: delete old docker image
         run: sudo docker system prune -f
 
       - name: docker run new container
-        run: sudo docker run --rm -it -d -p 8080:8080 --name planHub ${{ secrets.DOCKERHUB_USERNAME }}/planHub
+        run: sudo docker run --rm -it -d -p 8080:8080 --name planhub ${{ secrets.DOCKERHUB_USERNAME }}/planhub

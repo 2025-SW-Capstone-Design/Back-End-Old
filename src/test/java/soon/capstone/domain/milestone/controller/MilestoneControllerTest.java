@@ -11,6 +11,7 @@ import soon.capstone.domain.milestone.service.dto.response.MilestoneResponse;
 import soon.capstone.global.anootation.TestMember;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import static org.mockito.BDDMockito.given;
@@ -282,6 +283,8 @@ class MilestoneControllerTest extends ControllerTestSupport {
         LocalDateTime startDate = LocalDateTime.now();
         LocalDateTime dueDate = startDate.plusDays(7);
 
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS");
+
         MilestoneUpdateRequest milestoneUpdateRequest = MilestoneUpdateRequest.builder()
                 .title("Test")
                 .description("Description")
@@ -305,8 +308,8 @@ class MilestoneControllerTest extends ControllerTestSupport {
                 .andExpect(jsonPath("$.title").value("Test"))
                 .andExpect(jsonPath("$.description").value("Description"))
                 .andExpect(jsonPath("$.creator").value("nickname"))
-                .andExpect(jsonPath("$.startDate").value(startDate.toString()))
-                .andExpect(jsonPath("$.dueDate").value(dueDate.plusDays(2).toString()))
+                .andExpect(jsonPath("$.startDate").value(startDate.format(formatter)))
+                .andExpect(jsonPath("$.dueDate").value(dueDate.plusDays(2).format(formatter)))
                 .andExpect(jsonPath("$.isCompleted").value(false));
     }
 
