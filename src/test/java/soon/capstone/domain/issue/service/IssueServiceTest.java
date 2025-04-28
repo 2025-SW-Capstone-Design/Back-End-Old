@@ -82,9 +82,11 @@ class IssueServiceTest extends IntegrationTestSupport {
 
     @AfterEach
     void tearDown() {
-        Cache cache = cacheManager.getCache("issueDetail");
-        if (cache != null) {
-            cache.clear();
+        for (String cacheName : cacheManager.getCacheNames()) {
+            Cache cache = cacheManager.getCache(cacheName);
+            if (cache != null) {
+                cache.clear();
+            }
         }
 
         issueRepository.deleteAllInBatch();

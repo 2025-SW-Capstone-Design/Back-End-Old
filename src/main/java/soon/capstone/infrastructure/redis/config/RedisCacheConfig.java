@@ -28,6 +28,8 @@ public class RedisCacheConfig {
         cacheConfigs.put("issueLabels", defaultConfig);
         cacheConfigs.put("assignee", defaultConfig);
         cacheConfigs.put("issueDetail", defaultConfig);
+        cacheConfigs.put("issuesWithOrganization", defaultConfig);
+        cacheConfigs.put("issuesWithRepository", defaultConfig);
 
         return RedisCacheManager.builder(cf)
             .cacheDefaults(defaultConfig)
