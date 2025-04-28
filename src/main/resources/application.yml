@@ -1,3 +1,25 @@
 spring:
   profiles:
-    include: aws-s3, redis, local, oauth, email, graphQL
+#    active: local
+#    include: aws-s3, oauth, email
+    active: prod
+    include: aws-s3, redis, oauth, email
+
+  graphql:
+    graphiql:
+      enabled: true
+      printer:
+        enabled: true
+
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+
+server:
+  port: 8080
+
+logging:
+  level:
+    root: INFO
+    org.springframework: INFO
