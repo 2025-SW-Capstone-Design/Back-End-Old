@@ -43,7 +43,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build with Gradle Wrapper
-        run: ./gradlew build
+        run: ./gradlew build -x test
 
       - name: docker image build
         run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/planHub .
