@@ -58,7 +58,7 @@ public class SecurityConfig {
                             .requestMatchers(
                                     "/oauth2/**", "/login/oauth2/**", "/api/v1/auth/reissue",
                                     "/swagger-ui/**", "/v3/api-docs/**", "/h2-console/**",
-                                    "/favicon.ico", "/api-docs/**"
+                                    "/favicon.ico", "/api-docs/**", "/api/v1/health"
                             ).permitAll()
                             .anyRequest().authenticated();
                 });
