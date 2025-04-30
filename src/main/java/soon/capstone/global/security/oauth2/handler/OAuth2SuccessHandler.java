@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -23,6 +24,7 @@ import java.io.IOException;
 @Component
 public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
+    private final String BASE_URL = "https://planhub.site";
     private final JwtProvider jwtProvider;
     private final OAuthTokenRepository oauthTokenRepository;
     private final JwtRepository jwtRepository;
@@ -62,7 +64,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     }
 
     private String buildRedirectUrl(TokenResponse tokenResponse) {
-        return UriComponentsBuilder.fromUriString("http://localhost:8080")// TODO: 배포 시 수정
+        return UriComponentsBuilder.fromUriString(BASE_URL)
             .queryParam("accessToken", tokenResponse.accessToken())
             .queryParam("refreshToken", tokenResponse.refreshToken())
             .build()
