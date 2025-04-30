@@ -24,63 +24,6 @@ public enum GithubQuery {
             }
         }
     """),
-    ADD_STATUS_FIELD("""
-        mutation {
-            addProjectV2Field(input: {
-                projectId: "%s",
-                dataType: SINGLE_SELECT,
-                name: "Status"
-            }) {
-                projectV2Field {
-                    id
-                    name
-                }
-            }
-        }
-    """),
-    ADD_STATUS_FIELD_OPTION("""
-        mutation {
-            createProjectV2FieldOption(input: {
-                projectId: "%s",
-                fieldId: "%s",
-                name: "%s",
-                color: %s
-            }) {
-                projectV2FieldOption {
-                    id
-                    name
-                }
-            }
-        }
-    """),
-    CREATE_BOARD_VIEW("""
-        mutation {
-            createProjectV2View(input: {
-                projectId: "%s",
-                name: "Kanban Board",
-                layout: BOARD_LAYOUT
-            }) {
-                projectV2View {
-                    id
-                    name
-                    layout
-                }
-            }
-        }
-    """),
-    CONFIGURE_BOARD_VIEW("""
-        mutation {
-            updateProjectV2View(input: {
-                projectId: "%s",
-                viewId: "%s",
-                fieldId: "%s"
-            }) {
-                projectV2View {
-                    id
-                }
-            }
-        }
-    """),
     LINK_PROJECT_TO_REPOSITORY(
         """
         mutation {
