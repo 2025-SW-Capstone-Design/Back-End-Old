@@ -3,6 +3,7 @@ package soon.capstone.global.security.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
@@ -33,6 +34,8 @@ import java.util.List;
 @EnableWebSecurity
 public class SecurityConfig {
 
+    @Value("{spring.swagger.base-url")
+    private String baseUrl;
     private final OAuth2GithubService oauth2GithubService;
     private final OAuth2SuccessHandler oauth2SuccessHandler;
     private final OAuth2FailureHandler oauth2FailureHandler;
@@ -92,7 +95,7 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
 
         config.setAllowedOriginPatterns(
-                List.of("*")// TODO : 배포 시 수정
+                List.of("http://localhost:3000", "https://planhub.site", "http://localhost:8080", baseUrl)
         );
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowCredentials(true);

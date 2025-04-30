@@ -10,6 +10,7 @@ import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
 import org.springdoc.core.customizers.OperationCustomizer;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.HandlerMethod;
@@ -29,6 +30,8 @@ import java.util.stream.Collectors;
 @Configuration
 public class SwaggerConfig {
 
+    @Value("${spring.swagger.base-url}")
+    private String baseUrl;
     private static final String AUTH_NAME = "Json Web Token";
 
     @Bean
@@ -81,7 +84,7 @@ public class SwaggerConfig {
     private List<Server> createServers() {
         Server prodServer = new Server()
             .description("Production Server")
-            .url("https://test.com");
+            .url(baseUrl);
 
         Server localServer = new Server()
             .description("Development Server")

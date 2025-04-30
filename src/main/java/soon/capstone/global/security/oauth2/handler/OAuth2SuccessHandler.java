@@ -26,6 +26,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     private final JwtProvider jwtProvider;
     private final OAuthTokenRepository oauthTokenRepository;
     private final JwtRepository jwtRepository;
+    private final String BASE_URL = "https://planhub.site";
 
     @Override
     public void onAuthenticationSuccess(
@@ -62,7 +63,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     }
 
     private String buildRedirectUrl(TokenResponse tokenResponse) {
-        return UriComponentsBuilder.fromUriString("http://localhost:8080")// TODO: 배포 시 수정
+        return UriComponentsBuilder.fromUriString(BASE_URL)
             .queryParam("accessToken", tokenResponse.accessToken())
             .queryParam("refreshToken", tokenResponse.refreshToken())
             .build()
