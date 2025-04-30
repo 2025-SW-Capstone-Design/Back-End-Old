@@ -16,7 +16,7 @@ public class OrganizationProjectCreationService {
 
     public void createProject(String organizationName, String oauthToken, String repositoryId, String repoName) {
         String organizationId = getOrganizationId(organizationName, oauthToken);
-        String projectId = githubProjectCreationService.createProject(organizationId, repoName, oauthToken);
+        String projectId = githubProjectCreationService.setupKanbanProject(organizationId, repoName, oauthToken);
         linkProjectToRepository(projectId, repositoryId, oauthToken);
     }
 

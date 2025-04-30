@@ -76,7 +76,7 @@ class OrganizationProjectCreationServiceTest extends IntegrationTestSupport {
 
         // Then
         verify(githubOrganizationReadService).getOrganizationId(organizationName, token);
-        verify(githubProjectCreationService).createProject(mockOrgId, mockRepoName, token);
+        verify(githubProjectCreationService).setupKanbanProject(mockOrgId, mockRepoName, token);
     }
 
     private Member createMember() {
