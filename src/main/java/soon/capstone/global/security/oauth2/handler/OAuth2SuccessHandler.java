@@ -24,7 +24,7 @@ import java.io.IOException;
 @Component
 public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
-    private final String BASE_URL = "https://planhub.site";
+    private final String BASE_URL = "http://localhost:3000";
     private final JwtProvider jwtProvider;
     private final OAuthTokenRepository oauthTokenRepository;
     private final JwtRepository jwtRepository;
@@ -64,7 +64,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     }
 
     private String buildRedirectUrl(TokenResponse tokenResponse) {
-        return UriComponentsBuilder.fromUriString(BASE_URL)
+        return UriComponentsBuilder.fromUriString(BASE_URL + "/oauth2/redirect")
             .queryParam("accessToken", tokenResponse.accessToken())
             .queryParam("refreshToken", tokenResponse.refreshToken())
             .build()
