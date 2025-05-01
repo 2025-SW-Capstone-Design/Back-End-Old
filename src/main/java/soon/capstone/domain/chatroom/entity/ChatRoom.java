@@ -5,8 +5,10 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import soon.capstone.domain.teammember.entity.TeamMember;
 import soon.capstone.global.common.BaseTimeEntity;
+import soon.capstone.global.exception.common.InvalidRequest;
+
+import java.time.LocalDateTime;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
@@ -19,13 +21,48 @@ public class ChatRoom extends BaseTimeEntity {
     @Column(name = "chat_room_id")
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "team_member_id")
-    private TeamMember teamMember;
+    @Column(nullable = false)
+    private String title;
+
+    @Column(nullable = false)
+    private boolean active;
+
+    @Column(name = "reserved_at", nullable = true)
+    private LocalDateTime reservedAt;
 
     @Builder
-    private ChatRoom(TeamMember teamMember) {
-        this.teamMember = teamMember;
+    private ChatRoom(String title, boolean active, LocalDateTime reservedAt) {
+        this.title = title;
+        this.active = active;
+        this.reservedAt = reservedAt;
+    }
+
+    public static ChatRoom create(String title, LocalDateTime reservedAt) {
+        return ChatRoom.builder()
+            .title(title)
+            .active(true)
+            .reservedAt(reservedAt)
+            .build();
+    }
+
+    public void updateTitle(String title) {
+        if (title == null || title.isBlank()) {
+            throw new InvalidRequest("title", "제목은 비어있을 수 없습니다.");
+        }
+
+        this.title = title;
+    }
+
+    public void updateReservationTime(LocalDateTime newReservedAt) {
+        if (newReservedAt == null) {
+            throw new InvalidRequest();
+        }
+
+        if (newReservedAt.isBefore(LocalDateTime.now())) {
+            throw new InvalidRequest("reservedAt", "예약 시간은 현재 시간보다 미래여야 합니다.");
+        }
+
+        this.reservedAt = newReservedAt;
     }
 
 }
