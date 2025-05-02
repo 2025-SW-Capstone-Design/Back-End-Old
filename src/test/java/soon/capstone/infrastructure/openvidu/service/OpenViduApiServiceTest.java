@@ -30,14 +30,14 @@ class OpenViduApiServiceTest extends IntegrationTestSupport {
         // given
         var request = OpenViduGenerateTokenServiceRequest.builder()
             .roomName("roomName")
-            .memberName("memberName")
+            .memberId(1L)
             .build();
 
         given(openViduApiService.generateOpenViduToken(request))
             .willReturn(OpenViduGenerateTokenResponse.builder()
                 .jwt("jwt")
                 .roomName("roomName")
-                .memberName("memberName")
+                .memberId(1L)
                 .build());
 
         // when
@@ -45,8 +45,8 @@ class OpenViduApiServiceTest extends IntegrationTestSupport {
 
         // then
         assertThat(response).isNotNull()
-            .extracting("jwt", "roomName", "memberName")
-            .containsExactlyInAnyOrder("jwt", "roomName", "memberName");
+            .extracting("jwt", "roomName", "memberId")
+            .containsExactlyInAnyOrder("jwt", "roomName", 1L);
     }
 
     @DisplayName("방 생성 이벤트를 처리한다.")

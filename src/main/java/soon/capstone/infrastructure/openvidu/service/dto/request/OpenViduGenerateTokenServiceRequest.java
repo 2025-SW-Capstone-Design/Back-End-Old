@@ -6,7 +6,7 @@ import lombok.Builder;
 public record OpenViduGenerateTokenServiceRequest(
 
     String roomName,
-    String memberName
+    Long memberId
 
 ) {
 }

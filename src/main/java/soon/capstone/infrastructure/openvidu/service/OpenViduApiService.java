@@ -31,14 +31,14 @@ public class OpenViduApiService {
     public OpenViduGenerateTokenResponse generateOpenViduToken(OpenViduGenerateTokenServiceRequest request) {
         AccessToken token = new AccessToken(apiKey, apiSecret);
         token.setName(request.roomName());
-        token.setIdentity(request.memberName());
+        token.setIdentity(String.valueOf(request.memberId()));
         token.addGrants(new RoomJoin(true), new RoomName(request.roomName()));
 
         String jwt = token.toJwt();
         return OpenViduGenerateTokenResponse.builder()
             .jwt(jwt)
             .roomName(request.roomName())
-            .memberName(request.memberName())
+            .memberId(request.memberId())
             .build();
     }
 

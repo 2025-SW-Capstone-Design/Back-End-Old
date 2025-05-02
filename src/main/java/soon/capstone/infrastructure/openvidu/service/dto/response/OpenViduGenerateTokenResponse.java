@@ -7,7 +7,7 @@ public record OpenViduGenerateTokenResponse(
 
     String jwt,
     String roomName,
-    String memberName
+    Long memberId
 
 ) {
 
