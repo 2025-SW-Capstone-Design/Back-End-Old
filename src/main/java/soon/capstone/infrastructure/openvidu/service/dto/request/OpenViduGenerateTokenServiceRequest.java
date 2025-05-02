@@ -1,4 +1,4 @@
-package soon.capstone.infrastructure.openvidu.service.dto;
+package soon.capstone.infrastructure.openvidu.service.dto.request;
 
 import lombok.Builder;
 

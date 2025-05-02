@@ -35,20 +35,27 @@ public class ChatRoom extends BaseTimeEntity {
     @JoinColumn(name = "team_id")
     private Team team;
 
+    @Column(nullable = false)
+    private String sid; // OpenVidu에서 생성된 방의 고유 SID
+
     @Builder
-    private ChatRoom(String title, boolean active, LocalDateTime reservedAt, Team team) {
+    private ChatRoom(String title, boolean active, LocalDateTime reservedAt, Team team, String sid) {
         this.title = title;
         this.active = active;
         this.reservedAt = reservedAt;
         this.team = team;
+        this.sid = sid;
     }
 
-    public static ChatRoom create(String title, LocalDateTime reservedAt, Team team) {
+    public static ChatRoom create(String title, LocalDateTime reservedAt, Team team, String sid) {
+        validateReservationTime(reservedAt);
+
         return ChatRoom.builder()
             .title(title)
             .active(true)
             .reservedAt(reservedAt)
             .team(team)
+            .sid(sid)
             .build();
     }
 
@@ -70,6 +77,16 @@ public class ChatRoom extends BaseTimeEntity {
         }
 
         this.reservedAt = newReservedAt;
+    }
+
+    private static void validateReservationTime(LocalDateTime reservedAt) {
+        if (reservedAt == null) {
+            throw new InvalidRequest("reservedAt", "예약 시간이 설정되어 있지 않습니다.");
+        }
+
+        if (reservedAt.isBefore(LocalDateTime.now())) {
+            throw new InvalidRequest("reservedAt", "예약 시간은 현재 시간보다 미래여야 합니다.");
+        }
     }
 
 }
