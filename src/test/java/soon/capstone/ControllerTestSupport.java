@@ -24,6 +24,8 @@ import soon.capstone.domain.team.controller.TeamController;
 import soon.capstone.domain.team.service.team.TeamService;
 import soon.capstone.domain.teammember.controller.TeamMemberController;
 import soon.capstone.domain.teammember.service.TeamMemberService;
+import soon.capstone.infrastructure.openvidu.controller.OpenViduController;
+import soon.capstone.infrastructure.openvidu.service.OpenViduApiService;
 
 @Import(TestSecurityConfig.class)
 @WebMvcTest(
@@ -37,7 +39,8 @@ import soon.capstone.domain.teammember.service.TeamMemberService;
         IssueController.class,
         MilestoneController.class,
         ReadmeController.class,
-        PortfolioController.class
+        PortfolioController.class,
+        OpenViduController.class
     }
 )
 public abstract class ControllerTestSupport {
@@ -71,5 +74,8 @@ public abstract class ControllerTestSupport {
 
     @MockitoBean
     protected PortfolioService portfolioService;
+
+    @MockitoBean
+    protected OpenViduApiService openViduApiService;
 
 }

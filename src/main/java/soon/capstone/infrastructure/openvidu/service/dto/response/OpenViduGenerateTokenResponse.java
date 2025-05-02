@@ -5,7 +5,7 @@ import lombok.Builder;
 @Builder
 public record OpenViduGenerateTokenResponse(
 
-    String jwt,
+    String token,
     String roomName,
     Long memberId
 

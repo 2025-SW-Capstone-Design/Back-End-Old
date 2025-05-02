@@ -34,9 +34,8 @@ public class OpenViduApiService {
         token.setIdentity(String.valueOf(request.memberId()));
         token.addGrants(new RoomJoin(true), new RoomName(request.roomName()));
 
-        String jwt = token.toJwt();
         return OpenViduGenerateTokenResponse.builder()
-            .jwt(jwt)
+            .token(token.toJwt())
             .roomName(request.roomName())
             .memberId(request.memberId())
             .build();

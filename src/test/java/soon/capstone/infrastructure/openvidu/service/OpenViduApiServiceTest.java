@@ -35,7 +35,7 @@ class OpenViduApiServiceTest extends IntegrationTestSupport {
 
         given(openViduApiService.generateOpenViduToken(request))
             .willReturn(OpenViduGenerateTokenResponse.builder()
-                .jwt("jwt")
+                .token("jwt")
                 .roomName("roomName")
                 .memberId(1L)
                 .build());
@@ -45,7 +45,7 @@ class OpenViduApiServiceTest extends IntegrationTestSupport {
 
         // then
         assertThat(response).isNotNull()
-            .extracting("jwt", "roomName", "memberId")
+            .extracting("token", "roomName", "memberId")
             .containsExactlyInAnyOrder("jwt", "roomName", 1L);
     }
 
