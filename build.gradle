@@ -77,6 +77,9 @@ dependencies {
 
     // livekit
     implementation 'io.livekit:livekit-server:0.8.2'
+
+    // protobuf
+    implementation 'com.google.protobuf:protobuf-java:3.21.12'
 }
 
 tasks.named('test') {
