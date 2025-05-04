@@ -49,7 +49,7 @@ public class OpenViduApiService {
             .build();
     }
 
-    public void handleWebhookEvent(String body, Long memberId, String openViduToken) {
+    public void handleWebhookEvent(String body, Long memberId, Long teamId, String openViduToken) {
         try {
             log.info("웹훅 요청 처리 시작 - memberId: {}, openViduToken: {}", memberId, openViduToken);
 
@@ -61,7 +61,7 @@ public class OpenViduApiService {
                 .ifPresentOrElse(
                     handler -> {
                         log.info("이벤트 처리 중 - memberId: {}, event: {}", memberId, event.getEvent());
-                        handler.handle(event);
+                        handler.handle(event, teamId);
                     },
                     () -> {
                         log.error("지원하지 않는 이벤트 타입 - memberId: {}, event: {}", memberId, event.getEvent());

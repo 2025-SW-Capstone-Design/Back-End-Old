@@ -14,7 +14,7 @@ public class RoomFinishedEventHandler implements OpenViduWebhookEventHandler {
     }
 
     @Override
-    public void handle(LivekitWebhook.WebhookEvent event) {
+    public void handle(LivekitWebhook.WebhookEvent event, Long teamId) {
         log.info("회의 종료: {}", event.getRoom().getName());
     }
 

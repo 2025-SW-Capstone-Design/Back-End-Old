@@ -1,6 +1,6 @@
 package soon.capstone.infrastructure.openvidu.handler;
 
-import livekit.LivekitWebhook;
+import livekit.LivekitWebhook.WebhookEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -14,7 +14,7 @@ public class RoomStartedEventHandler implements OpenViduWebhookEventHandler {
     }
 
     @Override
-    public void handle(LivekitWebhook.WebhookEvent event) {
+    public void handle(WebhookEvent event, Long teamId) {
         log.info("방 생성 {}", event.getRoom().getName());
     }
 

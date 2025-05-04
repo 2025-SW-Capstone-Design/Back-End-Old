@@ -64,6 +64,7 @@ class OpenViduApiServiceTest extends IntegrationTestSupport {
         // given
         String body = "{\"event\":\"room_started\"}";
         Long memberId = 123L;
+        Long teamId = 123L;
         String openViduToken = "openViduToken";
 
         WebhookEvent event = WebhookEvent.newBuilder()
@@ -73,10 +74,10 @@ class OpenViduApiServiceTest extends IntegrationTestSupport {
         given(roomStartedEventHandler.support("room_started")).willReturn(true);
 
         // when
-        openViduApiService.handleWebhookEvent(body, memberId, openViduToken);
+        openViduApiService.handleWebhookEvent(body, memberId, teamId, openViduToken);
 
         // then
-        verify(roomStartedEventHandler).handle(event);
+        verify(roomStartedEventHandler).handle(event, teamId);
     }
 
     @DisplayName("지원되지 않는 이벤트를 처리 할 경우 예외가 발생한다.")
@@ -88,10 +89,10 @@ class OpenViduApiServiceTest extends IntegrationTestSupport {
 
         doThrow(new InvalidRequest())
             .when(openViduApiService)
-            .handleWebhookEvent(body, 1L, openViduToken);
+            .handleWebhookEvent(body, 1L, 1L, openViduToken);
 
         // expected
-        assertThatThrownBy(() -> openViduApiService.handleWebhookEvent(body, 1L, openViduToken))
+        assertThatThrownBy(() -> openViduApiService.handleWebhookEvent(body, 1L, 1L, openViduToken))
             .isInstanceOf(InvalidRequest.class)
             .hasMessage("잘못된 요청입니다.");
     }

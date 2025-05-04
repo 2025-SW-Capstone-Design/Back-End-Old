@@ -1,6 +1,5 @@
 package soon.capstone.infrastructure.openvidu.controller;
 
-import livekit.LivekitWebhook.WebhookEvent;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
@@ -58,7 +57,7 @@ class OpenViduControllerTest extends ControllerTestSupport {
         String openViduToken = "validToken";
 
         mockMvc.perform(
-                post(BASE_URL + "/webhook")
+                post(BASE_URL + "/webhook/1")
                     .content(body)
                     .contentType("application/webhook+json")
                     .header("X-OpenVidu-Token", openViduToken)
