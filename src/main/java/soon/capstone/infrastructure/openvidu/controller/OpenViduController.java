@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import soon.capstone.global.anootation.AuthMemberId;
 import soon.capstone.infrastructure.openvidu.controller.dto.OpenViduGenerateTokenRequest;
+import soon.capstone.infrastructure.openvidu.controller.dto.request.OpenViduWebhookEventRequest;
 import soon.capstone.infrastructure.openvidu.service.OpenViduApiService;
 import soon.capstone.infrastructure.openvidu.service.dto.response.OpenViduGenerateTokenResponse;
 
@@ -28,12 +29,12 @@ public class OpenViduController {
 
     @PostMapping(value = "/webhook/{teamId}", consumes = "application/webhook+json")
     public ResponseEntity<Void> receiveWebhook(
-        @RequestBody String body,
+        @Valid @RequestBody OpenViduWebhookEventRequest request,
         @RequestHeader(value = "X-OpenVidu-Token") String openViduToken,
         @AuthMemberId Long memberId,
         @PathVariable Long teamId
     ) {
-        openViduApiService.handleWebhookEvent(body, memberId, teamId, openViduToken);
+        openViduApiService.handleWebhookEvent(request.toServiceRequest(memberId, teamId, openViduToken));
         return ResponseEntity.ok().build();
     }
 

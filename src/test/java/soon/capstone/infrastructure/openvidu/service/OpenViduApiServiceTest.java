@@ -11,7 +11,10 @@ import soon.capstone.IntegrationTestSupport;
 import soon.capstone.global.exception.common.InvalidRequest;
 import soon.capstone.infrastructure.openvidu.handler.RoomStartedEventHandler;
 import soon.capstone.infrastructure.openvidu.service.dto.request.OpenViduGenerateTokenServiceRequest;
+import soon.capstone.infrastructure.openvidu.service.dto.request.OpenViduWebhookEventServiceRequest;
 import soon.capstone.infrastructure.openvidu.service.dto.response.OpenViduGenerateTokenResponse;
+
+import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -63,21 +66,19 @@ class OpenViduApiServiceTest extends IntegrationTestSupport {
     void handleWebhookEvent() {
         // given
         String body = "{\"event\":\"room_started\"}";
-        Long memberId = 123L;
-        Long teamId = 123L;
-        String openViduToken = "openViduToken";
+        OpenViduWebhookEventServiceRequest request = createOpenViduWebhookEventServiceRequest(body);
 
         WebhookEvent event = WebhookEvent.newBuilder()
             .setEvent("room_started")
             .build();
-        given(receiver.receive(body, openViduToken)).willReturn(event);
+        given(receiver.receive(body, request.openViduToken())).willReturn(event);
         given(roomStartedEventHandler.support("room_started")).willReturn(true);
 
         // when
-        openViduApiService.handleWebhookEvent(body, memberId, teamId, openViduToken);
+        openViduApiService.handleWebhookEvent(request);
 
         // then
-        verify(roomStartedEventHandler).handle(event, teamId);
+        verify(roomStartedEventHandler).handle(event, request);
     }
 
     @DisplayName("지원되지 않는 이벤트를 처리 할 경우 예외가 발생한다.")
@@ -85,16 +86,26 @@ class OpenViduApiServiceTest extends IntegrationTestSupport {
     void handleWebhookEventForUnsupportedEvent() {
         // given
         String body = "{\"event\":\"unsupported_event\"}";
-        String openViduToken = "openViduToken";
+        OpenViduWebhookEventServiceRequest request = createOpenViduWebhookEventServiceRequest(body);
 
         doThrow(new InvalidRequest())
             .when(openViduApiService)
-            .handleWebhookEvent(body, 1L, 1L, openViduToken);
+            .handleWebhookEvent(request);
 
         // expected
-        assertThatThrownBy(() -> openViduApiService.handleWebhookEvent(body, 1L, 1L, openViduToken))
+        assertThatThrownBy(() -> openViduApiService.handleWebhookEvent(request))
             .isInstanceOf(InvalidRequest.class)
             .hasMessage("잘못된 요청입니다.");
+    }
+
+    private OpenViduWebhookEventServiceRequest createOpenViduWebhookEventServiceRequest(String body) {
+        return OpenViduWebhookEventServiceRequest.builder()
+            .body(body)
+            .reservedAt(LocalDateTime.now())
+            .openViduToken("openViduToken")
+            .memberId(1L)
+            .teamId(1L)
+            .build();
     }
 
 }

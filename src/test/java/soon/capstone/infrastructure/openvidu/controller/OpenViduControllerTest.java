@@ -6,7 +6,10 @@ import org.springframework.http.MediaType;
 import soon.capstone.ControllerTestSupport;
 import soon.capstone.global.anootation.TestMember;
 import soon.capstone.infrastructure.openvidu.controller.dto.OpenViduGenerateTokenRequest;
+import soon.capstone.infrastructure.openvidu.controller.dto.request.OpenViduWebhookEventRequest;
 import soon.capstone.infrastructure.openvidu.service.dto.response.OpenViduGenerateTokenResponse;
+
+import java.time.LocalDateTime;
 
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -53,12 +56,15 @@ class OpenViduControllerTest extends ControllerTestSupport {
     @DisplayName("웹훅 이벤트를 처리한다")
     @Test
     void processesWebhookEvent() throws Exception {
-        String body = "{\"event\":\"room_started\"}";
-        String openViduToken = "validToken";
+        OpenViduWebhookEventRequest request = OpenViduWebhookEventRequest.builder()
+            .body("{\"event\":\"room_started\"}")
+            .reservedAt(LocalDateTime.now())
+            .build();
+        String openViduToken = "testToken";
 
         mockMvc.perform(
                 post(BASE_URL + "/webhook/1")
-                    .content(body)
+                    .content(objectMapper.writeValueAsString(request))
                     .contentType("application/webhook+json")
                     .header("X-OpenVidu-Token", openViduToken)
             )
