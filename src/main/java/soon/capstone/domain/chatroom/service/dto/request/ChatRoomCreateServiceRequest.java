@@ -10,6 +10,7 @@ public record ChatRoomCreateServiceRequest(
     String title,
     LocalDateTime reservedAt,
     Long teamId,
+    Long memberId,
     String sid
 
 ) {
