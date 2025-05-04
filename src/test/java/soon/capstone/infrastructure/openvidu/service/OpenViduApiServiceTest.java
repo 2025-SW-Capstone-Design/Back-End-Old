@@ -1,28 +1,37 @@
 package soon.capstone.infrastructure.openvidu.service;
 
-import livekit.LivekitModels;
-import livekit.LivekitWebhook;
+import io.livekit.server.WebhookReceiver;
+import livekit.LivekitWebhook.WebhookEvent;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import soon.capstone.IntegrationTestSupport;
 import soon.capstone.global.exception.common.InvalidRequest;
-import soon.capstone.infrastructure.openvidu.handler.OpenViduWebhookEventHandler;
+import soon.capstone.infrastructure.openvidu.handler.RoomStartedEventHandler;
 import soon.capstone.infrastructure.openvidu.service.dto.request.OpenViduGenerateTokenServiceRequest;
 import soon.capstone.infrastructure.openvidu.service.dto.response.OpenViduGenerateTokenResponse;
-
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 
 class OpenViduApiServiceTest extends IntegrationTestSupport {
 
-    @MockitoBean
+    @Autowired
     private OpenViduApiService openViduApiService;
+
+    @MockitoSpyBean
+    private OpenViduApiService spyOpenViduApiService;
+
+    @MockitoBean
+    private RoomStartedEventHandler roomStartedEventHandler;
+
+    @MockitoBean
+    private WebhookReceiver receiver;
 
     @DisplayName("OpenVidu의 토큰을 생성한다")
     @Test
@@ -33,7 +42,7 @@ class OpenViduApiServiceTest extends IntegrationTestSupport {
             .memberId(1L)
             .build();
 
-        given(openViduApiService.generateOpenViduToken(request))
+        given(spyOpenViduApiService.generateOpenViduToken(request))
             .willReturn(OpenViduGenerateTokenResponse.builder()
                 .token("jwt")
                 .roomName("roomName")
@@ -41,7 +50,7 @@ class OpenViduApiServiceTest extends IntegrationTestSupport {
                 .build());
 
         // when
-        var response = openViduApiService.generateOpenViduToken(request);
+        var response = spyOpenViduApiService.generateOpenViduToken(request);
 
         // then
         assertThat(response).isNotNull()
@@ -53,40 +62,36 @@ class OpenViduApiServiceTest extends IntegrationTestSupport {
     @Test
     void handleWebhookEvent() {
         // given
-        var room = LivekitModels.Room.newBuilder()
-            .setName("roomName")
-            .build();
+        String body = "{\"event\":\"room_started\"}";
+        Long memberId = 123L;
+        String openViduToken = "openViduToken";
 
-        var event = LivekitWebhook.WebhookEvent.newBuilder()
+        WebhookEvent event = WebhookEvent.newBuilder()
             .setEvent("room_started")
-            .setRoom(room)
             .build();
-
-        OpenViduWebhookEventHandler mockHandler = mock(OpenViduWebhookEventHandler.class);
-        given(mockHandler.support("room_started"))
-            .willReturn(true);
-
-        OpenViduApiService service = new OpenViduApiService(List.of(mockHandler));
+        given(receiver.receive(body, openViduToken)).willReturn(event);
+        given(roomStartedEventHandler.support("room_started")).willReturn(true);
 
         // when
-        service.handleWebhookEvent(event);
+        openViduApiService.handleWebhookEvent(body, memberId, openViduToken);
 
         // then
-        verify(mockHandler).handle(event);
+        verify(roomStartedEventHandler).handle(event);
     }
 
     @DisplayName("지원되지 않는 이벤트를 처리 할 경우 예외가 발생한다.")
     @Test
     void handleWebhookEventForUnsupportedEvent() {
         // given
-        var event = LivekitWebhook.WebhookEvent.newBuilder()
-            .setEvent("unsupported_event")
-            .build();
+        String body = "{\"event\":\"unsupported_event\"}";
+        String openViduToken = "openViduToken";
 
-        OpenViduApiService service = new OpenViduApiService(List.of());
+        doThrow(new InvalidRequest())
+            .when(openViduApiService)
+            .handleWebhookEvent(body, 1L, openViduToken);
 
         // expected
-        assertThatThrownBy(() -> service.handleWebhookEvent(event))
+        assertThatThrownBy(() -> openViduApiService.handleWebhookEvent(body, 1L, openViduToken))
             .isInstanceOf(InvalidRequest.class)
             .hasMessage("잘못된 요청입니다.");
     }

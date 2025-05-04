@@ -3,8 +3,8 @@ package soon.capstone.infrastructure.openvidu.service;
 import io.livekit.server.AccessToken;
 import io.livekit.server.RoomJoin;
 import io.livekit.server.RoomName;
+import io.livekit.server.WebhookReceiver;
 import livekit.LivekitWebhook.WebhookEvent;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -16,17 +16,25 @@ import soon.capstone.infrastructure.openvidu.service.dto.response.OpenViduGenera
 import java.util.List;
 
 @Slf4j
-@RequiredArgsConstructor
 @Service
 public class OpenViduApiService {
 
-    @Value("${livekit.api.key}")
-    private String apiKey;
-
-    @Value("${livekit.api.secret}")
-    private String apiSecret;
-
+    private final String apiKey;
+    private final String apiSecret;
     private final List<OpenViduWebhookEventHandler> eventHandlers;
+    private final WebhookReceiver webhookReceiver;
+
+    public OpenViduApiService(
+        @Value("${livekit.api.key}") String apiKey,
+        @Value("${livekit.api.secret}") String apiSecret,
+        List<OpenViduWebhookEventHandler> eventHandlers,
+        WebhookReceiver webhookReceiver
+    ) {
+        this.apiKey = apiKey;
+        this.apiSecret = apiSecret;
+        this.eventHandlers = eventHandlers;
+        this.webhookReceiver = webhookReceiver;
+    }
 
     public OpenViduGenerateTokenResponse generateOpenViduToken(OpenViduGenerateTokenServiceRequest request) {
         AccessToken token = new AccessToken(apiKey, apiSecret);
@@ -41,17 +49,29 @@ public class OpenViduApiService {
             .build();
     }
 
-    public void handleWebhookEvent(WebhookEvent event) {
-        eventHandlers.stream()
-            .filter(handler -> handler.support(event.getEvent()))
-            .findFirst()
-            .ifPresentOrElse(
-                handler -> handler.handle(event),
-                () -> {
-                    log.error("잘못된 이벤트: {}", event.getEvent());
-                    throw new InvalidRequest();
-                }
-            );
+    public void handleWebhookEvent(String body, Long memberId, String openViduToken) {
+        try {
+            log.info("웹훅 요청 처리 시작 - memberId: {}, openViduToken: {}", memberId, openViduToken);
+
+            WebhookEvent event = webhookReceiver.receive(body, openViduToken);
+
+            eventHandlers.stream()
+                .filter(handler -> handler.support(event.getEvent()))
+                .findFirst()
+                .ifPresentOrElse(
+                    handler -> {
+                        log.info("이벤트 처리 중 - memberId: {}, event: {}", memberId, event.getEvent());
+                        handler.handle(event);
+                    },
+                    () -> {
+                        log.error("지원하지 않는 이벤트 타입 - memberId: {}, event: {}", memberId, event.getEvent());
+                        throw new InvalidRequest();
+                    }
+                );
+        } catch (Exception e) {
+            log.error("웹훅 이벤트 처리 중 오류 발생 - memberId: {}, 오류: {}", memberId, e.getMessage());
+            throw new InvalidRequest();
+        }
     }
 
 }

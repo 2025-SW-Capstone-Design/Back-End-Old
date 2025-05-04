@@ -1,5 +1,6 @@
 package soon.capstone.infrastructure.openvidu.controller;
 
+import livekit.LivekitWebhook.WebhookEvent;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
@@ -48,5 +49,23 @@ class OpenViduControllerTest extends ControllerTestSupport {
             .andExpect(jsonPath("$.roomName").value("testRoom"))
             .andExpect(jsonPath("$.memberId").value(1L));
     }
+
+    @TestMember
+    @DisplayName("웹훅 이벤트를 처리한다")
+    @Test
+    void processesWebhookEvent() throws Exception {
+        String body = "{\"event\":\"room_started\"}";
+        String openViduToken = "validToken";
+
+        mockMvc.perform(
+                post(BASE_URL + "/webhook")
+                    .content(body)
+                    .contentType("application/webhook+json")
+                    .header("X-OpenVidu-Token", openViduToken)
+            )
+            .andDo(print())
+            .andExpect(status().isOk());
+    }
+
 
 }

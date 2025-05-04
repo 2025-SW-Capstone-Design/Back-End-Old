@@ -3,14 +3,12 @@ package soon.capstone.infrastructure.openvidu.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import soon.capstone.global.anootation.AuthMemberId;
 import soon.capstone.infrastructure.openvidu.controller.dto.OpenViduGenerateTokenRequest;
 import soon.capstone.infrastructure.openvidu.service.OpenViduApiService;
 import soon.capstone.infrastructure.openvidu.service.dto.response.OpenViduGenerateTokenResponse;
+
 
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/open-vidu")
@@ -28,4 +26,13 @@ public class OpenViduController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping(value = "/webhook", consumes = "application/webhook+json")
+    public ResponseEntity<Void> receiveWebhook(
+        @RequestBody String body,
+        @RequestHeader(value = "X-OpenVidu-Token") String openViduToken,
+        @AuthMemberId Long memberId
+    ) {
+        openViduApiService.handleWebhookEvent(body, memberId, openViduToken);
+        return ResponseEntity.ok().build();
+    }
 }
