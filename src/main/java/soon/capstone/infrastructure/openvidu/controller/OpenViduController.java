@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import soon.capstone.global.anootation.AuthMemberId;
-import soon.capstone.infrastructure.openvidu.controller.dto.OpenViduGenerateTokenRequest;
+import soon.capstone.infrastructure.openvidu.controller.dto.request.OpenViduGenerateTokenRequest;
 import soon.capstone.infrastructure.openvidu.controller.dto.request.OpenViduWebhookEventRequest;
 import soon.capstone.infrastructure.openvidu.service.OpenViduApiService;
 import soon.capstone.infrastructure.openvidu.service.dto.response.OpenViduGenerateTokenResponse;

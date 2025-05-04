@@ -1,4 +1,4 @@
-package soon.capstone.infrastructure.openvidu.controller.dto;
+package soon.capstone.infrastructure.openvidu.controller.dto.request;
 
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Builder;

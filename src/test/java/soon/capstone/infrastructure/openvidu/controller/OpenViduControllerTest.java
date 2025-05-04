@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import soon.capstone.ControllerTestSupport;
 import soon.capstone.global.anootation.TestMember;
-import soon.capstone.infrastructure.openvidu.controller.dto.OpenViduGenerateTokenRequest;
+import soon.capstone.infrastructure.openvidu.controller.dto.request.OpenViduGenerateTokenRequest;
 import soon.capstone.infrastructure.openvidu.controller.dto.request.OpenViduWebhookEventRequest;
 import soon.capstone.infrastructure.openvidu.service.dto.response.OpenViduGenerateTokenResponse;
 
