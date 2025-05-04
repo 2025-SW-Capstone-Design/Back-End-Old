@@ -7,6 +7,7 @@ import soon.capstone.ControllerTestSupport;
 import soon.capstone.domain.team.controller.dto.TeamCreateRequest;
 import soon.capstone.domain.team.controller.dto.TeamInvitationRequest;
 import soon.capstone.domain.team.controller.dto.TeamJoinRequest;
+import soon.capstone.domain.team.service.dto.response.TeamDetailResponse;
 import soon.capstone.global.anootation.TestMember;
 import soon.capstone.global.exception.team.IsNotTeamLeaderException;
 
@@ -14,6 +15,7 @@ import java.util.List;
 
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doThrow;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -287,6 +289,56 @@ class TeamControllerTest extends ControllerTestSupport {
             .andExpect(jsonPath("$.status").value(400))
             .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
             .andExpect(jsonPath("$.validation.invitationCode").value("팀 초대 코드는 필수입니다."));
+    }
+
+    @TestMember
+    @DisplayName("멤버가 참여한 팀 목록을 조회한다.")
+    @Test
+    void getTeamList() throws Exception {
+        // given
+        Long memberId = 1L;
+        var response = List.of(
+            createTeamDetailResponse(1L),
+            createTeamDetailResponse(2L)
+        );
+
+        given(teamService.getTeamDetails(memberId))
+            .willReturn(response);
+
+        // expected
+        mockMvc.perform(get(BASE_URL))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].id").value(1L))
+            .andExpect(jsonPath("$[1].id").value(2L))
+            .andExpect(jsonPath("$").isArray());
+    }
+
+    @TestMember
+    @DisplayName("참여된 팀이 없을 경우 빈 리스트를 반환한다.")
+    @Test
+    void getTeamListWithoutEmptyList() throws Exception {
+        // given
+        Long memberId = 1L;
+        List<TeamDetailResponse> response = List.of();
+
+        given(teamService.getTeamDetails(memberId))
+            .willReturn(response);
+
+        // expected
+        mockMvc.perform(get(BASE_URL))
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$").isEmpty());
+    }
+
+    private static TeamDetailResponse createTeamDetailResponse(long id) {
+        return TeamDetailResponse.builder()
+            .id(id)
+            .name("testName")
+            .organizationName("testOrganizationName")
+            .description("testDescription")
+            .build();
     }
 
 }
