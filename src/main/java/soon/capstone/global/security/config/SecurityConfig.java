@@ -34,8 +34,6 @@ import java.util.List;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Value("{spring.swagger.base-url")
-    private String baseUrl;
     private final OAuth2GithubService oauth2GithubService;
     private final OAuth2SuccessHandler oauth2SuccessHandler;
     private final OAuth2FailureHandler oauth2FailureHandler;
@@ -91,18 +89,18 @@ public class SecurityConfig {
         return http.build();
     }
 
-    private CorsConfigurationSource corsConfig() {
-        CorsConfiguration config = new CorsConfiguration();
+    @Bean
+    public CorsConfigurationSource corsConfig() {
+        CorsConfiguration configuration = new CorsConfiguration();
 
-        config.setAllowedOriginPatterns(
-                List.of("http://localhost:3000", "https://planhub.site", "http://localhost:8080", baseUrl)
-        );
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        config.setAllowCredentials(true);
-        config.setMaxAge(3600L);
+        configuration.setAllowedOrigins(List.of("http://localhost:3000", "https://planhub.site"));
+        configuration.setAllowedMethods(List.of("*"));
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
+        source.registerCorsConfiguration("/**", configuration);
         return source;
     }
 
