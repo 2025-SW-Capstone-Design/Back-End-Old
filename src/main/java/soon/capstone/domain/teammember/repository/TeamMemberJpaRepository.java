@@ -6,6 +6,7 @@ import soon.capstone.domain.team.entity.Team;
 import soon.capstone.domain.teammember.entity.TeamMember;
 import soon.capstone.domain.teammember.entity.common.Role;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface TeamMemberJpaRepository extends
@@ -21,5 +22,7 @@ public interface TeamMemberJpaRepository extends
     Optional<TeamMember> findByTeamIdAndRole(Long teamId, Role role);
 
     Optional<TeamMember> findByTeamIdAndMemberId(Long teamId, Long memberId);
+
+    List<TeamMember> findAllByMemberId(Long memberId);
 
 }
