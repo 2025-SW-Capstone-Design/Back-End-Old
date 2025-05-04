@@ -8,8 +8,11 @@ import soon.capstone.domain.team.controller.docs.TeamControllerDocs;
 import soon.capstone.domain.team.controller.dto.TeamCreateRequest;
 import soon.capstone.domain.team.controller.dto.TeamInvitationRequest;
 import soon.capstone.domain.team.controller.dto.TeamJoinRequest;
+import soon.capstone.domain.team.service.dto.response.TeamDetailResponse;
 import soon.capstone.domain.team.service.team.TeamService;
 import soon.capstone.global.anootation.AuthMemberId;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/teams")
@@ -57,6 +60,15 @@ public class TeamController implements TeamControllerDocs {
         Long teamId = teamService.joinTeamWithInvitationCode(request.toServiceRequest(), memberId);
 
         return ResponseEntity.ok(teamId);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<TeamDetailResponse>> getTeamList(
+        @AuthMemberId Long memberId
+    ) {
+        List<TeamDetailResponse> teamDetails = teamService.getTeamDetails(memberId);
+
+        return ResponseEntity.ok(teamDetails);
     }
 
 }
