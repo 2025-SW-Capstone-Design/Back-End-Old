@@ -11,7 +11,7 @@ import soon.capstone.domain.chatroom.service.ChatRoomTeamMemberService;
 import soon.capstone.global.anootation.AuthMemberId;
 
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/{teamId}/chatroom/{chatRoomId}/members")
+@RequestMapping("/api/v1/teams/{teamId}/chat-rooms/{chatRoomId}/members")
 @RestController
 public class ChatRoomTeamMemberController {
 

@@ -11,7 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 class ChatRoomTeamMemberControllerTest extends ControllerTestSupport {
 
-    private static final String BASE_URL = "/api/v1/{teamId}/chatroom/{chatRoomId}/members";
+    private static final String BASE_URL = "/api/v1/teams/{teamId}/chat-rooms/{chatRoomId}/members";
 
     @TestMember
     @DisplayName("채팅방에 팀 멤버를 추가한다.")
