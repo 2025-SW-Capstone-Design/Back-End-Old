@@ -41,27 +41,27 @@ public class TeamMemberService {
     }
 
     @Transactional
-    public void updateTeamMemberRole(TeamMemberUpdateRoleServiceRequest request, Long memberId) {
-        TeamMember requester = teamMemberRepository.findByTeamIdAndMemberId(request.teamId(), memberId);
+    public void updateTeamMemberRole(TeamMemberUpdateRoleServiceRequest request) {
+        TeamMember requester = teamMemberRepository.findByTeamIdAndMemberId(request.teamId(), request.requesterId());
 
         if (!isLeader(requester.getRole())) {
             throw new TeamNotAuthorizedException();
         }
 
-        TeamMember targetMember = teamMemberRepository.findByTeamIdAndMemberId(request.teamId(), request.teamMemberId());
+        TeamMember targetMember = teamMemberRepository.findByTeamIdAndMemberId(request.teamId(), request.memberId());
         Role role = Role.contains(request.role());
         targetMember.updateRole(role);
     }
 
     @Transactional
     public void updateTeamMemberPosition(TeamMemberUpdatePositionServiceRequest request) {
-        TeamMember requester = teamMemberRepository.findByTeamIdAndMemberId(request.teamId(), request.memberId());
+        TeamMember requester = teamMemberRepository.findByTeamIdAndMemberId(request.teamId(), request.requesterId());
 
         if (!isLeader(requester.getRole())) {
             throw new TeamNotAuthorizedException();
         }
 
-        TeamMember targetMember = teamMemberRepository.findByTeamIdAndMemberId(request.teamId(), request.teamMemberId());
+        TeamMember targetMember = teamMemberRepository.findByTeamIdAndMemberId(request.teamId(), request.memberId());
         targetMember.updatePosition(Position.contains(request.position()));
     }
 

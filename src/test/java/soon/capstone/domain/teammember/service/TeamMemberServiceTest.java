@@ -113,11 +113,11 @@ class TeamMemberServiceTest extends IntegrationTestSupport {
         teamMemberRepository.saveAll(List.of(leaderMember, teamMember));
 
         var request = new TeamMemberUpdateRoleServiceRequest(
-            team.getId(), member.getId(), ROLE_LEADER.name()
+            team.getId(), leader.getId(), member.getId(), ROLE_LEADER.name()
         );
 
         // when
-        teamMemberService.updateTeamMemberRole(request, leader.getId());
+        teamMemberService.updateTeamMemberRole(request);
 
         // then
         TeamMember updatedMember = teamMemberRepository.findByTeamIdAndMemberId(team.getId(), member.getId());
@@ -141,11 +141,11 @@ class TeamMemberServiceTest extends IntegrationTestSupport {
         teamMemberRepository.saveAll(List.of(leaderMember, teamMember));
 
         var request = new TeamMemberUpdateRoleServiceRequest(
-            team.getId(), member.getId(), ROLE_LEADER.name()
+            team.getId(), member.getId(), leader.getId(), ROLE_LEADER.name()
         );
 
         // expected
-        assertThatThrownBy(() -> teamMemberService.updateTeamMemberRole(request, member.getId()))
+        assertThatThrownBy(() -> teamMemberService.updateTeamMemberRole(request))
             .isInstanceOf(TeamNotAuthorizedException.class)
             .hasMessage(TEAM_NOT_AUTHORIZED.getMessage());
     }
@@ -166,11 +166,11 @@ class TeamMemberServiceTest extends IntegrationTestSupport {
         teamMemberRepository.saveAll(List.of(leaderMember, teamMember));
 
         var request = new TeamMemberUpdateRoleServiceRequest(
-            team.getId(), member.getId(), "ROLE_INVALID"
+            team.getId(), leader.getId(), member.getId(), "ROLE_INVALID"
         );
 
         // expected
-        assertThatThrownBy(() -> teamMemberService.updateTeamMemberRole(request, leader.getId()))
+        assertThatThrownBy(() -> teamMemberService.updateTeamMemberRole(request))
             .isInstanceOf(InvalidRequest.class)
             .hasMessage("잘못된 요청입니다.");
     }
@@ -192,8 +192,8 @@ class TeamMemberServiceTest extends IntegrationTestSupport {
 
         var request = TeamMemberUpdatePositionServiceRequest.builder()
             .teamId(team.getId())
-            .teamMemberId(teamMember.getId())
-            .memberId(leader.getId())
+            .memberId(member.getId())
+            .requesterId(leader.getId())
             .position("BACKEND")
             .build();
 

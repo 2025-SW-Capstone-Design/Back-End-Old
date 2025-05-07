@@ -6,7 +6,8 @@ import lombok.Builder;
 public record TeamMemberUpdateRoleServiceRequest(
 
     Long teamId,
-    Long teamMemberId,
+    Long requesterId,
+    Long memberId,
     String role
 
 ) {

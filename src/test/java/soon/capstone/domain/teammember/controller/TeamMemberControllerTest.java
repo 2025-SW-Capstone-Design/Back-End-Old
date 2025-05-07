@@ -14,7 +14,6 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
@@ -88,7 +87,7 @@ class TeamMemberControllerTest extends ControllerTestSupport {
             .andDo(print())
             .andExpect(status().isNoContent());
 
-        verify(teamMemberService).updateTeamMemberRole(any(), eq(1L));
+        verify(teamMemberService).updateTeamMemberRole(any());
     }
 
     @TestMember
@@ -100,7 +99,7 @@ class TeamMemberControllerTest extends ControllerTestSupport {
         var request = createTeamMemberUpdateRoleRequest(1L, ROLE_MEMBER.name());
 
         doThrow(new TeamNotAuthorizedException())
-            .when(teamMemberService).updateTeamMemberRole(any(), eq(1L));
+            .when(teamMemberService).updateTeamMemberRole(any());
 
         // expected
         mockMvc.perform(
@@ -129,7 +128,7 @@ class TeamMemberControllerTest extends ControllerTestSupport {
             .andDo(print())
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
-            .andExpect(jsonPath("$.validation.teamMemberId").value("팀 멤버 ID는 필수 값입니다."));
+            .andExpect(jsonPath("$.validation.memberId").value("멤버 ID는 필수 값입니다."));
     }
 
     @TestMember
@@ -149,7 +148,7 @@ class TeamMemberControllerTest extends ControllerTestSupport {
             .andDo(print())
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
-            .andExpect(jsonPath("$.validation.teamMemberId").value("팀 멤버 ID는 0보다 커야 합니다."));
+            .andExpect(jsonPath("$.validation.memberId").value("멤버 ID는 0보다 커야 합니다."));
     }
 
     @TestMember
@@ -159,7 +158,7 @@ class TeamMemberControllerTest extends ControllerTestSupport {
         // given
         Long teamId = 1L;
         TeamMemberUpdateRoleRequest request = TeamMemberUpdateRoleRequest.builder()
-            .teamMemberId(1L)
+            .memberId(1L)
             .build();
 
         // expected
@@ -180,7 +179,7 @@ class TeamMemberControllerTest extends ControllerTestSupport {
         // given
         Long teamId = 1L;
         var request = TeamMemberUpdatePositionRequest.builder()
-            .teamMemberId(1L)
+            .memberId(1L)
             .position(BACKEND.name())
             .build();
 
@@ -203,10 +202,10 @@ class TeamMemberControllerTest extends ControllerTestSupport {
             .build();
     }
 
-    private static TeamMemberUpdateRoleRequest createTeamMemberUpdateRoleRequest(long teamMemberId, String name) {
+    private TeamMemberUpdateRoleRequest createTeamMemberUpdateRoleRequest(long memberId, String role) {
         return TeamMemberUpdateRoleRequest.builder()
-            .teamMemberId(teamMemberId)
-            .role(name)
+            .memberId(memberId)
+            .role(role)
             .build();
     }
 }

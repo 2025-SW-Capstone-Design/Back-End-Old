@@ -9,21 +9,21 @@ import soon.capstone.domain.teammember.service.dto.request.TeamMemberUpdatePosit
 @Builder
 public record TeamMemberUpdatePositionRequest(
 
-    @Positive(message = "팀 ID는 양수여야 합니다.")
+    @Positive(message = "팀원 ID는 양수여야 합니다.")
     @NotNull(message = "팀원 ID는 필수입니다.")
-    Long teamMemberId,
+    Long memberId,
 
     @NotBlank(message = "팀원 포지션은 필수입니다.")
     String position
 
 ) {
 
-    public TeamMemberUpdatePositionServiceRequest toServiceRequest(Long teamId, Long memberId) {
+    public TeamMemberUpdatePositionServiceRequest toServiceRequest(Long teamId, Long requestId) {
         return TeamMemberUpdatePositionServiceRequest.builder()
             .teamId(teamId)
-            .teamMemberId(teamMemberId)
-            .position(position)
             .memberId(memberId)
+            .position(position)
+            .requesterId(requestId)
             .build();
     }
 

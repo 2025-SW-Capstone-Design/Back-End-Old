@@ -36,7 +36,7 @@ public class TeamMemberController implements TeamMemberControllerDocs {
         @Valid @RequestBody TeamMemberUpdateRoleRequest request,
         @AuthMemberId Long memberId
     ) {
-        teamMemberService.updateTeamMemberRole(request.toServiceRequest(teamId), memberId);
+        teamMemberService.updateTeamMemberRole(request.toServiceRequest(teamId, memberId));
 
         return ResponseEntity.noContent().build();
     }

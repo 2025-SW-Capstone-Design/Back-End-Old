@@ -6,8 +6,8 @@ import lombok.Builder;
 public record TeamMemberUpdatePositionServiceRequest(
 
     Long teamId,
-    Long teamMemberId,
     Long memberId,
+    Long requesterId,
     String position
 
 ) {

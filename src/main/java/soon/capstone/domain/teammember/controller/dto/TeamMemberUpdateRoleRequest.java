@@ -9,21 +9,20 @@ import soon.capstone.domain.teammember.service.dto.request.TeamMemberUpdateRoleS
 @Builder
 public record TeamMemberUpdateRoleRequest(
 
-    Long teamId,
-
-    @Positive(message = "팀 멤버 ID는 0보다 커야 합니다.")
-    @NotNull(message = "팀 멤버 ID는 필수 값입니다.")
-    Long teamMemberId,
+    @Positive(message = "멤버 ID는 0보다 커야 합니다.")
+    @NotNull(message = "멤버 ID는 필수 값입니다.")
+    Long memberId,
 
     @NotEmpty(message = "권한은 필수 값입니다.")
     String role
 
 ) {
 
-    public TeamMemberUpdateRoleServiceRequest toServiceRequest(Long teamId) {
+    public TeamMemberUpdateRoleServiceRequest toServiceRequest(Long teamId, Long requesterId) {
         return TeamMemberUpdateRoleServiceRequest.builder()
             .teamId(teamId)
-            .teamMemberId(teamMemberId)
+            .requesterId(requesterId)
+            .memberId(memberId)
             .role(role)
             .build();
     }
