@@ -79,6 +79,10 @@ public class ChatRoom extends BaseTimeEntity {
         this.reservedAt = newReservedAt;
     }
 
+    public void cancel() {
+        this.active = false;
+    }
+
     private static void validateReservationTime(LocalDateTime reservedAt) {
         if (reservedAt == null) {
             throw new InvalidRequest("reservedAt", "예약 시간이 설정되어 있지 않습니다.");

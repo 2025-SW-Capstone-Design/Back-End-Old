@@ -73,11 +73,13 @@ class OpenViduApiServiceTest extends IntegrationTestSupport {
             .build();
         given(receiver.receive(body, request.openViduToken())).willReturn(event);
         given(roomStartedEventHandler.support("room_started")).willReturn(true);
+        given(roomStartedEventHandler.handle(event, request)).willReturn(123L);
 
         // when
-        openViduApiService.handleWebhookEvent(request);
+        Long roomId = openViduApiService.handleWebhookEvent(request);
 
         // then
+        assertThat(roomId).isNotNull().isEqualTo(123L);
         verify(roomStartedEventHandler).handle(event, request);
     }
 

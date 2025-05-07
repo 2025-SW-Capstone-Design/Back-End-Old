@@ -28,14 +28,14 @@ public class OpenViduController {
     }
 
     @PostMapping(value = "/webhook/{teamId}", consumes = "application/webhook+json")
-    public ResponseEntity<Void> receiveWebhook(
+    public ResponseEntity<Long> receiveWebhook(
         @Valid @RequestBody OpenViduWebhookEventRequest request,
         @RequestHeader(value = "X-OpenVidu-Token") String openViduToken,
         @AuthMemberId Long memberId,
         @PathVariable Long teamId
     ) {
-        openViduApiService.handleWebhookEvent(request.toServiceRequest(memberId, teamId, openViduToken));
-        return ResponseEntity.ok().build();
+        Long chatRoomId = openViduApiService.handleWebhookEvent(request.toServiceRequest(memberId, teamId, openViduToken));
+        return ResponseEntity.ok(chatRoomId);
     }
 
 }

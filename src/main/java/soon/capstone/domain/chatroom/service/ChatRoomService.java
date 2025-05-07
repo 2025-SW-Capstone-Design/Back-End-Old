@@ -8,6 +8,7 @@ import soon.capstone.domain.chatroom.service.dto.request.ChatRoomAddMemberServic
 import soon.capstone.domain.chatroom.service.dto.request.ChatRoomCreateServiceRequest;
 import soon.capstone.domain.team.entity.Team;
 import soon.capstone.domain.team.repository.TeamRepository;
+import soon.capstone.domain.teammember.service.TeamMemberValidator;
 
 @RequiredArgsConstructor
 @Service
@@ -16,8 +17,11 @@ public class ChatRoomService {
     private final ChatRoomRepository chatRoomRepository;
     private final ChatRoomTeamMemberService chatRoomTeamMemberService;
     private final TeamRepository teamRepository;
+    private final TeamMemberValidator teamMemberValidator;
 
     public Long createRoom(ChatRoomCreateServiceRequest request) {
+        teamMemberValidator.validateTeamMember(request.teamId(), request.memberId());
+
         Team team = teamRepository.findById(request.teamId());
         ChatRoom chatRoom = ChatRoom.create(request.title(), request.reservedAt(), team, request.sid());
         Long savedChatRoomId = chatRoomRepository.save(chatRoom);

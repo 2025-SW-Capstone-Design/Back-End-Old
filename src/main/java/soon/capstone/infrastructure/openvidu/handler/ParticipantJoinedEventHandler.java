@@ -15,8 +15,10 @@ public class ParticipantJoinedEventHandler implements OpenViduWebhookEventHandle
     }
 
     @Override
-    public void handle(LivekitWebhook.WebhookEvent event, OpenViduWebhookEventServiceRequest request) {
+    public Long handle(LivekitWebhook.WebhookEvent event, OpenViduWebhookEventServiceRequest request) {
         log.info("참가자 입장: {}", event.getParticipant().getIdentity());
+
+        return null;
     }
 
 }

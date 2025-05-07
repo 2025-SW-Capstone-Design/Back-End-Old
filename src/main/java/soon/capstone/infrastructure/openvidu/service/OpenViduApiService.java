@@ -50,25 +50,23 @@ public class OpenViduApiService {
             .build();
     }
 
-    public void handleWebhookEvent(OpenViduWebhookEventServiceRequest request) {
+    public Long handleWebhookEvent(OpenViduWebhookEventServiceRequest request) {
         try {
             log.info("웹훅 요청 처리 시작 - memberId: {}, openViduToken: {}", request.memberId(), request.openViduToken());
 
             WebhookEvent event = webhookReceiver.receive(request.body(), request.openViduToken());
 
-            eventHandlers.stream()
+            return eventHandlers.stream()
                 .filter(handler -> handler.support(event.getEvent()))
                 .findFirst()
-                .ifPresentOrElse(
-                    handler -> {
-                        log.info("이벤트 처리 중 - memberId: {}, event: {}", request.memberId(), event.getEvent());
-                        handler.handle(event, request);
-                    },
-                    () -> {
-                        log.error("지원하지 않는 이벤트 타입 - memberId: {}, event: {}", request.memberId(), event.getEvent());
-                        throw new InvalidRequest();
-                    }
-                );
+                .map(handler -> {
+                    log.info("이벤트 처리 중 - memberId: {}, event: {}", request.memberId(), event.getEvent());
+                    return handler.handle(event, request);
+                })
+                .orElseThrow(() -> {
+                    log.error("지원하지 않는 이벤트 타입 - memberId: {}, event: {}", request.memberId(), event.getEvent());
+                    return new InvalidRequest();
+                });
         } catch (Exception e) {
             log.error("웹훅 이벤트 처리 중 오류 발생 - memberId: {}, 오류: {}", request.memberId(), e.getMessage());
             throw new InvalidRequest();
