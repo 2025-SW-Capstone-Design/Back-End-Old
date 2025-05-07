@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import soon.capstone.IntegrationTestSupport;
+import soon.capstone.domain.issue.service.IssueLabelService;
 import soon.capstone.domain.member.entity.Member;
 import soon.capstone.domain.member.repository.MemberRepository;
 import soon.capstone.domain.project.entity.Project;
@@ -25,11 +26,9 @@ import soon.capstone.infrastructure.redis.oauth2.repository.OAuthTokenRepository
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
-
 
 class ProjectServiceTest extends IntegrationTestSupport {
 
@@ -60,6 +59,9 @@ class ProjectServiceTest extends IntegrationTestSupport {
     @MockitoBean
     private ProjectReadService projectReadService;
 
+    @MockitoBean
+    private IssueLabelService issueLabelService;
+
     @AfterEach
     void tearDown() {
         projectRepository.deleteAllInBatch();
@@ -88,7 +90,7 @@ class ProjectServiceTest extends IntegrationTestSupport {
         projectRepository.save(project);
 
         given(projectReadService.getProjects(any(), any()))
-                .willReturn(List.of(createProjectDetailResponse(project)));
+            .willReturn(List.of(createProjectDetailResponse(project)));
 
         // When
         var projects = projectService.getProjects(member.getId(), team.getId());
@@ -113,11 +115,14 @@ class ProjectServiceTest extends IntegrationTestSupport {
         TeamMember teamMember = createTeamMember(member, team);
         teamMemberRepository.save(teamMember);
 
+        Project project = createProject(member.getNickname(), team);
+        projectRepository.save(project);
+
         var teamCreatedEvent = TeamCreatedEvent.builder()
-                .memberId(member.getId())
-                .teamId(team.getId())
-                .oauthToken(oAuthToken.getToken())
-                .build();
+            .memberId(member.getId())
+            .teamId(team.getId())
+            .oauthToken(oAuthToken.getToken())
+            .build();
 
         // When
         projectService.createRepository(teamCreatedEvent);
@@ -143,11 +148,11 @@ class ProjectServiceTest extends IntegrationTestSupport {
         projectRepository.save(project);
 
         var repositoryCreationEvent = RepositoryCreationEvent.builder()
-                .oauthToken(oAuthToken.getToken())
-                .organizationName(team.getOrganizationName())
-                .repositoryId("repositoryId")
-                .repoName("repoName")
-                .build();
+            .oauthToken(oAuthToken.getToken())
+            .organizationName(team.getOrganizationName())
+            .repositoryId("repositoryId")
+            .repoName("repoName")
+            .build();
 
         // When
         projectService.createProject(repositoryCreationEvent);
@@ -156,52 +161,78 @@ class ProjectServiceTest extends IntegrationTestSupport {
         verify(organizationProjectCreationService).createProject(anyString(), anyString(), anyString(), anyString());
     }
 
+    @DisplayName("TeamCreatedEvent 발생 시 이슈 라벨 초기화가 이뤄진다.")
+    @Test
+    void createRepositoryHandlesTeamCreatedEvent() {
+        // given
+        Member member = createMember();
+        memberRepository.save(member);
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        Project project = createProject(member.getNickname(), team);
+        projectRepository.save(project);
+
+        var teamCreatedEvent = TeamCreatedEvent.builder()
+            .memberId(member.getId())
+            .teamId(team.getId())
+            .oauthToken("oauthToken")
+            .build();
+
+        // when
+        projectService.createRepository(teamCreatedEvent);
+
+        // then
+        verify(issueLabelService).initializeIssueLabels(anyLong(), any(Project.class), any(Team.class));
+    }
+
     private Member createMember() {
         return Member.builder()
-                .email("email")
-                .nickname("nickname")
-                .profileImageURL("profileImageURL")
-                .build();
+            .email("email")
+            .nickname("nickname")
+            .profileImageURL("profileImageURL")
+            .build();
     }
 
     private OAuthToken createOAuthToken(Member member) {
         return OAuthToken.builder()
-                .memberId(member.getId())
-                .token("token")
-                .build();
+            .memberId(member.getId())
+            .token("token")
+            .build();
     }
 
     private Team createTeam() {
         return Team.builder()
-                .name("name")
-                .description("description")
-                .organizationName("organizationName")
-                .build();
+            .name("name")
+            .description("description")
+            .organizationName("organizationName")
+            .build();
     }
 
     private TeamMember createTeamMember(Member member, Team team) {
         return TeamMember.builder()
-                .member(member)
-                .team(team)
-                .position(Position.NONE)
-                .role(Role.ROLE_MEMBER)
-                .build();
+            .member(member)
+            .team(team)
+            .position(Position.NONE)
+            .role(Role.ROLE_MEMBER)
+            .build();
     }
 
     private Project createProject(String creator, Team team) {
         return Project.builder()
-                .title("title")
-                .repositoryId("repositoryId")
-                .creator(creator)
-                .team(team)
-                .build();
+            .title("title")
+            .repositoryId("repositoryId")
+            .creator(creator)
+            .team(team)
+            .build();
     }
 
     private ProjectDetailResponse createProjectDetailResponse(Project project) {
         return ProjectDetailResponse.builder()
-                .projectId(project.getId())
-                .title(project.getTitle())
-                .creator(project.getCreator())
-                .build();
+            .projectId(project.getId())
+            .title(project.getTitle())
+            .creator(project.getCreator())
+            .build();
     }
 }
