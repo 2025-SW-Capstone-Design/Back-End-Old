@@ -4,6 +4,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import soon.capstone.ControllerTestSupport;
+import soon.capstone.domain.teammember.controller.dto.TeamMemberUpdatePositionRequest;
 import soon.capstone.domain.teammember.controller.dto.TeamMemberUpdateRoleRequest;
 import soon.capstone.domain.teammember.service.dto.response.TeamMemberDetailResponse;
 import soon.capstone.global.anootation.TestMember;
@@ -22,6 +23,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static soon.capstone.domain.teammember.entity.common.Position.BACKEND;
 import static soon.capstone.domain.teammember.entity.common.Role.ROLE_LEADER;
 import static soon.capstone.domain.teammember.entity.common.Role.ROLE_MEMBER;
 
@@ -169,6 +171,26 @@ class TeamMemberControllerTest extends ControllerTestSupport {
             .andExpect(status().isBadRequest())
             .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
             .andExpect(jsonPath("$.validation.role").value("권한은 필수 값입니다."));
+    }
+
+    @TestMember
+    @DisplayName("팀 멤버의 역할을 변경한다.")
+    @Test
+    void updateTeamMemberPosition() throws Exception {
+        // given
+        Long teamId = 1L;
+        var request = TeamMemberUpdatePositionRequest.builder()
+            .teamMemberId(1L)
+            .position(BACKEND.name())
+            .build();
+
+        // expected
+        mockMvc.perform(
+                patch(BASE_URL + "/position", teamId)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(request)))
+            .andDo(print())
+            .andExpect(status().isNoContent());
     }
 
     private TeamMemberDetailResponse createTeamMemberDetailResponse(Long memberId, String role) {
