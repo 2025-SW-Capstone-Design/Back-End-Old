@@ -76,7 +76,7 @@ class ChatRoomTeamMemberServiceTest extends IntegrationTestSupport {
         chatRoomTeamMemberService.addMemberToChatRoom(request);
 
         // then
-        ChatRoomTeamMember chatRoomTeamMember = chatRoomTeamMemberRepository.findByChatRoomIdAndTeamMemberId(chatRoom.getId(), member.getId());
+        ChatRoomTeamMember chatRoomTeamMember = chatRoomTeamMemberRepository.findByChatRoomIdAndTeamMemberId(chatRoom.getId(), leader.getId());
         assertThat(chatRoomTeamMember).isNotNull();
 
     }

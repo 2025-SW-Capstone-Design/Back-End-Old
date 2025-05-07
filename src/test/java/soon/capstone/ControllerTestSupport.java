@@ -8,6 +8,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import soon.capstone.domain.auth.controller.AuthController;
 import soon.capstone.domain.auth.service.AuthService;
+import soon.capstone.domain.chatroom.controller.ChatRoomTeamMemberController;
+import soon.capstone.domain.chatroom.service.ChatRoomTeamMemberService;
 import soon.capstone.domain.issue.controller.IssueController;
 import soon.capstone.domain.issue.controller.IssueLabelController;
 import soon.capstone.domain.issue.controller.IssueTemplateController;
@@ -40,7 +42,8 @@ import soon.capstone.infrastructure.openvidu.service.OpenViduApiService;
         MilestoneController.class,
         ReadmeController.class,
         PortfolioController.class,
-        OpenViduController.class
+        OpenViduController.class,
+        ChatRoomTeamMemberController.class
     }
 )
 public abstract class ControllerTestSupport {
@@ -77,5 +80,8 @@ public abstract class ControllerTestSupport {
 
     @MockitoBean
     protected OpenViduApiService openViduApiService;
+
+    @MockitoBean
+    protected ChatRoomTeamMemberService chatRoomTeamMemberService;
 
 }

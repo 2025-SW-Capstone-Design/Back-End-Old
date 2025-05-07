@@ -58,7 +58,7 @@ class OpenViduControllerTest extends ControllerTestSupport {
     void processesWebhookEvent() throws Exception {
         OpenViduWebhookEventRequest request = OpenViduWebhookEventRequest.builder()
             .body("{\"event\":\"room_started\"}")
-            .reservedAt(LocalDateTime.now())
+            .reservedAt(LocalDateTime.now().plusDays(1L))
             .build();
         String openViduToken = "testToken";
 
