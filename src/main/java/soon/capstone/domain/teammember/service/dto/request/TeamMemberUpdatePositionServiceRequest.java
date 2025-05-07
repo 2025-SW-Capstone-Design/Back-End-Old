@@ -3,12 +3,12 @@ package soon.capstone.domain.teammember.service.dto.request;
 import lombok.Builder;
 
 @Builder
-public record TeamMemberUpdateRoleServiceRequest(
+public record TeamMemberUpdatePositionServiceRequest(
 
     Long teamId,
-    Long requesterId,
     Long memberId,
-    String role
+    Long requesterId,
+    String position
 
 ) {
 }

@@ -10,7 +10,9 @@ import soon.capstone.domain.member.repository.MemberRepository;
 import soon.capstone.domain.team.entity.Team;
 import soon.capstone.domain.team.repository.TeamRepository;
 import soon.capstone.domain.teammember.entity.TeamMember;
+import soon.capstone.domain.teammember.entity.common.Position;
 import soon.capstone.domain.teammember.repository.TeamMemberRepository;
+import soon.capstone.domain.teammember.service.dto.request.TeamMemberUpdatePositionServiceRequest;
 import soon.capstone.domain.teammember.service.dto.request.TeamMemberUpdateRoleServiceRequest;
 import soon.capstone.domain.teammember.service.dto.response.TeamMemberDetailResponse;
 import soon.capstone.global.exception.common.InvalidRequest;
@@ -111,11 +113,11 @@ class TeamMemberServiceTest extends IntegrationTestSupport {
         teamMemberRepository.saveAll(List.of(leaderMember, teamMember));
 
         var request = new TeamMemberUpdateRoleServiceRequest(
-            team.getId(), member.getId(), ROLE_LEADER.name()
+            team.getId(), leader.getId(), member.getId(), ROLE_LEADER.name()
         );
 
         // when
-        teamMemberService.updateTeamMemberRole(request, leader.getId());
+        teamMemberService.updateTeamMemberRole(request);
 
         // then
         TeamMember updatedMember = teamMemberRepository.findByTeamIdAndMemberId(team.getId(), member.getId());
@@ -139,11 +141,11 @@ class TeamMemberServiceTest extends IntegrationTestSupport {
         teamMemberRepository.saveAll(List.of(leaderMember, teamMember));
 
         var request = new TeamMemberUpdateRoleServiceRequest(
-            team.getId(), member.getId(), ROLE_LEADER.name()
+            team.getId(), member.getId(), leader.getId(), ROLE_LEADER.name()
         );
 
         // expected
-        assertThatThrownBy(() -> teamMemberService.updateTeamMemberRole(request, member.getId()))
+        assertThatThrownBy(() -> teamMemberService.updateTeamMemberRole(request))
             .isInstanceOf(TeamNotAuthorizedException.class)
             .hasMessage(TEAM_NOT_AUTHORIZED.getMessage());
     }
@@ -164,13 +166,44 @@ class TeamMemberServiceTest extends IntegrationTestSupport {
         teamMemberRepository.saveAll(List.of(leaderMember, teamMember));
 
         var request = new TeamMemberUpdateRoleServiceRequest(
-            team.getId(), member.getId(), "ROLE_INVALID"
+            team.getId(), leader.getId(), member.getId(), "ROLE_INVALID"
         );
 
         // expected
-        assertThatThrownBy(() -> teamMemberService.updateTeamMemberRole(request, leader.getId()))
+        assertThatThrownBy(() -> teamMemberService.updateTeamMemberRole(request))
             .isInstanceOf(InvalidRequest.class)
             .hasMessage("잘못된 요청입니다.");
+    }
+
+    @DisplayName("팀의 리더는 다른 팀원의 포지션을 변경 할 수 있다")
+    @Test
+    void updateTeamMemberPosition() {
+        // given
+        Member leader = createMember("email1", "nickname1");
+        Member member = createMember("email2", "nickname2");
+        memberRepository.saveAll(List.of(leader, member));
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        TeamMember leaderMember = TeamMember.createLeader(leader, team);
+        TeamMember teamMember = TeamMember.createMember(member, team);
+        teamMemberRepository.saveAll(List.of(leaderMember, teamMember));
+
+        var request = TeamMemberUpdatePositionServiceRequest.builder()
+            .teamId(team.getId())
+            .memberId(member.getId())
+            .requesterId(leader.getId())
+            .position("BACKEND")
+            .build();
+
+        // when
+        teamMemberService.updateTeamMemberPosition(request);
+
+        // then
+        TeamMember updatedMember = teamMemberRepository.findByTeamIdAndMemberId(team.getId(), member.getId());
+        assertThat(updatedMember.getPosition())
+            .isEqualTo(Position.BACKEND);
     }
 
     private Member createMember(String email, String nickname) {
