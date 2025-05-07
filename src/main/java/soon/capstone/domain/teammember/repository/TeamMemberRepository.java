@@ -68,4 +68,8 @@ public class TeamMemberRepository {
         teamMemberJpaRepository.deleteAllInBatch();
     }
 
+    public boolean existsByTeamIdAndMemberId(Long teamId, Long memberId) {
+        return teamMemberJpaRepository.existsByTeamIdAndMemberId(teamId, memberId);
+    }
+
 }

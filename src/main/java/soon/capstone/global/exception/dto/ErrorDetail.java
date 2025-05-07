@@ -66,6 +66,10 @@ public enum ErrorDetail {
     PORTFOLIO_NOT_FOUND(404, "해당 포트폴리오를 찾을 수 없습니다."),
     PORTFOLIO_DUPLICATE_TITLE(409, "포트폴리오 제목이 중복됩니다."),
 
+    // 채팅방 관련
+    CHAT_ROOM_NOT_FOUND(404, "해당 채팅방을 찾을 수 없습니다."),
+    CHAT_ROOM_TEAM_MEMBER_NOT_FOUND(404, "해당 채팅방에서 팀 멤버를 찾을 수 없습니다."),
+
     ;
 
     private final int status;

@@ -8,6 +8,10 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import soon.capstone.domain.auth.controller.AuthController;
 import soon.capstone.domain.auth.service.AuthService;
+import soon.capstone.domain.chatroom.controller.ChatRoomController;
+import soon.capstone.domain.chatroom.controller.ChatRoomTeamMemberController;
+import soon.capstone.domain.chatroom.service.ChatRoomService;
+import soon.capstone.domain.chatroom.service.ChatRoomTeamMemberService;
 import soon.capstone.domain.issue.controller.IssueController;
 import soon.capstone.domain.issue.controller.IssueLabelController;
 import soon.capstone.domain.issue.controller.IssueTemplateController;
@@ -24,6 +28,8 @@ import soon.capstone.domain.team.controller.TeamController;
 import soon.capstone.domain.team.service.team.TeamService;
 import soon.capstone.domain.teammember.controller.TeamMemberController;
 import soon.capstone.domain.teammember.service.TeamMemberService;
+import soon.capstone.infrastructure.openvidu.controller.OpenViduController;
+import soon.capstone.infrastructure.openvidu.service.OpenViduApiService;
 
 @Import(TestSecurityConfig.class)
 @WebMvcTest(
@@ -37,7 +43,10 @@ import soon.capstone.domain.teammember.service.TeamMemberService;
         IssueController.class,
         MilestoneController.class,
         ReadmeController.class,
-        PortfolioController.class
+        PortfolioController.class,
+        OpenViduController.class,
+        ChatRoomTeamMemberController.class,
+        ChatRoomController.class
     }
 )
 public abstract class ControllerTestSupport {
@@ -71,5 +80,14 @@ public abstract class ControllerTestSupport {
 
     @MockitoBean
     protected PortfolioService portfolioService;
+
+    @MockitoBean
+    protected OpenViduApiService openViduApiService;
+
+    @MockitoBean
+    protected ChatRoomTeamMemberService chatRoomTeamMemberService;
+
+    @MockitoBean
+    protected ChatRoomService chatRoomService;
 
 }

@@ -17,4 +17,11 @@ public class TeamMemberValidator {
             throw new TeamNotAuthorizedException();
         }
     }
+
+    public void validateTeamMember(Long teamId, Long memberId) {
+        if (!teamMemberRepository.existsByTeamIdAndMemberId(teamId, memberId)) {
+            throw new TeamNotAuthorizedException();
+        }
+    }
+
 }
