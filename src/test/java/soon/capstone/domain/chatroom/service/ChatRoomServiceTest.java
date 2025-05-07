@@ -11,6 +11,7 @@ import soon.capstone.domain.chatroom.repository.ChatRoomRepository;
 import soon.capstone.domain.chatroom.repository.ChatRoomTeamMemberRepository;
 import soon.capstone.domain.chatroom.service.dto.request.ChatRoomCreateServiceRequest;
 import soon.capstone.domain.chatroom.service.dto.request.ChatRoomFinishServiceRequest;
+import soon.capstone.domain.chatroom.service.dto.request.ChatRoomResumeServiceRequest;
 import soon.capstone.domain.member.entity.Member;
 import soon.capstone.domain.member.repository.MemberRepository;
 import soon.capstone.domain.team.entity.Team;
@@ -133,19 +134,54 @@ class ChatRoomServiceTest extends IntegrationTestSupport {
         TeamMember leader = TeamMember.createLeader(member, team);
         teamMemberRepository.save(leader);
 
-        var request = createChatRoomCreateServiceRequest(team, member, LocalDateTime.now().plusDays(3));
-        Long savedChatRoomId = chatRoomService.createRoom(request);
+        ChatRoom chatRoom = createChatRoom(team, LocalDateTime.now().plusDays(3));
+        chatRoomRepository.save(chatRoom);
 
-        // when
-        chatRoomService.finishRoom(ChatRoomFinishServiceRequest.builder()
+        var request = ChatRoomFinishServiceRequest.builder()
             .sid("sid")
             .teamId(team.getId())
             .memberId(member.getId())
-            .build());
+            .build();
+
+        // when
+        Long chatRoomId = chatRoomService.finishRoom(request);
 
         // then
-        ChatRoom chatRoom = chatRoomRepository.findById(savedChatRoomId);
-        assertThat(chatRoom.isActive()).isFalse();
+        ChatRoom updatedChatroom = chatRoomRepository.findById(chatRoomId);
+        assertThat(updatedChatroom.isActive())
+            .isFalse();
+    }
+
+    @DisplayName("채팅방을 다시 활성화 한다")
+    @Test
+    void resumeChatRoom() {
+        // given
+        Member member = createMember("email", "nickname");
+        memberRepository.save(member);
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        TeamMember leader = TeamMember.createLeader(member, team);
+        teamMemberRepository.save(leader);
+
+        ChatRoom chatRoom = createChatRoom(team, LocalDateTime.now().plusDays(3));
+        chatRoom.finish();
+        chatRoomRepository.save(chatRoom);
+
+        var request = ChatRoomResumeServiceRequest.builder()
+            .chatRoomId(chatRoom.getId())
+            .teamId(team.getId())
+            .memberId(member.getId())
+            .build();
+
+        // when
+        Long chatRoomId = chatRoomService.resumeRoom(request);
+
+        // then
+        ChatRoom updatedChatroom = chatRoomRepository.findById(chatRoomId);
+        assertThat(updatedChatroom.isActive())
+            .isTrue();
     }
 
     private Member createMember(String email, String nickname) {
@@ -161,6 +197,15 @@ class ChatRoomServiceTest extends IntegrationTestSupport {
             .organizationName("organizationName")
             .name("teamName")
             .description("teamDescription")
+            .build();
+    }
+
+    private ChatRoom createChatRoom(Team team, LocalDateTime reservedAt) {
+        return ChatRoom.builder()
+            .title("title")
+            .reservedAt(reservedAt)
+            .team(team)
+            .sid("sid")
             .build();
     }
 

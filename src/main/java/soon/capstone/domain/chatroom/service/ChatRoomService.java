@@ -8,6 +8,7 @@ import soon.capstone.domain.chatroom.repository.ChatRoomRepository;
 import soon.capstone.domain.chatroom.service.dto.request.ChatRoomAddMemberServiceRequest;
 import soon.capstone.domain.chatroom.service.dto.request.ChatRoomCreateServiceRequest;
 import soon.capstone.domain.chatroom.service.dto.request.ChatRoomFinishServiceRequest;
+import soon.capstone.domain.chatroom.service.dto.request.ChatRoomResumeServiceRequest;
 import soon.capstone.domain.team.entity.Team;
 import soon.capstone.domain.team.repository.TeamRepository;
 import soon.capstone.domain.teammember.service.TeamMemberValidator;
@@ -41,6 +42,16 @@ public class ChatRoomService {
         chatRoom.finish();
         return chatRoom.getId();
     }
+
+    @Transactional
+    public Long resumeRoom(ChatRoomResumeServiceRequest request) {
+        teamMemberValidator.validateTeamMember(request.teamId(), request.memberId());
+
+        ChatRoom chatRoom = chatRoomRepository.findById(request.chatRoomId());
+        chatRoom.resume();
+        return chatRoom.getId();
+    }
+
 
     private void addMemberToChatRoom(ChatRoomCreateServiceRequest request, ChatRoom chatRoom, Team team) {
         ChatRoomAddMemberServiceRequest addMemberRequest = ChatRoomAddMemberServiceRequest.builder()
