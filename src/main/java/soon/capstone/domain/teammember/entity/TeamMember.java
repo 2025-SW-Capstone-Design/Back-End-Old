@@ -72,4 +72,8 @@ public class TeamMember extends BaseTimeEntity {
         this.role = role;
     }
 
+    public void updatePosition(Position position) {
+        this.position = position;
+    }
+
 }

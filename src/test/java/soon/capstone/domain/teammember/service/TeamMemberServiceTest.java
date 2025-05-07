@@ -10,7 +10,9 @@ import soon.capstone.domain.member.repository.MemberRepository;
 import soon.capstone.domain.team.entity.Team;
 import soon.capstone.domain.team.repository.TeamRepository;
 import soon.capstone.domain.teammember.entity.TeamMember;
+import soon.capstone.domain.teammember.entity.common.Position;
 import soon.capstone.domain.teammember.repository.TeamMemberRepository;
+import soon.capstone.domain.teammember.service.dto.request.TeamMemberUpdatePositionServiceRequest;
 import soon.capstone.domain.teammember.service.dto.request.TeamMemberUpdateRoleServiceRequest;
 import soon.capstone.domain.teammember.service.dto.response.TeamMemberDetailResponse;
 import soon.capstone.global.exception.common.InvalidRequest;
@@ -171,6 +173,37 @@ class TeamMemberServiceTest extends IntegrationTestSupport {
         assertThatThrownBy(() -> teamMemberService.updateTeamMemberRole(request, leader.getId()))
             .isInstanceOf(InvalidRequest.class)
             .hasMessage("잘못된 요청입니다.");
+    }
+
+    @DisplayName("팀의 리더는 다른 팀원의 포지션을 변경 할 수 있다")
+    @Test
+    void updateTeamMemberPosition() {
+        // given
+        Member leader = createMember("email1", "nickname1");
+        Member member = createMember("email2", "nickname2");
+        memberRepository.saveAll(List.of(leader, member));
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        TeamMember leaderMember = TeamMember.createLeader(leader, team);
+        TeamMember teamMember = TeamMember.createMember(member, team);
+        teamMemberRepository.saveAll(List.of(leaderMember, teamMember));
+
+        var request = TeamMemberUpdatePositionServiceRequest.builder()
+            .teamId(team.getId())
+            .teamMemberId(teamMember.getId())
+            .memberId(leader.getId())
+            .position("BACKEND")
+            .build();
+
+        // when
+        teamMemberService.updateTeamMemberPosition(request);
+
+        // then
+        TeamMember updatedMember = teamMemberRepository.findByTeamIdAndMemberId(team.getId(), member.getId());
+        assertThat(updatedMember.getPosition())
+            .isEqualTo(Position.BACKEND);
     }
 
     private Member createMember(String email, String nickname) {
