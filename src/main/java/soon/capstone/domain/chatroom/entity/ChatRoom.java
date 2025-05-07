@@ -79,8 +79,12 @@ public class ChatRoom extends BaseTimeEntity {
         this.reservedAt = newReservedAt;
     }
 
-    public void cancel() {
+    public void finish() {
         this.active = false;
+    }
+
+    public void resume() {
+        this.active = true;
     }
 
     private static void validateReservationTime(LocalDateTime reservedAt) {

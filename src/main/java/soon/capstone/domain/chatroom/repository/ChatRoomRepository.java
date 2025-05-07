@@ -20,6 +20,11 @@ public class ChatRoomRepository {
             .orElseThrow(ChatRoomNotFoundException::new);
     }
 
+    public ChatRoom findBySid(String sid) {
+        return chatRoomJpaRepository.findBySid(sid)
+            .orElseThrow(ChatRoomNotFoundException::new);
+    }
+
     public void deleteAllInBatch() {
         chatRoomJpaRepository.deleteAllInBatch();
     }

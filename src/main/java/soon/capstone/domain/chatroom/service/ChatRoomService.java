@@ -2,10 +2,12 @@ package soon.capstone.domain.chatroom.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import soon.capstone.domain.chatroom.entity.ChatRoom;
 import soon.capstone.domain.chatroom.repository.ChatRoomRepository;
 import soon.capstone.domain.chatroom.service.dto.request.ChatRoomAddMemberServiceRequest;
 import soon.capstone.domain.chatroom.service.dto.request.ChatRoomCreateServiceRequest;
+import soon.capstone.domain.chatroom.service.dto.request.ChatRoomFinishServiceRequest;
 import soon.capstone.domain.team.entity.Team;
 import soon.capstone.domain.team.repository.TeamRepository;
 import soon.capstone.domain.teammember.service.TeamMemberValidator;
@@ -29,6 +31,15 @@ public class ChatRoomService {
         addMemberToChatRoom(request, chatRoom, team);
 
         return savedChatRoomId;
+    }
+
+    @Transactional
+    public Long finishRoom(ChatRoomFinishServiceRequest request) {
+        teamMemberValidator.validateTeamMember(request.teamId(), request.memberId());
+
+        ChatRoom chatRoom = chatRoomRepository.findBySid(request.sid());
+        chatRoom.finish();
+        return chatRoom.getId();
     }
 
     private void addMemberToChatRoom(ChatRoomCreateServiceRequest request, ChatRoom chatRoom, Team team) {

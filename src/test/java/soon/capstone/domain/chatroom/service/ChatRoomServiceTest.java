@@ -10,6 +10,7 @@ import soon.capstone.domain.chatroom.entity.ChatRoomTeamMember;
 import soon.capstone.domain.chatroom.repository.ChatRoomRepository;
 import soon.capstone.domain.chatroom.repository.ChatRoomTeamMemberRepository;
 import soon.capstone.domain.chatroom.service.dto.request.ChatRoomCreateServiceRequest;
+import soon.capstone.domain.chatroom.service.dto.request.ChatRoomFinishServiceRequest;
 import soon.capstone.domain.member.entity.Member;
 import soon.capstone.domain.member.repository.MemberRepository;
 import soon.capstone.domain.team.entity.Team;
@@ -117,6 +118,34 @@ class ChatRoomServiceTest extends IntegrationTestSupport {
         assertThatThrownBy(() -> chatRoomService.createRoom(request))
             .isInstanceOf(InvalidRequest.class)
             .hasMessageContaining("잘못된 요청입니다.");
+    }
+
+    @DisplayName("채팅방을 종료한다")
+    @Test
+    void finishChatRoom() {
+        // given
+        Member member = createMember("email", "nickname");
+        memberRepository.save(member);
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        TeamMember leader = TeamMember.createLeader(member, team);
+        teamMemberRepository.save(leader);
+
+        var request = createChatRoomCreateServiceRequest(team, member, LocalDateTime.now().plusDays(3));
+        Long savedChatRoomId = chatRoomService.createRoom(request);
+
+        // when
+        chatRoomService.finishRoom(ChatRoomFinishServiceRequest.builder()
+            .sid("sid")
+            .teamId(team.getId())
+            .memberId(member.getId())
+            .build());
+
+        // then
+        ChatRoom chatRoom = chatRoomRepository.findById(savedChatRoomId);
+        assertThat(chatRoom.isActive()).isFalse();
     }
 
     private Member createMember(String email, String nickname) {

@@ -4,6 +4,7 @@ import livekit.LivekitWebhook.WebhookEvent;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import soon.capstone.domain.chatroom.service.dto.request.ChatRoomCreateServiceRequest;
+import soon.capstone.domain.chatroom.service.dto.request.ChatRoomFinishServiceRequest;
 import soon.capstone.infrastructure.openvidu.service.dto.request.OpenViduWebhookEventServiceRequest;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -15,6 +16,14 @@ public final class OpenViduWebhookEventMapper {
             .title(event.getRoom().getName())
             .reservedAt(request.reservedAt())
             .teamId(request.teamId())
+            .build();
+    }
+
+    public static ChatRoomFinishServiceRequest toChatRoomFinishServiceRequest(WebhookEvent event, OpenViduWebhookEventServiceRequest request) {
+        return ChatRoomFinishServiceRequest.builder()
+            .sid(event.getRoom().getSid())
+            .teamId(request.teamId())
+            .memberId(request.memberId())
             .build();
     }
 
