@@ -27,6 +27,11 @@ public class ProjectRepository {
         return projectJpaRepository.findById(id).orElseThrow(ProjectNotFoundException::new);
     }
 
+    public Project findByTeamIdAndCreator(Long teamId, String creator) {
+        return projectJpaRepository.findByTeamIdAndCreator(teamId, creator)
+            .orElseThrow(ProjectNotFoundException::new);
+    }
+
     public List<ProjectDetailResponse> getProjects(Team team) {
         return projectJpaRepository.getProjects(team);
     }

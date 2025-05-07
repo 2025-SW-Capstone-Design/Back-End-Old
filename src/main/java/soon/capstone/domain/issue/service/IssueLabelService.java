@@ -109,6 +109,19 @@ public class IssueLabelService {
             .collect(Collectors.toList());
     }
 
+    @Cacheable(value = "issueLabels", key = "#team.organizationName + '_' + #project.title")
+    public void initializeIssueLabels(
+        Long memberId,
+        Project project,
+        Team team
+    ) {
+        List<IssueLabel> labels = getGithubIssueLabels(memberId, team.getOrganizationName(), project.getTitle()).stream()
+            .map(label -> IssueLabel.createIssueLabel(label.getColor(), label.getName(), label.getDescription(), team, project))
+            .toList();
+
+        issueLabelRepository.saveAll(labels);
+    }
+
     private void validateLabelNotExists(String title, Project project) {
         boolean alreadyExists = issueLabelRepository.existsByTitleAndProject(title, project);
         if (alreadyExists) {

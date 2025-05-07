@@ -258,6 +258,65 @@ class IssueLabelServiceTest extends IntegrationTestSupport {
             .getIssueLabels(any());
     }
 
+    @DisplayName("초기 라벨을 저장한다.")
+    @Test
+    void initializeIssueLabels() {
+        // given
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        Project project = createProject(team);
+        projectRepository.save(project);
+
+        List<IssueLabelDetailResponse> githubLabels = List.of(
+            createIssueLabelDetailResponse(null, "title1", "description1", "color1"),
+            createIssueLabelDetailResponse(null, "title2", "description2", "color2"),
+            createIssueLabelDetailResponse(null, "title3", "description3", "color3")
+        );
+
+        given(githubIssueLabelService.getIssueLabels(any()))
+            .willReturn(githubLabels);
+
+        // when
+        issueLabelService.initializeIssueLabels(1L, project, team);
+
+        // then
+        List<IssueLabel> savedLabels = issueLabelRepository.findAllByProject(project);
+        assertThat(savedLabels)
+            .hasSize(3)
+            .extracting("title", "description", "color")
+            .containsExactlyInAnyOrder(
+                tuple("title1", "description1", "color1"),
+                tuple("title2", "description2", "color2"),
+                tuple("title3", "description3", "color3")
+            );
+
+        verify(githubIssueLabelService).getIssueLabels(any());
+    }
+
+    @DisplayName("initializeIssueLabels 호출 시 GitHub에서 반환된 라벨이 없을 경우 저장하지 않는다.")
+    @Test
+    void initializeIssueLabelsWithNoLabels() {
+        // given
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        Project project = createProject(team);
+        projectRepository.save(project);
+
+        given(githubIssueLabelService.getIssueLabels(any()))
+            .willReturn(List.of());
+
+        // when
+        issueLabelService.initializeIssueLabels(1L, project, team);
+
+        // then
+        List<IssueLabel> savedLabels = issueLabelRepository.findAllByProject(project);
+        assertThat(savedLabels).isEmpty();
+
+        verify(githubIssueLabelService).getIssueLabels(any());
+    }
+
     private Team createTeam() {
         return Team.builder()
             .organizationName("organizationName")
