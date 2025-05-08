@@ -117,6 +117,8 @@ public class GithubIssueLabelService {
                 .body(new ParameterizedTypeReference<>() {
                 });
 
+            log.info("깃허브 이슈라벨:{} {}", request.repositoryName(), labels != null ? labels.size() : 0);
+
             return labels == null ? Collections.emptyList() :
                 labels.stream()
                     .map(GithubIssueLabelDetailDto::toResponse)
