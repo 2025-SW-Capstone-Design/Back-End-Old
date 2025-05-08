@@ -28,6 +28,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 class ProjectServiceTest extends IntegrationTestSupport {
@@ -86,7 +87,7 @@ class ProjectServiceTest extends IntegrationTestSupport {
         TeamMember teamMember = createTeamMember(member, team);
         teamMemberRepository.save(teamMember);
 
-        Project project = createProject(member.getNickname(), team);
+        Project project = createProject(member.getNickname(), team, "title");
         projectRepository.save(project);
 
         given(projectReadService.getProjects(any(), any()))
@@ -115,7 +116,7 @@ class ProjectServiceTest extends IntegrationTestSupport {
         TeamMember teamMember = createTeamMember(member, team);
         teamMemberRepository.save(teamMember);
 
-        Project project = createProject(member.getNickname(), team);
+        Project project = createProject(member.getNickname(), team, "title");
         projectRepository.save(project);
 
         var teamCreatedEvent = TeamCreatedEvent.builder()
@@ -144,7 +145,7 @@ class ProjectServiceTest extends IntegrationTestSupport {
         Team team = createTeam();
         teamRepository.save(team);
 
-        Project project = createProject(member.getNickname(), team);
+        Project project = createProject(member.getNickname(), team, "title");
         projectRepository.save(project);
 
         var repositoryCreationEvent = RepositoryCreationEvent.builder()
@@ -171,8 +172,9 @@ class ProjectServiceTest extends IntegrationTestSupport {
         Team team = createTeam();
         teamRepository.save(team);
 
-        Project project = createProject(member.getNickname(), team);
-        projectRepository.save(project);
+        Project backend = createProject(member.getNickname(), team, "backend");
+        Project front = createProject(member.getNickname(), team, "front");
+        projectRepository.saveAll(List.of(backend, front));
 
         var teamCreatedEvent = TeamCreatedEvent.builder()
             .memberId(member.getId())
@@ -184,7 +186,8 @@ class ProjectServiceTest extends IntegrationTestSupport {
         projectService.createRepository(teamCreatedEvent);
 
         // then
-        verify(issueLabelService).initializeIssueLabels(anyLong(), any(Project.class), any(Team.class));
+        verify(issueLabelService, times(2))
+            .initializeIssueLabels(anyLong(), any(Project.class), any(Team.class));
     }
 
     private Member createMember() {
@@ -219,9 +222,9 @@ class ProjectServiceTest extends IntegrationTestSupport {
             .build();
     }
 
-    private Project createProject(String creator, Team team) {
+    private Project createProject(String creator, Team team, String title) {
         return Project.builder()
-            .title("title")
+            .title(title)
             .repositoryId("repositoryId")
             .creator(creator)
             .team(team)
