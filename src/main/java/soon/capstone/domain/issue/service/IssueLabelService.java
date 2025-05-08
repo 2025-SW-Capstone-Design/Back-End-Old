@@ -1,6 +1,7 @@
 package soon.capstone.domain.issue.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class IssueLabelService {
@@ -109,17 +111,23 @@ public class IssueLabelService {
             .collect(Collectors.toList());
     }
 
-    @Cacheable(value = "issueLabels", key = "#team.organizationName + '_' + #project.title")
+    @CacheEvict(value = "issueLabels", key = "#team.organizationName + '_' + #project.title")
+    @Transactional
     public void initializeIssueLabels(
         Long memberId,
         Project project,
         Team team
     ) {
+        log.info("이슈 라벨 초기화: {}", project.getTitle());
         List<IssueLabel> labels = getGithubIssueLabels(memberId, team.getOrganizationName(), project.getTitle()).stream()
             .map(label -> IssueLabel.createIssueLabel(label.getColor(), label.getName(), label.getDescription(), team, project))
             .toList();
+        log.info("초기화 할 라벨 개수: {}", labels.size());
 
         issueLabelRepository.saveAll(labels);
+
+        List<IssueLabel> allByProject = issueLabelRepository.findAllByProject(project);
+        log.info("DB에 저장된 라벨 개수: {}", allByProject.size());
     }
 
     private void validateLabelNotExists(String title, Project project) {

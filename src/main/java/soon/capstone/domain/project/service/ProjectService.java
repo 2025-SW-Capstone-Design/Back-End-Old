@@ -1,6 +1,7 @@
 package soon.capstone.domain.project.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +20,7 @@ import soon.capstone.domain.team.repository.TeamRepository;
 
 import java.util.List;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class ProjectService {
@@ -46,6 +48,12 @@ public class ProjectService {
         Team team = teamRepository.findById(event.teamId());
         List<Project> projects = projectRepository.findAllByTeamIdAndCreator(team.getId(), member.getNickname());
         projects.forEach(project -> {
+            log.info("Initializing issue labels for project: {}", project.getTitle());
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
             issueLabelService.initializeIssueLabels(member.getId(), project, team);
         });
     }
