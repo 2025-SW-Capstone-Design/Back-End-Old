@@ -65,7 +65,9 @@ public class IssueLabelService {
         Project project,
         Long memberId
     ) {
-        validateLabelNotExists(newTitle, project);
+        if (!oldTitle.equals(newTitle)) {
+            validateLabelNotExists(newTitle, project);
+        }
 
         updateGithubIssueLabel(
             oldTitle, newTitle, description, color, organizationName, repositoryName, memberId

@@ -147,15 +147,18 @@ class IssueLabelServiceTest extends IntegrationTestSupport {
         Project project = createProject(team);
         projectRepository.save(project);
 
-        IssueLabel issueLabel = IssueLabel.createIssueLabel(
+        IssueLabel issueLabel1 = IssueLabel.createIssueLabel(
             "color", "oldTitle", "description", team, project
         );
-        issueLabelRepository.save(issueLabel);
+        IssueLabel issueLabel2 = IssueLabel.createIssueLabel(
+            "color", "newTitle", "description", team, project
+        );
+        issueLabelRepository.saveAll(List.of(issueLabel1, issueLabel2));
 
         // expected
         assertThatThrownBy(() ->
             issueLabelService.updateIssueLabel(
-                issueLabel.getId(), "oldTitle", "oldTitle", "description", "color", "organizationName", "repositoryName", project, 1L
+                issueLabel1.getId(), "oldTitle", "newTitle", "description", "color", "organizationName", "repositoryName", project, 1L
             )
         )
             .isInstanceOf(AlreadyIssueLabelException.class)
