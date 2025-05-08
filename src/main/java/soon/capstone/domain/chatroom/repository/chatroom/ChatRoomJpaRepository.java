@@ -1,4 +1,4 @@
-package soon.capstone.domain.chatroom.repository;
+package soon.capstone.domain.chatroom.repository.chatroom;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import soon.capstone.domain.chatroom.entity.ChatRoom;

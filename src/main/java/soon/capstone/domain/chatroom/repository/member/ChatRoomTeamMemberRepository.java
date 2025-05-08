@@ -1,9 +1,11 @@
-package soon.capstone.domain.chatroom.repository;
+package soon.capstone.domain.chatroom.repository.member;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import soon.capstone.domain.chatroom.entity.ChatRoomTeamMember;
 import soon.capstone.global.exception.chatroom.ChatRoomTeamMemberNotFoundException;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @Repository
@@ -13,6 +15,10 @@ public class ChatRoomTeamMemberRepository {
 
     public void save(ChatRoomTeamMember chatRoomTeamMember) {
         chatRoomTeamMemberJpaRepository.save(chatRoomTeamMember);
+    }
+
+    public void saveAll(List<ChatRoomTeamMember> chatRoomTeamMembers) {
+        chatRoomTeamMemberJpaRepository.saveAll(chatRoomTeamMembers);
     }
 
     public ChatRoomTeamMember findByChatRoomIdAndTeamMemberId(Long chatRoomId, Long teamMemberId) {

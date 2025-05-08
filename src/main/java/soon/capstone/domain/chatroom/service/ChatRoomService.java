@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import soon.capstone.domain.chatroom.entity.ChatRoom;
-import soon.capstone.domain.chatroom.repository.ChatRoomRepository;
+import soon.capstone.domain.chatroom.repository.chatroom.ChatRoomRepository;
 import soon.capstone.domain.chatroom.service.dto.request.ChatRoomAddMemberServiceRequest;
 import soon.capstone.domain.chatroom.service.dto.request.ChatRoomCreateServiceRequest;
 import soon.capstone.domain.chatroom.service.dto.request.ChatRoomFinishServiceRequest;

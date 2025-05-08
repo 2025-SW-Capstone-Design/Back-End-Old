@@ -1,4 +1,4 @@
-package soon.capstone.domain.chatroom.repository;
+package soon.capstone.domain.chatroom.repository.chatroom;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
