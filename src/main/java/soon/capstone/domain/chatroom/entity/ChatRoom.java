@@ -68,13 +68,7 @@ public class ChatRoom extends BaseTimeEntity {
     }
 
     public void updateReservationTime(LocalDateTime newReservedAt) {
-        if (newReservedAt == null) {
-            throw new InvalidRequest();
-        }
-
-        if (newReservedAt.isBefore(LocalDateTime.now())) {
-            throw new InvalidRequest("reservedAt", "예약 시간은 현재 시간보다 미래여야 합니다.");
-        }
+        validateReservationTime(newReservedAt);
 
         this.reservedAt = newReservedAt;
     }

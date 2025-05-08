@@ -7,9 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import soon.capstone.IntegrationTestSupport;
 import soon.capstone.domain.chatroom.entity.ChatRoom;
 import soon.capstone.domain.chatroom.entity.ChatRoomTeamMember;
-import soon.capstone.domain.chatroom.repository.ChatRoomRepository;
-import soon.capstone.domain.chatroom.repository.ChatRoomTeamMemberRepository;
+import soon.capstone.domain.chatroom.repository.chatroom.ChatRoomRepository;
+import soon.capstone.domain.chatroom.repository.member.ChatRoomTeamMemberRepository;
 import soon.capstone.domain.chatroom.service.dto.request.ChatRoomAddMemberServiceRequest;
+import soon.capstone.domain.chatroom.service.dto.request.ChatRoomTeamMembersDetailServiceRequest;
 import soon.capstone.domain.member.entity.Member;
 import soon.capstone.domain.member.repository.MemberRepository;
 import soon.capstone.domain.team.entity.Team;
@@ -20,6 +21,7 @@ import soon.capstone.domain.teammember.repository.TeamMemberRepository;
 import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 
 class ChatRoomTeamMemberServiceTest extends IntegrationTestSupport {
 
@@ -78,7 +80,44 @@ class ChatRoomTeamMemberServiceTest extends IntegrationTestSupport {
         // then
         ChatRoomTeamMember chatRoomTeamMember = chatRoomTeamMemberRepository.findByChatRoomIdAndTeamMemberId(chatRoom.getId(), leader.getId());
         assertThat(chatRoomTeamMember).isNotNull();
+    }
 
+    @DisplayName("채팅방에 속한 팀원 목록을 조회한다.")
+    @Test
+    void getTeamMembersByChatRoom() {
+        // given
+        Member member = createMember("email", "nickname");
+        memberRepository.save(member);
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        TeamMember teamMember = TeamMember.createMember(member, team);
+        teamMemberRepository.save(teamMember);
+
+        ChatRoom chatRoom = ChatRoom.create("title", LocalDateTime.now().plusDays(3L), team, "sid");
+        chatRoomRepository.save(chatRoom);
+
+        ChatRoomTeamMember chatRoomTeamMember = ChatRoomTeamMember.builder()
+            .chatRoom(chatRoom)
+            .teamMember(teamMember)
+            .build();
+        chatRoomTeamMemberRepository.save(chatRoomTeamMember);
+
+        var request = ChatRoomTeamMembersDetailServiceRequest.builder()
+            .teamId(team.getId())
+            .chatRoomId(chatRoom.getId())
+            .build();
+
+        // when
+        var teamMembers = chatRoomTeamMemberService.getTeamMembersByChatRoom(request);
+
+        // then
+        assertThat(teamMembers).hasSize(1)
+            .extracting("memberId", "position", "role", "nickname", "profileImageURL")
+            .contains(
+                tuple(member.getId(), "NONE", "ROLE_MEMBER", "nickname", "profileImageURL")
+            );
     }
 
     private Member createMember(String email, String nickname) {

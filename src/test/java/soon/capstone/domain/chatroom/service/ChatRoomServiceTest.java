@@ -7,11 +7,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import soon.capstone.IntegrationTestSupport;
 import soon.capstone.domain.chatroom.entity.ChatRoom;
 import soon.capstone.domain.chatroom.entity.ChatRoomTeamMember;
-import soon.capstone.domain.chatroom.repository.ChatRoomRepository;
-import soon.capstone.domain.chatroom.repository.ChatRoomTeamMemberRepository;
+import soon.capstone.domain.chatroom.repository.chatroom.ChatRoomRepository;
+import soon.capstone.domain.chatroom.repository.member.ChatRoomTeamMemberRepository;
 import soon.capstone.domain.chatroom.service.dto.request.ChatRoomCreateServiceRequest;
+import soon.capstone.domain.chatroom.service.dto.request.ChatRoomDetailsServiceRequest;
 import soon.capstone.domain.chatroom.service.dto.request.ChatRoomFinishServiceRequest;
 import soon.capstone.domain.chatroom.service.dto.request.ChatRoomResumeServiceRequest;
+import soon.capstone.domain.chatroom.service.dto.response.ChatRoomDetailsResponse;
 import soon.capstone.domain.member.entity.Member;
 import soon.capstone.domain.member.repository.MemberRepository;
 import soon.capstone.domain.team.entity.Team;
@@ -21,9 +23,11 @@ import soon.capstone.domain.teammember.repository.TeamMemberRepository;
 import soon.capstone.global.exception.common.InvalidRequest;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 
 class ChatRoomServiceTest extends IntegrationTestSupport {
 
@@ -182,6 +186,40 @@ class ChatRoomServiceTest extends IntegrationTestSupport {
         ChatRoom updatedChatroom = chatRoomRepository.findById(chatRoomId);
         assertThat(updatedChatroom.isActive())
             .isTrue();
+    }
+
+    @DisplayName("채팅방 세부 정보를 조회한다")
+    @Test
+    void getChatRoomDetails() {
+        // given
+        Member member = createMember("email", "nickname");
+        memberRepository.save(member);
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        TeamMember leader = TeamMember.createLeader(member, team);
+        teamMemberRepository.save(leader);
+
+        ChatRoom chatRoom1 = createChatRoom(team, LocalDateTime.now().plusDays(3));
+        ChatRoom chatRoom2 = createChatRoom(team, LocalDateTime.now().plusDays(5));
+        chatRoomRepository.saveAll(List.of(chatRoom1, chatRoom2));
+
+        var request = ChatRoomDetailsServiceRequest.builder()
+            .teamId(team.getId())
+            .memberId(member.getId())
+            .build();
+
+        // when
+        List<ChatRoomDetailsResponse> chatRoomDetails = chatRoomService.getChatRoomDetails(request);
+
+        // then
+        assertThat(chatRoomDetails).hasSize(2)
+            .extracting("id", "reservedAt")
+            .containsExactlyInAnyOrder(
+                tuple(chatRoom1.getId(), chatRoom1.getReservedAt()),
+                tuple(chatRoom2.getId(), chatRoom2.getReservedAt())
+            );
     }
 
     private Member createMember(String email, String nickname) {
