@@ -9,6 +9,9 @@ import soon.capstone.domain.chatroom.repository.member.ChatRoomTeamMemberReposit
 import soon.capstone.domain.chatroom.service.dto.request.ChatRoomAddMemberServiceRequest;
 import soon.capstone.domain.teammember.entity.TeamMember;
 import soon.capstone.domain.teammember.repository.TeamMemberRepository;
+import soon.capstone.domain.teammember.service.dto.response.TeamMemberDetailResponse;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @Service
@@ -23,6 +26,11 @@ public class ChatRoomTeamMemberService {
         ChatRoom chatRoom = chatRoomRepository.findById(request.chatRoomId());
 
         saveToChatRoomTeamMember(chatRoom, teamMember);
+    }
+
+    public List<TeamMemberDetailResponse> getTeamMembersByChatRoom(Long chatRoomId) {
+        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId);
+        return chatRoomTeamMemberRepository.getTeamMembersByChatRoom(chatRoom);
     }
 
     private void saveToChatRoomTeamMember(ChatRoom chatRoom, TeamMember teamMember) {
