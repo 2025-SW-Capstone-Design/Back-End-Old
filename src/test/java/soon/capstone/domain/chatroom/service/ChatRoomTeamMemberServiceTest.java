@@ -10,6 +10,7 @@ import soon.capstone.domain.chatroom.entity.ChatRoomTeamMember;
 import soon.capstone.domain.chatroom.repository.chatroom.ChatRoomRepository;
 import soon.capstone.domain.chatroom.repository.member.ChatRoomTeamMemberRepository;
 import soon.capstone.domain.chatroom.service.dto.request.ChatRoomAddMemberServiceRequest;
+import soon.capstone.domain.chatroom.service.dto.request.ChatRoomTeamMembersDetailServiceRequest;
 import soon.capstone.domain.member.entity.Member;
 import soon.capstone.domain.member.repository.MemberRepository;
 import soon.capstone.domain.team.entity.Team;
@@ -103,8 +104,13 @@ class ChatRoomTeamMemberServiceTest extends IntegrationTestSupport {
             .build();
         chatRoomTeamMemberRepository.save(chatRoomTeamMember);
 
+        var request = ChatRoomTeamMembersDetailServiceRequest.builder()
+            .teamId(team.getId())
+            .chatRoomId(chatRoom.getId())
+            .build();
+
         // when
-        var teamMembers = chatRoomTeamMemberService.getTeamMembersByChatRoom(chatRoom.getId());
+        var teamMembers = chatRoomTeamMemberService.getTeamMembersByChatRoom(request);
 
         // then
         assertThat(teamMembers).hasSize(1)

@@ -7,6 +7,7 @@ import soon.capstone.domain.chatroom.entity.ChatRoomTeamMember;
 import soon.capstone.domain.chatroom.repository.chatroom.ChatRoomRepository;
 import soon.capstone.domain.chatroom.repository.member.ChatRoomTeamMemberRepository;
 import soon.capstone.domain.chatroom.service.dto.request.ChatRoomAddMemberServiceRequest;
+import soon.capstone.domain.chatroom.service.dto.request.ChatRoomTeamMembersDetailServiceRequest;
 import soon.capstone.domain.teammember.entity.TeamMember;
 import soon.capstone.domain.teammember.repository.TeamMemberRepository;
 import soon.capstone.domain.teammember.service.dto.response.TeamMemberDetailResponse;
@@ -28,8 +29,8 @@ public class ChatRoomTeamMemberService {
         saveToChatRoomTeamMember(chatRoom, teamMember);
     }
 
-    public List<TeamMemberDetailResponse> getTeamMembersByChatRoom(Long chatRoomId) {
-        ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId);
+    public List<TeamMemberDetailResponse> getTeamMembersByChatRoom(ChatRoomTeamMembersDetailServiceRequest request) {
+        ChatRoom chatRoom = chatRoomRepository.findByIdAndTeamId(request.chatRoomId(), request.teamId());
         return chatRoomTeamMemberRepository.getTeamMembersByChatRoom(chatRoom);
     }
 

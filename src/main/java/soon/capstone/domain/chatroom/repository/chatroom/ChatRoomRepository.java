@@ -25,6 +25,11 @@ public class ChatRoomRepository {
             .orElseThrow(ChatRoomNotFoundException::new);
     }
 
+    public ChatRoom findByIdAndTeamId(Long chatRoomId, Long teamId) {
+        return chatRoomJpaRepository.findByIdAndTeamId(chatRoomId, teamId)
+            .orElseThrow(ChatRoomNotFoundException::new);
+    }
+
     public void deleteAllInBatch() {
         chatRoomJpaRepository.deleteAllInBatch();
     }
