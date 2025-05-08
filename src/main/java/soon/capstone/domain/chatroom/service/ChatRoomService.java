@@ -5,13 +5,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import soon.capstone.domain.chatroom.entity.ChatRoom;
 import soon.capstone.domain.chatroom.repository.chatroom.ChatRoomRepository;
-import soon.capstone.domain.chatroom.service.dto.request.ChatRoomAddMemberServiceRequest;
-import soon.capstone.domain.chatroom.service.dto.request.ChatRoomCreateServiceRequest;
-import soon.capstone.domain.chatroom.service.dto.request.ChatRoomFinishServiceRequest;
-import soon.capstone.domain.chatroom.service.dto.request.ChatRoomResumeServiceRequest;
+import soon.capstone.domain.chatroom.service.dto.request.*;
+import soon.capstone.domain.chatroom.service.dto.response.ChatRoomDetailsResponse;
 import soon.capstone.domain.team.entity.Team;
 import soon.capstone.domain.team.repository.TeamRepository;
 import soon.capstone.domain.teammember.service.TeamMemberValidator;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @Service
@@ -52,6 +52,13 @@ public class ChatRoomService {
         return chatRoom.getId();
     }
 
+    public List<ChatRoomDetailsResponse> getChatRoomDetails(ChatRoomDetailsServiceRequest request) {
+        teamMemberValidator.validateTeamMember(request.teamId(), request.memberId());
+
+        return chatRoomRepository.findAllByTeamId(request.teamId()).stream()
+            .map(ChatRoomDetailsResponse::from)
+            .toList();
+    }
 
     private void addMemberToChatRoom(ChatRoomCreateServiceRequest request, ChatRoom chatRoom, Team team) {
         ChatRoomAddMemberServiceRequest addMemberRequest = ChatRoomAddMemberServiceRequest.builder()
