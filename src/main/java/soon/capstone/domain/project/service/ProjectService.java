@@ -49,6 +49,11 @@ public class ProjectService {
         List<Project> projects = projectRepository.findAllByTeamIdAndCreator(team.getId(), member.getNickname());
         projects.forEach(project -> {
             log.info("Initializing issue labels for project: {}", project.getTitle());
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
             issueLabelService.initializeIssueLabels(member.getId(), project, team);
         });
     }
