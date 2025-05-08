@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import soon.capstone.domain.issue.entity.IssueLabel;
 import soon.capstone.domain.issue.repository.issuelabel.IssueLabelRepository;
@@ -112,8 +111,8 @@ public class IssueLabelService {
             .collect(Collectors.toList());
     }
 
-    @Cacheable(value = "issueLabels", key = "#team.organizationName + '_' + #project.title")
-    @Transactional(propagation = Propagation.NESTED)
+    @CacheEvict(value = "issueLabels", key = "#team.organizationName + '_' + #project.title")
+    @Transactional
     public void initializeIssueLabels(
         Long memberId,
         Project project,
