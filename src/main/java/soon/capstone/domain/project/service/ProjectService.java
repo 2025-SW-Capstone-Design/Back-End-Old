@@ -44,8 +44,10 @@ public class ProjectService {
         repositoryCreationService.createRepository(event.teamId(), member.getNickname(), event.oauthToken());
 
         Team team = teamRepository.findById(event.teamId());
-        Project project = projectRepository.findByTeamIdAndCreator(team.getId(), member.getNickname());
-        issueLabelService.initializeIssueLabels(member.getId(), project, team);
+        List<Project> projects = projectRepository.findAllByTeamIdAndCreator(team.getId(), member.getNickname());
+        projects.forEach(project -> {
+            issueLabelService.initializeIssueLabels(member.getId(), project, team);
+        });
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
