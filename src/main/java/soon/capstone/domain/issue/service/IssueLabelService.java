@@ -122,8 +122,12 @@ public class IssueLabelService {
         List<IssueLabel> labels = getGithubIssueLabels(memberId, team.getOrganizationName(), project.getTitle()).stream()
             .map(label -> IssueLabel.createIssueLabel(label.getColor(), label.getName(), label.getDescription(), team, project))
             .toList();
+        log.info("초기화 할 라벨 개수: {}", labels.size());
 
         issueLabelRepository.saveAll(labels);
+
+        List<IssueLabel> allByProject = issueLabelRepository.findAllByProject(project);
+        log.info("DB에 저장된 라벨 개수: {}", allByProject.size());
     }
 
     private void validateLabelNotExists(String title, Project project) {
