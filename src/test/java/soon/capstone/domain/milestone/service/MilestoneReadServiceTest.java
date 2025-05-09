@@ -18,6 +18,7 @@ import soon.capstone.domain.issue.service.dto.response.IssueLabelDetailResponse;
 import soon.capstone.domain.member.entity.Member;
 import soon.capstone.domain.member.repository.MemberRepository;
 import soon.capstone.domain.milestone.entity.Milestone;
+import soon.capstone.domain.milestone.entity.MilestoneStatus;
 import soon.capstone.domain.milestone.repository.MilestoneRepository;
 import soon.capstone.domain.milestone.service.dto.response.MilestoneDetailResponse;
 import soon.capstone.domain.milestone.service.dto.response.MilestoneIssueResponse;
@@ -292,6 +293,7 @@ class MilestoneReadServiceTest extends IntegrationTestSupport {
             .startDate(startTime)
             .dueDate(dueDate)
             .project(project)
+            .status(MilestoneStatus.NOT_STARTED)
             .build();
     }
 

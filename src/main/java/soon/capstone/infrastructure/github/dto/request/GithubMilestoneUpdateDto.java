@@ -17,12 +17,12 @@ public record GithubMilestoneUpdateDto(
 ) {
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ISO_INSTANT;
 
-    public static GithubMilestoneUpdateDto of(String title, String description, LocalDateTime dueOn) {
+    public static GithubMilestoneUpdateDto of(String title, String description, LocalDateTime dueOn, String state) {
         return GithubMilestoneUpdateDto.builder()
-                .title(title)
-                .description(description)
-                .dueOn(dueOn != null ? dueOn.atZone(ZoneOffset.UTC).format(FORMATTER) : null)
-                .state("open")
-                .build();
+            .title(title)
+            .description(description)
+            .dueOn(dueOn != null ? dueOn.atZone(ZoneOffset.UTC).format(FORMATTER) : null)
+            .state(state) // TODO: enum에 따른 변경 로직 구현 예정
+            .build();
     }
 }

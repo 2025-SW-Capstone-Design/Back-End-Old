@@ -21,6 +21,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static soon.capstone.domain.milestone.entity.MilestoneStatus.NOT_STARTED;
 
 class MilestoneControllerTest extends ControllerTestSupport {
 
@@ -253,7 +254,7 @@ class MilestoneControllerTest extends ControllerTestSupport {
             .creator("nickname")
             .startDate(startDate)
             .dueDate(dueDate)
-            .isCompleted(false)
+            .status(NOT_STARTED.name())
             .issues(List.of())
             .build();
 
@@ -273,7 +274,7 @@ class MilestoneControllerTest extends ControllerTestSupport {
             .andExpect(jsonPath("$.creator").value("nickname"))
             .andExpect(jsonPath("$.startDate").exists())
             .andExpect(jsonPath("$.dueDate").exists())
-            .andExpect(jsonPath("$.isCompleted").value(false));
+            .andExpect(jsonPath("$.status").value(NOT_STARTED.name()));
     }
 
     @TestMember
@@ -312,7 +313,7 @@ class MilestoneControllerTest extends ControllerTestSupport {
             .andExpect(jsonPath("$.creator").value("nickname"))
             .andExpect(jsonPath("$.startDate").value(startDate.format(formatter)))
             .andExpect(jsonPath("$.dueDate").value(dueDate.plusDays(2).format(formatter)))
-            .andExpect(jsonPath("$.isCompleted").value(false));
+            .andExpect(jsonPath("$.status").value(NOT_STARTED.name()));
     }
 
     @DisplayName("해당하는 팀의 마감일이 내일인 마일스톤과 연관된 이슈를 반환한다.")
@@ -347,7 +348,7 @@ class MilestoneControllerTest extends ControllerTestSupport {
             .creator("nickname")
             .startDate(startDate)
             .dueDate(dueDate)
-            .isCompleted(false)
+            .status(NOT_STARTED.name())
             .build();
     }
 

@@ -31,31 +31,32 @@ public class MilestoneUpdateService {
         validateMilestoneDates(updatedStartDate, updatedDueDate);
 
         milestone.updateMilestone(
-                updatedTitle,
-                updatedDescription,
-                updatedDueDate,
-                updatedStartDate
+            updatedTitle,
+            updatedDescription,
+            updatedDueDate,
+            updatedStartDate
         );
 
         githubMilestoneUpdateService.updateMilestone(
-                request.owner(),
-                request.repo(),
-                milestone.getGithubMilestoneId(),
-                request.oauthToken(),
-                updatedTitle,
-                updatedDescription,
-                updatedDueDate
+            request.owner(),
+            request.repo(),
+            milestone.getGithubMilestoneId(),
+            request.oauthToken(),
+            updatedTitle,
+            updatedDescription,
+            updatedDueDate,
+            milestone.getStatus().name() // TODO: 이넘 활용으로 변경
         );
 
         return MilestoneResponse.builder()
-                .milestoneId(milestone.getId())
-                .title(milestone.getTitle())
-                .description(milestone.getDescription())
-                .creator(milestone.getCreator())
-                .dueDate(milestone.getDueDate())
-                .startDate(milestone.getStartDate())
-                .isCompleted(milestone.isCompleted())
-                .build();
+            .milestoneId(milestone.getId())
+            .title(milestone.getTitle())
+            .description(milestone.getDescription())
+            .creator(milestone.getCreator())
+            .dueDate(milestone.getDueDate())
+            .startDate(milestone.getStartDate())
+            .status(milestone.getStatus().name())
+            .build();
     }
 
     private void validateMilestoneDates(LocalDateTime startDate, LocalDateTime dueDate) {

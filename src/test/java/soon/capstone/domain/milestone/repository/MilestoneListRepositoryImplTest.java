@@ -8,6 +8,7 @@ import soon.capstone.IntegrationTestSupport;
 import soon.capstone.domain.member.entity.Member;
 import soon.capstone.domain.member.repository.MemberRepository;
 import soon.capstone.domain.milestone.entity.Milestone;
+import soon.capstone.domain.milestone.entity.MilestoneStatus;
 import soon.capstone.domain.milestone.service.dto.MilestoneMailDto;
 import soon.capstone.domain.project.entity.Project;
 import soon.capstone.domain.project.repository.ProjectRepository;
@@ -170,6 +171,7 @@ class MilestoneListRepositoryImplTest extends IntegrationTestSupport {
             .startDate(startTime)
             .dueDate(dueDate)
             .project(project)
+            .status(MilestoneStatus.NOT_STARTED)
             .build();
     }
 

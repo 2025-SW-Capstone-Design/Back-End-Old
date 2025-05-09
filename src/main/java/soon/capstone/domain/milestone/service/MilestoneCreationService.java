@@ -3,6 +3,7 @@ package soon.capstone.domain.milestone.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import soon.capstone.domain.milestone.entity.Milestone;
+import soon.capstone.domain.milestone.entity.MilestoneStatus;
 import soon.capstone.domain.milestone.repository.MilestoneRepository;
 import soon.capstone.domain.milestone.service.dto.MilestoneCreationDto;
 import soon.capstone.domain.project.entity.Project;
@@ -25,22 +26,23 @@ public class MilestoneCreationService {
         isDuplicateMilestoneTitle(milestoneCreationDto.title());
 
         int githubMilestoneId = githubMilestoneCreationService.createMilestone(
-                milestoneCreationDto.owner(),
-                milestoneCreationDto.repo(),
-                milestoneCreationDto.oauthToken(),
-                milestoneCreationDto.title(),
-                milestoneCreationDto.description(),
-                milestoneCreationDto.dueDate()
+            milestoneCreationDto.owner(),
+            milestoneCreationDto.repo(),
+            milestoneCreationDto.oauthToken(),
+            milestoneCreationDto.title(),
+            milestoneCreationDto.description(),
+            milestoneCreationDto.dueDate()
         );
 
         Milestone milestone = createMilestoneEntity(
-                milestoneCreationDto.title(),
-                milestoneCreationDto.description(),
-                milestoneCreationDto.creator(),
-                milestoneCreationDto.dueDate(),
-                milestoneCreationDto.startDate(),
-                githubMilestoneId,
-                milestoneCreationDto.project()
+            milestoneCreationDto.title(),
+            milestoneCreationDto.description(),
+            milestoneCreationDto.creator(),
+            milestoneCreationDto.dueDate(),
+            milestoneCreationDto.startDate(),
+            MilestoneStatus.contains(milestoneCreationDto.status()),
+            githubMilestoneId,
+            milestoneCreationDto.project()
         );
 
         milestoneRepository.save(milestone);
@@ -55,20 +57,21 @@ public class MilestoneCreationService {
     }
 
     private void isDuplicateMilestoneTitle(String title) {
-        if(milestoneRepository.existsByTitle(title)) {
+        if (milestoneRepository.existsByTitle(title)) {
             throw new MilestoneDuplicateTitleException();
         }
     }
 
-    private Milestone createMilestoneEntity(String title, String description, String creator, LocalDateTime dueDate, LocalDateTime startDate, int githubMilestoneId, Project project) {
+    private Milestone createMilestoneEntity(String title, String description, String creator, LocalDateTime dueDate, LocalDateTime startDate, MilestoneStatus status, int githubMilestoneId, Project project) {
         return Milestone.builder()
-                .title(title)
-                .description(description)
-                .dueDate(dueDate)
-                .creator(creator)
-                .startDate(startDate)
-                .githubMilestoneId(githubMilestoneId)
-                .project(project)
-                .build();
+            .title(title)
+            .description(description)
+            .dueDate(dueDate)
+            .creator(creator)
+            .startDate(startDate)
+            .status(status)
+            .githubMilestoneId(githubMilestoneId)
+            .project(project)
+            .build();
     }
 }

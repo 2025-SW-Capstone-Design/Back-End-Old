@@ -1,5 +1,6 @@
 package soon.capstone.domain.milestone.repository;
 
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -37,7 +38,8 @@ public class MilestoneCustomRepositoryImpl implements MilestoneCustomRepository 
                 milestone.creator,
                 milestone.dueDate,
                 milestone.startDate,
-                milestone.isCompleted
+                Expressions.stringTemplate("function('str', {0})", milestone.status)
+                    .as("status")
             ))
             .from(milestone)
             .where(

@@ -20,6 +20,7 @@ import soon.capstone.domain.issue.service.dto.response.IssueTemplateDetailRespon
 import soon.capstone.domain.member.entity.Member;
 import soon.capstone.domain.member.repository.MemberRepository;
 import soon.capstone.domain.milestone.entity.Milestone;
+import soon.capstone.domain.milestone.entity.MilestoneStatus;
 import soon.capstone.domain.milestone.repository.MilestoneRepository;
 import soon.capstone.domain.project.entity.Project;
 import soon.capstone.domain.project.repository.ProjectRepository;
@@ -956,6 +957,7 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
             .startDate(LocalDateTime.of(2025, 4, 11, 0, 0))
             .githubMilestoneId(1)
             .project(project)
+            .status(MilestoneStatus.NOT_STARTED)
             .build();
     }
 
