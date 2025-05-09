@@ -1,6 +1,6 @@
 package soon.capstone.domain.milestone.repository;
 
-import com.querydsl.core.Tuple;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.querydsl.core.types.Projections.constructor;
-import static com.querydsl.core.types.Projections.list;
 import static soon.capstone.domain.member.entity.QMember.member;
 import static soon.capstone.domain.milestone.entity.QMilestone.milestone;
 import static soon.capstone.domain.project.entity.QProject.project;
@@ -30,80 +29,64 @@ public class MilestoneListRepositoryImpl implements MilestoneListRepository {
 
     @Override
     public List<MilestoneResponse> getMilestonesByProject(Project project) {
-        return queryFactory.select(
-                        constructor(MilestoneResponse.class,
-                                milestone.id.as("milestoneId"),
-                                milestone.title,
-                                milestone.description,
-                                milestone.creator,
-                                milestone.dueDate,
-                                milestone.startDate,
-                                milestone.isCompleted
-                        ))
-                .from(milestone)
-                .where(milestone.project.eq(project))
-                .fetch();
+        return fetchMilestoneResponses(milestone.project.eq(project));
     }
 
     @Override
     public List<MilestoneResponse> getMilestonesByTeam(Team team) {
-        return queryFactory.select(
-                        constructor(MilestoneResponse.class,
-                                milestone.id.as("milestoneId"),
-                                milestone.title,
-                                milestone.description,
-                                milestone.creator,
-                                milestone.dueDate,
-                                milestone.startDate,
-                                milestone.isCompleted
-                        ))
-                .from(milestone)
-                .join(milestone.project, project)
-                .where(project.team.eq(team))
-                .fetch();
+        return fetchMilestoneResponses(milestone.project.team.eq(team));
     }
 
     @Override
     public List<MilestoneMailDto> getEmailsByMilestones() {
-        LocalDateTime startTime = LocalDateTime.now().toLocalDate().atStartOfDay();
-        LocalDateTime dueTime = startTime.plusDays(1);
+        LocalDateTime startOfToday = LocalDateTime.now().toLocalDate().atStartOfDay();
+        LocalDateTime endOfToday = startOfToday.plusDays(1);
 
-        List<Tuple> baseResults = queryFactory
+        Map<Long, List<String>> teamEmails = fetchTeamEmailMap();
+
+        return queryFactory
             .select(milestone.title, team.name, team.id)
             .from(milestone)
-            .where(milestone.dueDate.between(startTime, dueTime))
             .join(milestone.project, project)
             .join(project.team, team)
-            .fetch();
+            .where(milestone.dueDate.between(startOfToday, endOfToday))
+            .fetch()
+            .stream()
+            .map(tuple -> MilestoneMailDto.builder()
+                .milestoneTitle(tuple.get(milestone.title))
+                .teamName(tuple.get(team.name))
+                .emails(teamEmails.getOrDefault(tuple.get(team.id), List.of()))
+                .build())
+            .toList();
+    }
 
-        List<Tuple> emailTuples = queryFactory
+    private List<MilestoneResponse> fetchMilestoneResponses(BooleanExpression condition) {
+        return queryFactory.select(constructor(MilestoneResponse.class,
+                milestone.id.as("milestoneId"),
+                milestone.title,
+                milestone.description,
+                milestone.creator,
+                milestone.dueDate,
+                milestone.startDate,
+                milestone.isCompleted))
+            .from(milestone)
+            .join(milestone.project, project)
+            .where(condition)
+            .fetch();
+    }
+
+    private Map<Long, List<String>> fetchTeamEmailMap() {
+        return queryFactory
             .select(team.id, member.email)
             .from(teamMember)
             .join(teamMember.member, member)
             .join(teamMember.team, team)
-            .fetch();
-
-        Map<Long, List<String>> emailMap = emailTuples.stream()
+            .fetch()
+            .stream()
             .collect(Collectors.groupingBy(
                 tuple -> tuple.get(team.id),
                 Collectors.mapping(tuple -> tuple.get(member.email), Collectors.toList())
             ));
-
-        return baseResults.stream()
-            .map(tuple -> {
-                String title = tuple.get(milestone.title);
-                String teamName = tuple.get(team.name);
-                Long teamId = tuple.get(team.id);
-                List<String> emails = emailMap.getOrDefault(teamId, List.of());
-
-                return MilestoneMailDto.builder()
-                    .milestoneTitle(title)
-                    .teamName(teamName)
-                    .emails(emails)
-                    .build();
-            })
-            .toList();
     }
-
 
 }
