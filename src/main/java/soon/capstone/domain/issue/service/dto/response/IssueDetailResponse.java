@@ -6,11 +6,13 @@ import java.util.List;
 
 @Builder
 public record IssueDetailResponse(
-        Long issueId,
-        String title,
-        String content,
-        String creator,
-        String status,
-        List<IssueLabelDetailResponse> labels
+
+    Long issueId,
+    String title,
+    String content,
+    String creator,
+    String status,
+    List<IssueLabelDetailResponse> labels
+
 ) {
 }
