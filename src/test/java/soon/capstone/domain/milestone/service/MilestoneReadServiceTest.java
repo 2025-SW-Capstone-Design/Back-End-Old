@@ -246,7 +246,7 @@ class MilestoneReadServiceTest extends IntegrationTestSupport {
         issueLabelRelationRepository.saveAll(List.of(rel1, rel2));
 
         // when
-        List<MilestoneIssueResponse> responses = milestoneReadService.getMilestoneWithIssuesDueTomorrow();
+        List<MilestoneIssueResponse> responses = milestoneReadService.getMilestoneWithIssuesDueTomorrow(team.getId());
 
         // then
         assertThat(responses).hasSize(1)

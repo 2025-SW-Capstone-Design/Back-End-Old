@@ -56,7 +56,7 @@ class MilestoneCustomRepositoryImplTest extends IntegrationTestSupport {
         milestoneRepository.saveAll(List.of(milestone1, milestone2));
 
         // when
-        List<MilestoneResponse> responses = milestoneCustomRepositoryImpl.getMilestoneWithIssuesDueTomorrow();
+        List<MilestoneResponse> responses = milestoneCustomRepositoryImpl.getMilestoneWithIssuesDueTomorrow(team.getId());
 
         // then
         assertThat(responses).hasSize(1)

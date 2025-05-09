@@ -6,6 +6,6 @@ import java.util.List;
 
 public interface MilestoneCustomRepository {
 
-    List<MilestoneResponse> getMilestoneWithIssuesDueTomorrow();
+    List<MilestoneResponse> getMilestoneWithIssuesDueTomorrow(Long teamId);
 
 }

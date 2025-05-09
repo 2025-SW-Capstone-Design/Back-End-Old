@@ -48,8 +48,8 @@ public class MilestoneReadService {
     }
 
     @Transactional(readOnly = true)
-    public List<MilestoneIssueResponse> getMilestoneWithIssuesDueTomorrow() {
-        List<MilestoneResponse> milestones = milestoneRepository.getMilestoneWithIssuesDueTomorrow();
+    public List<MilestoneIssueResponse> getMilestoneWithIssuesDueTomorrow(Long teamId) {
+        List<MilestoneResponse> milestones = milestoneRepository.getMilestoneWithIssuesDueTomorrow(teamId);
 
         return milestones.stream()
             .map(milestone -> MilestoneIssueResponse.builder()

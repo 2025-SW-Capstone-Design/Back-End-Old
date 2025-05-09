@@ -42,8 +42,8 @@ public class MilestoneRepository {
         return milestoneJpaRepository.getMilestonesByTeam(team);
     }
 
-    public List<MilestoneResponse> getMilestoneWithIssuesDueTomorrow() {
-        return milestoneJpaRepository.getMilestoneWithIssuesDueTomorrow();
+    public List<MilestoneResponse> getMilestoneWithIssuesDueTomorrow(Long teamId) {
+        return milestoneJpaRepository.getMilestoneWithIssuesDueTomorrow(teamId);
     }
 
     public boolean existsByTitle(String title) {

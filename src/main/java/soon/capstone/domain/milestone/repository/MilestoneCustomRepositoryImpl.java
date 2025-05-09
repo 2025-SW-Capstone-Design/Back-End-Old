@@ -18,17 +18,17 @@ public class MilestoneCustomRepositoryImpl implements MilestoneCustomRepository 
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public List<MilestoneResponse> getMilestoneWithIssuesDueTomorrow() {
+    public List<MilestoneResponse> getMilestoneWithIssuesDueTomorrow(Long teamId) {
         LocalDateTime startOfTomorrow = LocalDateTime.now()
             .toLocalDate()
             .atStartOfDay()
             .plusDays(1);
         LocalDateTime endOfTomorrow = startOfTomorrow.plusDays(1);
 
-        return getMilestonesDueTomorrow(startOfTomorrow, endOfTomorrow);
+        return getMilestonesDueTomorrow(teamId, startOfTomorrow, endOfTomorrow);
     }
 
-    private List<MilestoneResponse> getMilestonesDueTomorrow(LocalDateTime startOfTomorrow, LocalDateTime endOfTomorrow) {
+    private List<MilestoneResponse> getMilestonesDueTomorrow(Long teamId, LocalDateTime startOfTomorrow, LocalDateTime endOfTomorrow) {
         return queryFactory
             .select(constructor(MilestoneResponse.class,
                 milestone.id.as("milestoneId"),
@@ -40,7 +40,10 @@ public class MilestoneCustomRepositoryImpl implements MilestoneCustomRepository 
                 milestone.isCompleted
             ))
             .from(milestone)
-            .where(milestone.dueDate.between(startOfTomorrow, endOfTomorrow))
+            .where(
+                milestone.dueDate.between(startOfTomorrow, endOfTomorrow)
+                    .and(milestone.project.team.id.eq(teamId))
+            )
             .fetch();
     }
 
