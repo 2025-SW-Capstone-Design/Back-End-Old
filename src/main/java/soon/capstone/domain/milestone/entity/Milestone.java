@@ -36,8 +36,9 @@ public class Milestone extends BaseTimeEntity {
     @Column(nullable = false)
     private LocalDateTime startDate;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private boolean isCompleted;
+    private MilestoneStatus status;
 
     @Column(nullable = false)
     private int githubMilestoneId;
@@ -47,13 +48,13 @@ public class Milestone extends BaseTimeEntity {
     private Project project;
 
     @Builder
-    private Milestone(String title, String description, String creator, LocalDateTime dueDate, LocalDateTime startDate, int githubMilestoneId, Project project) {
+    private Milestone(String title, String description, String creator, LocalDateTime dueDate, LocalDateTime startDate, MilestoneStatus status, int githubMilestoneId, Project project) {
         this.title = title;
         this.description = description;
         this.creator = creator;
         this.dueDate = dueDate;
         this.startDate = startDate;
-        this.isCompleted = false;
+        this.status = status;
         this.githubMilestoneId = githubMilestoneId;
         this.project = project;
     }
@@ -64,4 +65,5 @@ public class Milestone extends BaseTimeEntity {
         this.dueDate = dueDate;
         this.startDate = startDate;
     }
+
 }

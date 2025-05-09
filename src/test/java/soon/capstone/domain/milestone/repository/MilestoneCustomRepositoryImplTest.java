@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import soon.capstone.IntegrationTestSupport;
 import soon.capstone.domain.milestone.entity.Milestone;
+import soon.capstone.domain.milestone.entity.MilestoneStatus;
 import soon.capstone.domain.milestone.service.dto.response.MilestoneResponse;
 import soon.capstone.domain.project.entity.Project;
 import soon.capstone.domain.project.repository.ProjectRepository;
@@ -91,6 +92,7 @@ class MilestoneCustomRepositoryImplTest extends IntegrationTestSupport {
             .dueDate(dueDate)
             .startDate(startDate)
             .githubMilestoneId(1)
+            .status(MilestoneStatus.NOT_STARTED)
             .project(project)
             .build();
     }

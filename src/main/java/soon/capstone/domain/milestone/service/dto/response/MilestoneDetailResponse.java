@@ -8,13 +8,13 @@ import java.util.List;
 
 @Builder
 public record MilestoneDetailResponse(
-        Long milestoneId,
-        String title,
-        String description,
-        String creator,
-        LocalDateTime dueDate,
-        LocalDateTime startDate,
-        boolean isCompleted,
-        List<IssueDetailResponse> issues
+    Long milestoneId,
+    String title,
+    String description,
+    String creator,
+    LocalDateTime dueDate,
+    LocalDateTime startDate,
+    String status,
+    List<IssueDetailResponse> issues
 ) {
 }

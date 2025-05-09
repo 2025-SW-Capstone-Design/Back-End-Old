@@ -6,12 +6,14 @@ import java.time.LocalDateTime;
 
 @Builder
 public record MilestoneResponse(
-        Long milestoneId,
-        String title,
-        String description,
-        String creator,
-        LocalDateTime dueDate,
-        LocalDateTime startDate,
-        boolean isCompleted
+
+    Long milestoneId,
+    String title,
+    String description,
+    String creator,
+    LocalDateTime dueDate,
+    LocalDateTime startDate,
+    String status
+
 ) {
 }

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import soon.capstone.domain.milestone.entity.Milestone;
+import soon.capstone.domain.milestone.entity.MilestoneStatus;
 import soon.capstone.domain.milestone.repository.MilestoneRepository;
 import soon.capstone.domain.milestone.service.dto.MilestoneUpdateDto;
 import soon.capstone.domain.milestone.service.dto.response.MilestoneResponse;
@@ -31,31 +32,32 @@ public class MilestoneUpdateService {
         validateMilestoneDates(updatedStartDate, updatedDueDate);
 
         milestone.updateMilestone(
-                updatedTitle,
-                updatedDescription,
-                updatedDueDate,
-                updatedStartDate
+            updatedTitle,
+            updatedDescription,
+            updatedDueDate,
+            updatedStartDate
         );
 
         githubMilestoneUpdateService.updateMilestone(
-                request.owner(),
-                request.repo(),
-                milestone.getGithubMilestoneId(),
-                request.oauthToken(),
-                updatedTitle,
-                updatedDescription,
-                updatedDueDate
+            request.owner(),
+            request.repo(),
+            milestone.getGithubMilestoneId(),
+            request.oauthToken(),
+            updatedTitle,
+            updatedDescription,
+            updatedDueDate,
+            MilestoneStatus.toState(milestone.getStatus())
         );
 
         return MilestoneResponse.builder()
-                .milestoneId(milestone.getId())
-                .title(milestone.getTitle())
-                .description(milestone.getDescription())
-                .creator(milestone.getCreator())
-                .dueDate(milestone.getDueDate())
-                .startDate(milestone.getStartDate())
-                .isCompleted(milestone.isCompleted())
-                .build();
+            .milestoneId(milestone.getId())
+            .title(milestone.getTitle())
+            .description(milestone.getDescription())
+            .creator(milestone.getCreator())
+            .dueDate(milestone.getDueDate())
+            .startDate(milestone.getStartDate())
+            .status(milestone.getStatus().name())
+            .build();
     }
 
     private void validateMilestoneDates(LocalDateTime startDate, LocalDateTime dueDate) {

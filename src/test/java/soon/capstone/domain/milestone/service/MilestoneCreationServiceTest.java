@@ -10,6 +10,7 @@ import soon.capstone.IntegrationTestSupport;
 import soon.capstone.domain.member.entity.Member;
 import soon.capstone.domain.member.repository.MemberRepository;
 import soon.capstone.domain.milestone.entity.Milestone;
+import soon.capstone.domain.milestone.entity.MilestoneStatus;
 import soon.capstone.domain.milestone.repository.MilestoneRepository;
 import soon.capstone.domain.milestone.service.dto.MilestoneCreationDto;
 import soon.capstone.domain.project.entity.Project;
@@ -92,14 +93,14 @@ class MilestoneCreationServiceTest extends IntegrationTestSupport {
         Milestone milestone = milestoneRepository.findAll().getFirst();
 
         assertThat(milestone)
-                .extracting(
-                        Milestone::getCreator,
-                        Milestone::getTitle,
-                        Milestone::getDescription,
-                        Milestone::getDueDate,
-                        Milestone::getStartDate
-                )
-                .containsExactly(member.getNickname(), "title", "description", dueDate, startDate);
+            .extracting(
+                Milestone::getCreator,
+                Milestone::getTitle,
+                Milestone::getDescription,
+                Milestone::getDueDate,
+                Milestone::getStartDate
+            )
+            .containsExactly(member.getNickname(), "title", "description", dueDate, startDate);
     }
 
     @DisplayName("마일스톤 생성 시, 시작일과 마감일이 유효하지 않으면 예외가 발생한다.")
@@ -125,8 +126,8 @@ class MilestoneCreationServiceTest extends IntegrationTestSupport {
 
         // Expect
         assertThatThrownBy(() -> milestoneCreationService.createMilestone(milestoneCreationDto))
-                .isInstanceOf(MilestoneInvalidDateException.class)
-                .hasMessage("마일스톤의 시작일과 종료일이 올바르지 않습니다.");
+            .isInstanceOf(MilestoneInvalidDateException.class)
+            .hasMessage("마일스톤의 시작일과 종료일이 올바르지 않습니다.");
     }
 
     @DisplayName("마일스톤 생성 시, 중복되는 제목의 마일스톤이 존재하면 예외가 발생한다.")
@@ -149,68 +150,70 @@ class MilestoneCreationServiceTest extends IntegrationTestSupport {
         LocalDateTime dueDate = startDate.plusDays(7);
 
         Milestone milestone = Milestone.builder()
-                .title("title")
-                .description("description")
-                .dueDate(dueDate)
-                .creator(member.getNickname())
-                .startDate(startDate)
-                .githubMilestoneId(1)
-                .project(project)
-                .build();
+            .title("title")
+            .description("description")
+            .dueDate(dueDate)
+            .creator(member.getNickname())
+            .startDate(startDate)
+            .githubMilestoneId(1)
+            .project(project)
+            .status(MilestoneStatus.NOT_STARTED)
+            .build();
         milestoneRepository.save(milestone);
 
         MilestoneCreationDto milestoneCreationDto = createMilestoneCreationDto(team, project, oauthToken, dueDate, startDate, member);
 
         // Expect
         assertThatThrownBy(() -> milestoneCreationService.createMilestone(milestoneCreationDto))
-                .isInstanceOf(MilestoneDuplicateTitleException.class)
-                .hasMessage("마일스톤 제목이 중복됩니다.");
+            .isInstanceOf(MilestoneDuplicateTitleException.class)
+            .hasMessage("마일스톤 제목이 중복됩니다.");
     }
 
     private Member createMember() {
         return Member.builder()
-                .email("email")
-                .nickname("nickname")
-                .profileImageURL("profileImageURL")
-                .build();
+            .email("email")
+            .nickname("nickname")
+            .profileImageURL("profileImageURL")
+            .build();
     }
 
     private Team createTeam() {
         return Team.builder()
-                .name("name")
-                .description("description")
-                .organizationName("organizationName")
-                .build();
+            .name("name")
+            .description("description")
+            .organizationName("organizationName")
+            .build();
     }
 
     private OAuthToken createOAuthToken(Member member) {
         return OAuthToken.builder()
-                .memberId(member.getId())
-                .token("token")
-                .build();
+            .memberId(member.getId())
+            .token("token")
+            .build();
     }
 
     private Project createProject(String creator, Team team) {
         return Project.builder()
-                .title("title")
-                .repositoryId("repositoryId")
-                .creator(creator)
-                .team(team)
-                .build();
+            .title("title")
+            .repositoryId("repositoryId")
+            .creator(creator)
+            .team(team)
+            .build();
     }
 
     private MilestoneCreationDto createMilestoneCreationDto(Team team, Project project, OAuthToken oauthToken, LocalDateTime dueDate, LocalDateTime startDate, Member member) {
         return MilestoneCreationDto.builder()
-                .owner(team.getOrganizationName())
-                .repo(project.getTitle())
-                .oauthToken(oauthToken.getToken())
-                .title("title")
-                .description("description")
-                .dueDate(dueDate)
-                .startDate(startDate)
-                .creator(member.getNickname())
-                .project(project)
-                .build();
+            .owner(team.getOrganizationName())
+            .repo(project.getTitle())
+            .oauthToken(oauthToken.getToken())
+            .title("title")
+            .description("description")
+            .dueDate(dueDate)
+            .startDate(startDate)
+            .creator(member.getNickname())
+            .project(project)
+            .status(MilestoneStatus.NOT_STARTED.name())
+            .build();
     }
 
 }

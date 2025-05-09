@@ -42,7 +42,7 @@ public class MilestoneReadService {
             .description(milestone.getDescription())
             .startDate(milestone.getStartDate())
             .dueDate(milestone.getDueDate())
-            .isCompleted(milestone.isCompleted())
+            .status(milestone.getStatus().name())
             .issues(issueDetailResponses)
             .build();
     }

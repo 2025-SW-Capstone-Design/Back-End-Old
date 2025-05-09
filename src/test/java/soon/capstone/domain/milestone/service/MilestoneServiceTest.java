@@ -18,12 +18,13 @@ import soon.capstone.domain.issue.service.dto.response.IssueDetailResponse;
 import soon.capstone.domain.issue.service.dto.response.IssueLabelDetailResponse;
 import soon.capstone.domain.member.entity.Member;
 import soon.capstone.domain.member.repository.MemberRepository;
+import soon.capstone.domain.milestone.entity.Milestone;
+import soon.capstone.domain.milestone.entity.MilestoneStatus;
+import soon.capstone.domain.milestone.repository.MilestoneRepository;
+import soon.capstone.domain.milestone.service.dto.request.MilestoneCreateServiceRequest;
 import soon.capstone.domain.milestone.service.dto.request.MilestoneUpdateServiceRequest;
 import soon.capstone.domain.milestone.service.dto.response.MilestoneDetailResponse;
 import soon.capstone.domain.milestone.service.dto.response.MilestoneResponse;
-import soon.capstone.domain.milestone.entity.Milestone;
-import soon.capstone.domain.milestone.repository.MilestoneRepository;
-import soon.capstone.domain.milestone.service.dto.request.MilestoneCreateServiceRequest;
 import soon.capstone.domain.project.entity.Project;
 import soon.capstone.domain.project.repository.ProjectRepository;
 import soon.capstone.domain.team.entity.Team;
@@ -44,6 +45,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
+import static soon.capstone.domain.milestone.entity.MilestoneStatus.NOT_STARTED;
 
 @SpringBootTest
 class MilestoneServiceTest extends IntegrationTestSupport {
@@ -123,11 +125,11 @@ class MilestoneServiceTest extends IntegrationTestSupport {
 
         Long memberId = member.getId();
         var request = MilestoneCreateServiceRequest.builder()
-                .title("title")
-                .description("description")
-                .startDate(startDate)
-                .dueDate(dueDate)
-                .build();
+            .title("title")
+            .description("description")
+            .startDate(startDate)
+            .dueDate(dueDate)
+            .build();
 
         // When
         milestoneService.createMilestone(memberId, team.getId(), project.getId(), request);
@@ -156,17 +158,17 @@ class MilestoneServiceTest extends IntegrationTestSupport {
         LocalDateTime dueDate = startDate.plusDays(7);
 
         milestoneRepository.saveAll(
-                List.of(
-                        createMilestone(project, startDate, dueDate),
-                        createMilestone(project, startDate, dueDate)
-                )
+            List.of(
+                createMilestone(project, startDate, dueDate),
+                createMilestone(project, startDate, dueDate)
+            )
         );
 
         given(milestoneReadService.getMilestonesByProject(any()))
-                .willReturn(List.of(
-                        createMilestoneResponse(1L, startDate, dueDate),
-                        createMilestoneResponse(2L, startDate, dueDate)
-                ));
+            .willReturn(List.of(
+                createMilestoneResponse(1L, startDate, dueDate),
+                createMilestoneResponse(2L, startDate, dueDate)
+            ));
 
         // When
         List<MilestoneResponse> milestones = milestoneService.getMilestonesByProject(member.getId(), team.getId(), project.getId());
@@ -174,11 +176,11 @@ class MilestoneServiceTest extends IntegrationTestSupport {
         // Then
         assertThat(milestones).hasSize(2);
         assertThat(milestones)
-                .extracting("title", "description", "creator")
-                .containsExactlyInAnyOrder(
-                        tuple("Test", "Description", "nickname"),
-                        tuple("Test", "Description", "nickname")
-                );
+            .extracting("title", "description", "creator")
+            .containsExactlyInAnyOrder(
+                tuple("Test", "Description", "nickname"),
+                tuple("Test", "Description", "nickname")
+            );
 
     }
 
@@ -202,17 +204,17 @@ class MilestoneServiceTest extends IntegrationTestSupport {
         LocalDateTime dueDate = startDate.plusDays(7);
 
         milestoneRepository.saveAll(
-                List.of(
-                        createMilestone(project, startDate, dueDate),
-                        createMilestone(project, startDate, dueDate)
-                )
+            List.of(
+                createMilestone(project, startDate, dueDate),
+                createMilestone(project, startDate, dueDate)
+            )
         );
 
         given(milestoneReadService.getMilestonesByTeam(any()))
-                .willReturn(List.of(
-                        createMilestoneResponse(1L, startDate, dueDate),
-                        createMilestoneResponse(2L, startDate, dueDate)
-                ));
+            .willReturn(List.of(
+                createMilestoneResponse(1L, startDate, dueDate),
+                createMilestoneResponse(2L, startDate, dueDate)
+            ));
 
         // When
         List<MilestoneResponse> milestones = milestoneService.getMilestonesByTeam(member.getId(), team.getId());
@@ -220,11 +222,11 @@ class MilestoneServiceTest extends IntegrationTestSupport {
         // Then
         assertThat(milestones).hasSize(2);
         assertThat(milestones)
-                .extracting("title", "description", "creator")
-                .containsExactlyInAnyOrder(
-                        tuple("Test", "Description", "nickname"),
-                        tuple("Test", "Description", "nickname")
-                );
+            .extracting("title", "description", "creator")
+            .containsExactlyInAnyOrder(
+                tuple("Test", "Description", "nickname"),
+                tuple("Test", "Description", "nickname")
+            );
     }
 
     @DisplayName("마일스톤 상세 정보를 조회할 수 있다.")
@@ -259,56 +261,56 @@ class MilestoneServiceTest extends IntegrationTestSupport {
         issueLabelRelationRepository.save(relation);
 
         given(milestoneReadService.getMilestoneDetail(any()))
-                .willReturn(
-                        MilestoneDetailResponse.builder()
-                                .milestoneId(milestone.getId())
-                                .title("Test")
-                                .description("Description")
-                                .creator("nickname")
-                                .startDate(startDate)
-                                .dueDate(dueDate)
-                                .isCompleted(false)
-                                .issues(List.of(
-                                        createIssues(issue, label)
-                                ))
-                                .build()
-                );
+            .willReturn(
+                MilestoneDetailResponse.builder()
+                    .milestoneId(milestone.getId())
+                    .title("Test")
+                    .description("Description")
+                    .creator("nickname")
+                    .startDate(startDate)
+                    .dueDate(dueDate)
+                    .status(NOT_STARTED.name())
+                    .issues(List.of(
+                        createIssues(issue, label)
+                    ))
+                    .build()
+            );
 
         // When
         MilestoneDetailResponse milestoneDetail = milestoneService.getMilestoneDetail(member.getId(), team.getId(), milestone.getId());
 
         // Then
         assertThat(milestoneDetail)
-                .isNotNull()
-                .satisfies(detail -> {
-                    assertThat(detail.milestoneId()).isEqualTo(milestone.getId());
-                    assertThat(detail.title()).isEqualTo("Test");
-                    assertThat(detail.description()).isEqualTo("Description");
-                    assertThat(detail.creator()).isEqualTo("nickname");
-                    assertThat(detail.startDate()).isEqualTo(startDate);
-                    assertThat(detail.dueDate()).isEqualTo(dueDate);
-                    assertThat(detail.isCompleted()).isFalse();
-                });
+            .isNotNull()
+            .satisfies(detail -> {
+                assertThat(detail.milestoneId()).isEqualTo(milestone.getId());
+                assertThat(detail.title()).isEqualTo("Test");
+                assertThat(detail.description()).isEqualTo("Description");
+                assertThat(detail.creator()).isEqualTo("nickname");
+                assertThat(detail.startDate()).isEqualTo(startDate);
+                assertThat(detail.dueDate()).isEqualTo(dueDate);
+                assertThat(detail.status()).isEqualTo(NOT_STARTED.name());
+            });
 
         assertThat(milestoneDetail.issues())
-                .hasSize(1)
-                .first()
-                .satisfies(i -> {
-                    assertThat(i.issueId()).isEqualTo(issue.getId());
-                    assertThat(i.title()).isEqualTo(issue.getTitle());
-                    assertThat(i.content()).isEqualTo(issue.getContent());
-                    assertThat(i.creator()).isEqualTo(issue.getTeamMember().getMember().getNickname());
+            .hasSize(1)
+            .first()
+            .satisfies(i -> {
+                assertThat(i.issueId()).isEqualTo(issue.getId());
+                assertThat(i.title()).isEqualTo(issue.getTitle());
+                assertThat(i.content()).isEqualTo(issue.getContent());
+                assertThat(i.creator()).isEqualTo(issue.getTeamMember().getMember().getNickname());
 
-                    assertThat(i.labels())
-                            .hasSize(1)
-                            .first()
-                            .satisfies(l -> {
-                                assertThat(l.getLabelId()).isEqualTo(label.getId());
-                                assertThat(l.getName()).isEqualTo(label.getTitle());
-                                assertThat(l.getColor()).isEqualTo(label.getColor());
-                                assertThat(l.getDescription()).isEqualTo(label.getDescription());
-                            });
-                });
+                assertThat(i.labels())
+                    .hasSize(1)
+                    .first()
+                    .satisfies(l -> {
+                        assertThat(l.getLabelId()).isEqualTo(label.getId());
+                        assertThat(l.getName()).isEqualTo(label.getTitle());
+                        assertThat(l.getColor()).isEqualTo(label.getColor());
+                        assertThat(l.getDescription()).isEqualTo(label.getDescription());
+                    });
+            });
 
     }
 
@@ -338,158 +340,159 @@ class MilestoneServiceTest extends IntegrationTestSupport {
         milestoneRepository.save(milestone);
 
         var request = MilestoneUpdateServiceRequest.builder()
-                .title("updatedTitle")
-                .description("updatedDescription")
-                .startDate(startDate)
-                .dueDate(dueDate.plusDays(2))
-                .build();
+            .title("updatedTitle")
+            .description("updatedDescription")
+            .startDate(startDate)
+            .dueDate(dueDate.plusDays(2))
+            .build();
 
         given(milestoneUpdateService.updateMilestone(anyLong(), any()))
-                .willReturn(
-                        MilestoneResponse.builder()
-                                .milestoneId(milestone.getId())
-                                .title("updatedTitle")
-                                .description("updatedDescription")
-                                .creator("nickname")
-                                .startDate(startDate)
-                                .dueDate(dueDate.plusDays(2))
-                                .isCompleted(false)
-                                .build()
-                );
+            .willReturn(
+                MilestoneResponse.builder()
+                    .milestoneId(milestone.getId())
+                    .title("updatedTitle")
+                    .description("updatedDescription")
+                    .creator("nickname")
+                    .startDate(startDate)
+                    .dueDate(dueDate.plusDays(2))
+                    .status(NOT_STARTED.name())
+                    .build()
+            );
 
         // When
         MilestoneResponse milestoneResponse = milestoneService.updateMilestone(member.getId(), team.getId(), project.getId(), milestone.getId(), request);
 
         // Then
         assertThat(milestoneResponse)
-                .extracting(
-                        MilestoneResponse::milestoneId,
-                        MilestoneResponse::title,
-                        MilestoneResponse::description,
-                        MilestoneResponse::dueDate,
-                        MilestoneResponse::startDate
-                )
-                .containsExactlyInAnyOrder(
-                        milestone.getId(),
-                        "updatedTitle",
-                        "updatedDescription",
-                        dueDate.plusDays(2),
-                        startDate
-                );
+            .extracting(
+                MilestoneResponse::milestoneId,
+                MilestoneResponse::title,
+                MilestoneResponse::description,
+                MilestoneResponse::dueDate,
+                MilestoneResponse::startDate
+            )
+            .containsExactlyInAnyOrder(
+                milestone.getId(),
+                "updatedTitle",
+                "updatedDescription",
+                dueDate.plusDays(2),
+                startDate
+            );
     }
 
     private Member createMember() {
         return Member.builder()
-                .email("email")
-                .nickname("nickname")
-                .profileImageURL("profileImageURL")
-                .build();
+            .email("email")
+            .nickname("nickname")
+            .profileImageURL("profileImageURL")
+            .build();
     }
 
     private Team createTeam() {
         return Team.builder()
-                .name("name")
-                .description("description")
-                .organizationName("organizationName")
-                .build();
+            .name("name")
+            .description("description")
+            .organizationName("organizationName")
+            .build();
     }
 
     private TeamMember createTeamMember(Member member, Team team) {
         return TeamMember.builder()
-                .member(member)
-                .team(team)
-                .position(Position.NONE)
-                .role(Role.ROLE_MEMBER)
-                .build();
+            .member(member)
+            .team(team)
+            .position(Position.NONE)
+            .role(Role.ROLE_MEMBER)
+            .build();
     }
 
     private OAuthToken createOAuthToken(Member member) {
         return OAuthToken.builder()
-                .memberId(member.getId())
-                .token("token")
-                .build();
+            .memberId(member.getId())
+            .token("token")
+            .build();
     }
 
     private Project createProject(String creator, Team team) {
         return Project.builder()
-                .title("title")
-                .repositoryId("repositoryId")
-                .creator(creator)
-                .team(team)
-                .build();
+            .title("title")
+            .repositoryId("repositoryId")
+            .creator(creator)
+            .team(team)
+            .build();
     }
 
     private Milestone createMilestone(Project project, LocalDateTime startTime, LocalDateTime dueDate) {
         return Milestone.builder()
-                .title("Test")
-                .description("Description")
-                .creator("nickname")
-                .startDate(startTime)
-                .dueDate(dueDate)
-                .project(project)
-                .build();
+            .title("Test")
+            .description("Description")
+            .creator("nickname")
+            .startDate(startTime)
+            .dueDate(dueDate)
+            .project(project)
+            .status(MilestoneStatus.NOT_STARTED)
+            .build();
     }
 
     private MilestoneResponse createMilestoneResponse(Long milestoneId, LocalDateTime startDate, LocalDateTime dueDate) {
         return MilestoneResponse.builder()
-                .milestoneId(milestoneId)
-                .title("Test")
-                .description("Description")
-                .creator("nickname")
-                .startDate(startDate)
-                .dueDate(dueDate)
-                .isCompleted(false)
-                .build();
+            .milestoneId(milestoneId)
+            .title("Test")
+            .description("Description")
+            .creator("nickname")
+            .startDate(startDate)
+            .dueDate(dueDate)
+            .status(NOT_STARTED.name())
+            .build();
     }
 
     private Issue createIssue(String title, String content, TeamMember teamMember, Milestone milestone, Project project) {
         return Issue.builder()
-                .title(title)
-                .content(content)
-                .teamMember(teamMember)
-                .status(IssueStatus.OPEN)
-                .githubIssueNumber(1L)
-                .milestone(milestone)
-                .project(project)
-                .build();
+            .title(title)
+            .content(content)
+            .teamMember(teamMember)
+            .status(IssueStatus.OPEN)
+            .githubIssueNumber(1L)
+            .milestone(milestone)
+            .project(project)
+            .build();
     }
 
     private IssueLabel createLabel(String title, String color, String description, Team team, Project project) {
         return IssueLabel.builder()
-                .title(title)
-                .color(color)
-                .description(description)
-                .team(team)
-                .project(project)
-                .build();
+            .title(title)
+            .color(color)
+            .description(description)
+            .team(team)
+            .project(project)
+            .build();
     }
 
     private IssueLabelRelation createRelation(Issue issue, IssueLabel label) {
         return IssueLabelRelation.builder()
-                .issue(issue)
-                .issueLabel(label)
-                .build();
+            .issue(issue)
+            .issueLabel(label)
+            .build();
     }
 
     private IssueDetailResponse createIssues(Issue issue, IssueLabel label) {
         return IssueDetailResponse.builder()
-                .issueId(issue.getId())
-                .title(issue.getTitle())
-                .status(issue.getStatus().name())
-                .content(issue.getContent())
-                .creator(issue.getTeamMember().getMember().getNickname())
-                .labels(createIssueLabels(label))
-                .build();
+            .issueId(issue.getId())
+            .title(issue.getTitle())
+            .status(issue.getStatus().name())
+            .content(issue.getContent())
+            .creator(issue.getTeamMember().getMember().getNickname())
+            .labels(createIssueLabels(label))
+            .build();
     }
 
     private List<IssueLabelDetailResponse> createIssueLabels(IssueLabel label) {
         return List.of(
-                IssueLabelDetailResponse.builder()
-                        .labelId(label.getId())
-                        .name(label.getTitle())
-                        .color(label.getColor())
-                        .description(label.getDescription())
-                        .build()
+            IssueLabelDetailResponse.builder()
+                .labelId(label.getId())
+                .name(label.getTitle())
+                .color(label.getColor())
+                .description(label.getDescription())
+                .build()
         );
     }
 
