@@ -4,9 +4,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import soon.capstone.ControllerTestSupport;
+import soon.capstone.domain.issue.service.dto.response.IssueDetailResponse;
 import soon.capstone.domain.milestone.controller.dto.request.MilestoneCreateRequest;
 import soon.capstone.domain.milestone.controller.dto.request.MilestoneUpdateRequest;
 import soon.capstone.domain.milestone.service.dto.response.MilestoneDetailResponse;
+import soon.capstone.domain.milestone.service.dto.response.MilestoneIssueResponse;
 import soon.capstone.domain.milestone.service.dto.response.MilestoneResponse;
 import soon.capstone.global.anootation.TestMember;
 
@@ -36,24 +38,24 @@ class MilestoneControllerTest extends ControllerTestSupport {
         LocalDateTime dueDate = startDate.plusDays(7);
 
         MilestoneCreateRequest request = MilestoneCreateRequest.builder()
-                .title("Test")
-                .description("Test Description")
-                .startDate(startDate)
-                .dueDate(dueDate)
-                .build();
+            .title("Test")
+            .description("Test Description")
+            .startDate(startDate)
+            .dueDate(dueDate)
+            .build();
 
         given(milestoneService.createMilestone(1L, TEAM_ID, PROJECT_ID, request.toServiceRequest()))
-                .willReturn(1L);
+            .willReturn(1L);
 
         // expected
         mockMvc.perform(
-                        post(BASE_URL + "/projects/{projectId}", PROJECT_ID)
-                                .content(objectMapper.writeValueAsString(request))
-                                .contentType(MediaType.APPLICATION_JSON)
-                )
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$").value(1));
+                post(BASE_URL + "/projects/{projectId}", PROJECT_ID)
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$").value(1));
     }
 
     @TestMember
@@ -65,22 +67,22 @@ class MilestoneControllerTest extends ControllerTestSupport {
         LocalDateTime dueDate = startDate.plusDays(7);
 
         MilestoneCreateRequest request = MilestoneCreateRequest.builder()
-                .description("Test Description")
-                .startDate(startDate)
-                .dueDate(dueDate)
-                .build();
+            .description("Test Description")
+            .startDate(startDate)
+            .dueDate(dueDate)
+            .build();
 
         // expected
         mockMvc.perform(
-                        post(BASE_URL + "/projects/{projectId}", PROJECT_ID)
-                                .content(objectMapper.writeValueAsString(request))
-                                .contentType(MediaType.APPLICATION_JSON)
-                )
-                .andDo(print())
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
-                .andExpect(jsonPath("$.validation.title").value("마일스톤 이름을 입력해주세요."));
+                post(BASE_URL + "/projects/{projectId}", PROJECT_ID)
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+            .andDo(print())
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.status").value(400))
+            .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
+            .andExpect(jsonPath("$.validation.title").value("마일스톤 이름을 입력해주세요."));
     }
 
     @TestMember
@@ -92,22 +94,22 @@ class MilestoneControllerTest extends ControllerTestSupport {
         LocalDateTime dueDate = startDate.plusDays(7);
 
         MilestoneCreateRequest request = MilestoneCreateRequest.builder()
-                .title("Test")
-                .startDate(startDate)
-                .dueDate(dueDate)
-                .build();
+            .title("Test")
+            .startDate(startDate)
+            .dueDate(dueDate)
+            .build();
 
         // expected
         mockMvc.perform(
-                        post(BASE_URL + "/projects/{projectId}", PROJECT_ID)
-                                .content(objectMapper.writeValueAsString(request))
-                                .contentType(MediaType.APPLICATION_JSON)
-                )
-                .andDo(print())
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
-                .andExpect(jsonPath("$.validation.description").value("마일스톤 설명을 입력해주세요."));
+                post(BASE_URL + "/projects/{projectId}", PROJECT_ID)
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+            .andDo(print())
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.status").value(400))
+            .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
+            .andExpect(jsonPath("$.validation.description").value("마일스톤 설명을 입력해주세요."));
     }
 
     @TestMember
@@ -119,22 +121,22 @@ class MilestoneControllerTest extends ControllerTestSupport {
         LocalDateTime dueDate = startDate.plusDays(7);
 
         MilestoneCreateRequest request = MilestoneCreateRequest.builder()
-                .title("Test")
-                .description("Test Description")
-                .dueDate(dueDate)
-                .build();
+            .title("Test")
+            .description("Test Description")
+            .dueDate(dueDate)
+            .build();
 
         // expected
         mockMvc.perform(
-                        post(BASE_URL + "/projects/{projectId}", PROJECT_ID)
-                                .content(objectMapper.writeValueAsString(request))
-                                .contentType(MediaType.APPLICATION_JSON)
-                )
-                .andDo(print())
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
-                .andExpect(jsonPath("$.validation.startDate").value("마일스톤 시작일을 입력해주세요."));
+                post(BASE_URL + "/projects/{projectId}", PROJECT_ID)
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+            .andDo(print())
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.status").value(400))
+            .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
+            .andExpect(jsonPath("$.validation.startDate").value("마일스톤 시작일을 입력해주세요."));
     }
 
     @TestMember
@@ -145,22 +147,22 @@ class MilestoneControllerTest extends ControllerTestSupport {
         LocalDateTime startDate = LocalDateTime.now();
 
         MilestoneCreateRequest request = MilestoneCreateRequest.builder()
-                .title("Test")
-                .description("Test Description")
-                .startDate(startDate)
-                .build();
+            .title("Test")
+            .description("Test Description")
+            .startDate(startDate)
+            .build();
 
         // expected
         mockMvc.perform(
-                        post(BASE_URL + "/projects/{projectId}", PROJECT_ID)
-                                .content(objectMapper.writeValueAsString(request))
-                                .contentType(MediaType.APPLICATION_JSON)
-                )
-                .andDo(print())
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
-                .andExpect(jsonPath("$.validation.dueDate").value("마일스톤 마감일을 입력해주세요."));
+                post(BASE_URL + "/projects/{projectId}", PROJECT_ID)
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+            .andDo(print())
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.status").value(400))
+            .andExpect(jsonPath("$.message").value("잘못된 요청입니다."))
+            .andExpect(jsonPath("$.validation.dueDate").value("마일스톤 마감일을 입력해주세요."));
     }
 
     @TestMember
@@ -173,30 +175,30 @@ class MilestoneControllerTest extends ControllerTestSupport {
         LocalDateTime dueDate = startDate.plusDays(7);
 
         List<MilestoneResponse> milestones = List.of(
-                createMilestoneResponse(1L, startDate, dueDate),
-                createMilestoneResponse(2L, startDate, dueDate)
+            createMilestoneResponse(1L, startDate, dueDate),
+            createMilestoneResponse(2L, startDate, dueDate)
         );
 
         given(milestoneService.getMilestonesByProject(memberId, TEAM_ID, PROJECT_ID))
-                .willReturn(milestones);
+            .willReturn(milestones);
 
         // Expected
         mockMvc.perform(
-                        get(BASE_URL + "/projects/{projectId}", PROJECT_ID)
-                                .contentType(MediaType.APPLICATION_JSON)
-                )
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].title").value("Test"))
-                .andExpect(jsonPath("$[0].description").value("Description"))
-                .andExpect(jsonPath("$[0].startDate").exists())
-                .andExpect(jsonPath("$[0].dueDate").exists())
-                .andExpect(jsonPath("$[0].creator").value("nickname"))
-                .andExpect(jsonPath("$[1].title").value("Test"))
-                .andExpect(jsonPath("$[1].description").value("Description"))
-                .andExpect(jsonPath("$[1].startDate").exists())
-                .andExpect(jsonPath("$[1].dueDate").exists())
-                .andExpect(jsonPath("$[1].creator").value("nickname"));
+                get(BASE_URL + "/projects/{projectId}", PROJECT_ID)
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].title").value("Test"))
+            .andExpect(jsonPath("$[0].description").value("Description"))
+            .andExpect(jsonPath("$[0].startDate").exists())
+            .andExpect(jsonPath("$[0].dueDate").exists())
+            .andExpect(jsonPath("$[0].creator").value("nickname"))
+            .andExpect(jsonPath("$[1].title").value("Test"))
+            .andExpect(jsonPath("$[1].description").value("Description"))
+            .andExpect(jsonPath("$[1].startDate").exists())
+            .andExpect(jsonPath("$[1].dueDate").exists())
+            .andExpect(jsonPath("$[1].creator").value("nickname"));
     }
 
     @TestMember
@@ -209,30 +211,30 @@ class MilestoneControllerTest extends ControllerTestSupport {
         LocalDateTime dueDate = startDate.plusDays(7);
 
         List<MilestoneResponse> milestones = List.of(
-                createMilestoneResponse(1L, startDate, dueDate),
-                createMilestoneResponse(2L, startDate, dueDate)
+            createMilestoneResponse(1L, startDate, dueDate),
+            createMilestoneResponse(2L, startDate, dueDate)
         );
 
         given(milestoneService.getMilestonesByTeam(memberId, TEAM_ID))
-                .willReturn(milestones);
+            .willReturn(milestones);
 
         // Expected
         mockMvc.perform(
-                        get(BASE_URL)
-                                .contentType(MediaType.APPLICATION_JSON)
-                )
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].title").value("Test"))
-                .andExpect(jsonPath("$[0].description").value("Description"))
-                .andExpect(jsonPath("$[0].startDate").exists())
-                .andExpect(jsonPath("$[0].dueDate").exists())
-                .andExpect(jsonPath("$[0].creator").value("nickname"))
-                .andExpect(jsonPath("$[1].title").value("Test"))
-                .andExpect(jsonPath("$[1].description").value("Description"))
-                .andExpect(jsonPath("$[1].startDate").exists())
-                .andExpect(jsonPath("$[1].dueDate").exists())
-                .andExpect(jsonPath("$[1].creator").value("nickname"));
+                get(BASE_URL)
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].title").value("Test"))
+            .andExpect(jsonPath("$[0].description").value("Description"))
+            .andExpect(jsonPath("$[0].startDate").exists())
+            .andExpect(jsonPath("$[0].dueDate").exists())
+            .andExpect(jsonPath("$[0].creator").value("nickname"))
+            .andExpect(jsonPath("$[1].title").value("Test"))
+            .andExpect(jsonPath("$[1].description").value("Description"))
+            .andExpect(jsonPath("$[1].startDate").exists())
+            .andExpect(jsonPath("$[1].dueDate").exists())
+            .andExpect(jsonPath("$[1].creator").value("nickname"));
     }
 
     @TestMember
@@ -245,33 +247,33 @@ class MilestoneControllerTest extends ControllerTestSupport {
         LocalDateTime dueDate = startDate.plusDays(7);
 
         MilestoneDetailResponse milestoneDetail = MilestoneDetailResponse.builder()
-                .milestoneId(MILESTONE_ID)
-                .title("Test")
-                .description("Description")
-                .creator("nickname")
-                .startDate(startDate)
-                .dueDate(dueDate)
-                .isCompleted(false)
-                .issues(List.of())
-                .build();
+            .milestoneId(MILESTONE_ID)
+            .title("Test")
+            .description("Description")
+            .creator("nickname")
+            .startDate(startDate)
+            .dueDate(dueDate)
+            .isCompleted(false)
+            .issues(List.of())
+            .build();
 
         given(milestoneService.getMilestoneDetail(memberId, TEAM_ID, MILESTONE_ID))
-                .willReturn(milestoneDetail);
+            .willReturn(milestoneDetail);
 
         // Expected
         mockMvc.perform(
-                        get(BASE_URL + "/milestones/{milestoneId}", MILESTONE_ID)
-                                .contentType(MediaType.APPLICATION_JSON)
-                )
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.milestoneId").value(MILESTONE_ID))
-                .andExpect(jsonPath("$.title").value("Test"))
-                .andExpect(jsonPath("$.description").value("Description"))
-                .andExpect(jsonPath("$.creator").value("nickname"))
-                .andExpect(jsonPath("$.startDate").exists())
-                .andExpect(jsonPath("$.dueDate").exists())
-                .andExpect(jsonPath("$.isCompleted").value(false));
+                get(BASE_URL + "/milestones/{milestoneId}", MILESTONE_ID)
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.milestoneId").value(MILESTONE_ID))
+            .andExpect(jsonPath("$.title").value("Test"))
+            .andExpect(jsonPath("$.description").value("Description"))
+            .andExpect(jsonPath("$.creator").value("nickname"))
+            .andExpect(jsonPath("$.startDate").exists())
+            .andExpect(jsonPath("$.dueDate").exists())
+            .andExpect(jsonPath("$.isCompleted").value(false));
     }
 
     @TestMember
@@ -286,42 +288,84 @@ class MilestoneControllerTest extends ControllerTestSupport {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS");
 
         MilestoneUpdateRequest milestoneUpdateRequest = MilestoneUpdateRequest.builder()
-                .title("Test")
-                .description("Description")
-                .startDate(startDate)
-                .dueDate(dueDate.plusDays(2))
-                .build();
+            .title("Test")
+            .description("Description")
+            .startDate(startDate)
+            .dueDate(dueDate.plusDays(2))
+            .build();
         MilestoneResponse milestoneResponse = createMilestoneResponse(MILESTONE_ID, startDate, dueDate.plusDays(2));
 
         given(milestoneService.updateMilestone(memberId, TEAM_ID, PROJECT_ID, MILESTONE_ID, milestoneUpdateRequest.toServiceRequest()))
-                .willReturn(milestoneResponse);
+            .willReturn(milestoneResponse);
 
         // Expected
         mockMvc.perform(
-                        put(BASE_URL + "/projects/{projectId}/milestones/{milestoneId}", PROJECT_ID, MILESTONE_ID)
-                                .content(objectMapper.writeValueAsString(milestoneUpdateRequest))
-                                .contentType(MediaType.APPLICATION_JSON)
-                )
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.milestoneId").value(MILESTONE_ID))
-                .andExpect(jsonPath("$.title").value("Test"))
-                .andExpect(jsonPath("$.description").value("Description"))
-                .andExpect(jsonPath("$.creator").value("nickname"))
-                .andExpect(jsonPath("$.startDate").value(startDate.format(formatter)))
-                .andExpect(jsonPath("$.dueDate").value(dueDate.plusDays(2).format(formatter)))
-                .andExpect(jsonPath("$.isCompleted").value(false));
+                put(BASE_URL + "/projects/{projectId}/milestones/{milestoneId}", PROJECT_ID, MILESTONE_ID)
+                    .content(objectMapper.writeValueAsString(milestoneUpdateRequest))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.milestoneId").value(MILESTONE_ID))
+            .andExpect(jsonPath("$.title").value("Test"))
+            .andExpect(jsonPath("$.description").value("Description"))
+            .andExpect(jsonPath("$.creator").value("nickname"))
+            .andExpect(jsonPath("$.startDate").value(startDate.format(formatter)))
+            .andExpect(jsonPath("$.dueDate").value(dueDate.plusDays(2).format(formatter)))
+            .andExpect(jsonPath("$.isCompleted").value(false));
+    }
+
+    @DisplayName("해당하는 팀의 마감일이 내일인 마일스톤과 연관된 이슈를 반환한다.")
+    @Test
+    void getMilestoneWithIssuesDueTomorrow() throws Exception {
+        // given
+        Long teamId = 1L;
+
+        List<MilestoneIssueResponse> responses = List.of(
+            createMilestoneIssueResponse(1L, LocalDateTime.now(), LocalDateTime.now().plusDays(1))
+        );
+        given(milestoneService.getMilestoneWithIssuesDueTomorrow(teamId))
+            .willReturn(responses);
+
+        // expected
+        mockMvc.perform(
+                get(BASE_URL + "/milestones")
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+            .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].milestone.milestoneId").value(1L))
+            .andExpect(jsonPath("$[0].issues[0].issueId").value(1L))
+            .andExpect(jsonPath("$[0].issues[1].issueId").value(2L));
     }
 
     private MilestoneResponse createMilestoneResponse(Long milestoneId, LocalDateTime startDate, LocalDateTime dueDate) {
         return MilestoneResponse.builder()
-                .milestoneId(milestoneId)
-                .title("Test")
-                .description("Description")
-                .creator("nickname")
-                .startDate(startDate)
-                .dueDate(dueDate)
-                .isCompleted(false)
-                .build();
+            .milestoneId(milestoneId)
+            .title("Test")
+            .description("Description")
+            .creator("nickname")
+            .startDate(startDate)
+            .dueDate(dueDate)
+            .isCompleted(false)
+            .build();
     }
+
+    private IssueDetailResponse createIssueDetailResponse(Long issueId) {
+        return IssueDetailResponse.builder()
+            .issueId(issueId)
+            .title("title")
+            .content("content")
+            .creator("creator")
+            .status("close")
+            .build();
+    }
+
+    private MilestoneIssueResponse createMilestoneIssueResponse(Long milestoneId, LocalDateTime startDate, LocalDateTime dueDate) {
+        return MilestoneIssueResponse.builder()
+            .milestone(createMilestoneResponse(milestoneId, startDate, dueDate))
+            .issues(List.of(createIssueDetailResponse(1L), createIssueDetailResponse(2L)))
+            .build();
+    }
+
 }
