@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import soon.capstone.domain.milestone.entity.Milestone;
+import soon.capstone.domain.milestone.entity.MilestoneStatus;
 import soon.capstone.domain.milestone.repository.MilestoneRepository;
 import soon.capstone.domain.milestone.service.dto.MilestoneUpdateDto;
 import soon.capstone.domain.milestone.service.dto.response.MilestoneResponse;
@@ -45,7 +46,7 @@ public class MilestoneUpdateService {
             updatedTitle,
             updatedDescription,
             updatedDueDate,
-            milestone.getStatus().name() // TODO: 이넘 활용으로 변경
+            MilestoneStatus.toState(milestone.getStatus())
         );
 
         return MilestoneResponse.builder()

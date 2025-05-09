@@ -40,7 +40,7 @@ public class MilestoneCreationService {
             milestoneCreationDto.creator(),
             milestoneCreationDto.dueDate(),
             milestoneCreationDto.startDate(),
-            MilestoneStatus.contains(milestoneCreationDto.status()),
+            MilestoneStatus.from(milestoneCreationDto.status()),
             githubMilestoneId,
             milestoneCreationDto.project()
         );

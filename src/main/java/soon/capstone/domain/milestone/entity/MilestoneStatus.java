@@ -10,11 +10,15 @@ public enum MilestoneStatus {
     IN_PROGRESS,
     DONE;
 
-    public static MilestoneStatus contains(String status) {
+    public static MilestoneStatus from(String status) {
         return Arrays.stream(values())
-            .filter(s -> s.name().equals(status))
+            .filter(s -> s.name().equalsIgnoreCase(status))
             .findFirst()
             .orElseThrow(InvalidRequest::new);
+    }
+
+    public static String toState(MilestoneStatus status) {
+        return (status == NOT_STARTED || status == IN_PROGRESS) ? "open" : "closed";
     }
 
 }

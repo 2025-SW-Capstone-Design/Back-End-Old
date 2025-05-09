@@ -22,7 +22,7 @@ public record GithubMilestoneUpdateDto(
             .title(title)
             .description(description)
             .dueOn(dueOn != null ? dueOn.atZone(ZoneOffset.UTC).format(FORMATTER) : null)
-            .state(state) // TODO: enum에 따른 변경 로직 구현 예정
+            .state(state)
             .build();
     }
 }
