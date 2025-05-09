@@ -3,12 +3,13 @@ package soon.capstone.domain.milestone.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import soon.capstone.domain.member.entity.Member;
+import soon.capstone.domain.milestone.service.dto.MilestoneCreationDto;
 import soon.capstone.domain.milestone.service.dto.MilestoneUpdateDto;
+import soon.capstone.domain.milestone.service.dto.request.MilestoneCreateServiceRequest;
 import soon.capstone.domain.milestone.service.dto.request.MilestoneUpdateServiceRequest;
 import soon.capstone.domain.milestone.service.dto.response.MilestoneDetailResponse;
+import soon.capstone.domain.milestone.service.dto.response.MilestoneIssueResponse;
 import soon.capstone.domain.milestone.service.dto.response.MilestoneResponse;
-import soon.capstone.domain.milestone.service.dto.MilestoneCreationDto;
-import soon.capstone.domain.milestone.service.dto.request.MilestoneCreateServiceRequest;
 import soon.capstone.domain.milestone.service.port.MilestonePort;
 import soon.capstone.domain.project.entity.Project;
 import soon.capstone.domain.team.entity.Team;
@@ -36,17 +37,17 @@ public class MilestoneService {
         teamMemberValidator.validateTeamMember(member, team);
 
         return milestoneCreationService.createMilestone(
-                MilestoneCreationDto.of(
-                        team.getOrganizationName(),
-                        project.getTitle(),
-                        oAuthToken.getToken(),
-                        request.title(),
-                        request.description(),
-                        request.dueDate(),
-                        request.startDate(),
-                        member.getNickname(),
-                        project
-                )
+            MilestoneCreationDto.of(
+                team.getOrganizationName(),
+                project.getTitle(),
+                oAuthToken.getToken(),
+                request.title(),
+                request.description(),
+                request.dueDate(),
+                request.startDate(),
+                member.getNickname(),
+                project
+            )
         );
     }
 
@@ -86,16 +87,20 @@ public class MilestoneService {
 
         teamMemberValidator.validateTeamMember(member, team);
         MilestoneUpdateDto milestoneUpdateDto = MilestoneUpdateDto.of(
-                team.getOrganizationName(),
-                project.getTitle(),
-                oAuthToken.getToken(),
-                request.title(),
-                request.description(),
-                request.dueDate(),
-                request.startDate()
+            team.getOrganizationName(),
+            project.getTitle(),
+            oAuthToken.getToken(),
+            request.title(),
+            request.description(),
+            request.dueDate(),
+            request.startDate()
         );
 
         return milestoneUpdateService.updateMilestone(milestoneId, milestoneUpdateDto);
+    }
+
+    public List<MilestoneIssueResponse> getMilestoneWithIssuesDueTomorrow(Long teamId) {
+        return milestoneReadService.getMilestoneWithIssuesDueTomorrow(teamId);
     }
 
 }

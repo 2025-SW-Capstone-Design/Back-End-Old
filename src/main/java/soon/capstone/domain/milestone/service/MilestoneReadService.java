@@ -6,9 +6,10 @@ import org.springframework.transaction.annotation.Transactional;
 import soon.capstone.domain.issue.repository.issue.IssueRepository;
 import soon.capstone.domain.issue.service.dto.response.IssueDetailResponse;
 import soon.capstone.domain.milestone.entity.Milestone;
-import soon.capstone.domain.milestone.service.dto.response.MilestoneDetailResponse;
-import soon.capstone.domain.milestone.service.dto.response.MilestoneResponse;
 import soon.capstone.domain.milestone.repository.MilestoneRepository;
+import soon.capstone.domain.milestone.service.dto.response.MilestoneDetailResponse;
+import soon.capstone.domain.milestone.service.dto.response.MilestoneIssueResponse;
+import soon.capstone.domain.milestone.service.dto.response.MilestoneResponse;
 import soon.capstone.domain.project.entity.Project;
 import soon.capstone.domain.team.entity.Team;
 
@@ -35,14 +36,27 @@ public class MilestoneReadService {
         List<IssueDetailResponse> issueDetailResponses = issueRepository.findIssuesWithLabelsByMilestoneId(milestoneId);
 
         return MilestoneDetailResponse.builder()
-                .milestoneId(milestone.getId())
-                .creator(milestone.getCreator())
-                .title(milestone.getTitle())
-                .description(milestone.getDescription())
-                .startDate(milestone.getStartDate())
-                .dueDate(milestone.getDueDate())
-                .isCompleted(milestone.isCompleted())
-                .issues(issueDetailResponses)
-                .build();
+            .milestoneId(milestone.getId())
+            .creator(milestone.getCreator())
+            .title(milestone.getTitle())
+            .description(milestone.getDescription())
+            .startDate(milestone.getStartDate())
+            .dueDate(milestone.getDueDate())
+            .isCompleted(milestone.isCompleted())
+            .issues(issueDetailResponses)
+            .build();
     }
+
+    @Transactional(readOnly = true)
+    public List<MilestoneIssueResponse> getMilestoneWithIssuesDueTomorrow(Long teamId) {
+        List<MilestoneResponse> milestones = milestoneRepository.getMilestoneWithIssuesDueTomorrow(teamId);
+
+        return milestones.stream()
+            .map(milestone -> MilestoneIssueResponse.builder()
+                .milestone(milestone)
+                .issues(issueRepository.findIssuesWithLabelsByMilestoneId(milestone.milestoneId()))
+                .build())
+            .toList();
+    }
+
 }
