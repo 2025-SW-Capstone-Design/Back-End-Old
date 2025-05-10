@@ -23,7 +23,7 @@ public class MilestoneCreationService {
     public Long createMilestone(MilestoneCreationDto milestoneCreationDto) {
 
         validateMilestoneDates(milestoneCreationDto.startDate(), milestoneCreationDto.dueDate());
-        isDuplicateMilestoneTitle(milestoneCreationDto.title());
+        isDuplicateMilestoneTitle(milestoneCreationDto.title(), milestoneCreationDto.project());
 
         int githubMilestoneId = githubMilestoneCreationService.createMilestone(
             milestoneCreationDto.owner(),
@@ -59,8 +59,8 @@ public class MilestoneCreationService {
         }
     }
 
-    private void isDuplicateMilestoneTitle(String title) {
-        if (milestoneRepository.existsByTitle(title)) {
+    private void isDuplicateMilestoneTitle(String title, Project project) {
+        if (milestoneRepository.existsByTitleAndProject(title, project)) {
             throw new MilestoneDuplicateTitleException();
         }
     }

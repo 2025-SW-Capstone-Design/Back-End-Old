@@ -46,8 +46,8 @@ public class MilestoneRepository {
         return milestoneJpaRepository.getMilestoneWithIssuesDueTomorrow(teamId);
     }
 
-    public boolean existsByTitle(String title) {
-        return milestoneJpaRepository.existsByTitle(title);
+    public boolean existsByTitleAndProject(String title, Project project) {
+        return milestoneJpaRepository.existsByTitleAndProject(title, project);
     }
 
     public List<Milestone> findAll() {
