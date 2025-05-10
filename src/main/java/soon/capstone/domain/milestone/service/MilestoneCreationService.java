@@ -40,7 +40,10 @@ public class MilestoneCreationService {
             milestoneCreationDto.creator(),
             milestoneCreationDto.dueDate(),
             milestoneCreationDto.startDate(),
-            MilestoneStatus.from(milestoneCreationDto.status()),
+            setMilestoneStatus(
+                milestoneCreationDto.startDate(),
+                milestoneCreationDto.dueDate()
+            ),
             githubMilestoneId,
             milestoneCreationDto.project()
         );
@@ -60,6 +63,10 @@ public class MilestoneCreationService {
         if (milestoneRepository.existsByTitle(title)) {
             throw new MilestoneDuplicateTitleException();
         }
+    }
+
+    private MilestoneStatus setMilestoneStatus(LocalDateTime startDate, LocalDateTime dueDate) {
+        return startDate.isAfter(LocalDateTime.now()) && dueDate.isAfter(startDate) ? MilestoneStatus.NOT_STARTED : MilestoneStatus.IN_PROGRESS;
     }
 
     private Milestone createMilestoneEntity(String title, String description, String creator, LocalDateTime dueDate, LocalDateTime startDate, MilestoneStatus status, int githubMilestoneId, Project project) {
