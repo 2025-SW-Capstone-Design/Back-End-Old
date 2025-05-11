@@ -1,9 +1,9 @@
 spring:
   profiles:
 #    active: local
-#    include: aws-s3, redis, oauth, email
+#    include: aws-s3, redis, oauth, email, openai
     active: prod
-    include: aws-s3, redis, oauth, email
+    include: aws-s3, redis, oauth, email, openai
 
   graphql:
     graphiql:
