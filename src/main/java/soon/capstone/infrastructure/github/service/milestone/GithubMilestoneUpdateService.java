@@ -6,6 +6,7 @@ import soon.capstone.infrastructure.github.dto.request.GithubMilestoneUpdateDto;
 import soon.capstone.infrastructure.restclient.config.RestClientConfig;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @RequiredArgsConstructor
 @Service
@@ -17,17 +18,33 @@ public class GithubMilestoneUpdateService {
     public void updateMilestone(String owner, String repo, int milestoneNumber, String oauthToken, String title, String description, LocalDateTime dueDate, String status) {
 
         String url = MILESTONE_UPDATE_URL
-                .replace("{owner}", owner)
-                .replace("{repo}", repo)
-                .replace("{milestone_number}", String.valueOf(milestoneNumber));
+            .replace("{owner}", owner)
+            .replace("{repo}", repo)
+            .replace("{milestone_number}", String.valueOf(milestoneNumber));
 
         GithubMilestoneUpdateDto updateDto = GithubMilestoneUpdateDto.of(title, description, dueDate, status);
 
         restClientConfig.githubRestClient(oauthToken)
-                .patch()
-                .uri(url)
-                .body(updateDto)
-                .retrieve()
-                .body(Void.class);
+            .patch()
+            .uri(url)
+            .body(updateDto)
+            .retrieve()
+            .body(Void.class);
     }
+
+    public void updateMilestoneStatus(String owner, String repo, int milestoneNumber, String oauthToken, String state) {
+
+        String url = MILESTONE_UPDATE_URL
+            .replace("{owner}", owner)
+            .replace("{repo}", repo)
+            .replace("{milestone_number}", String.valueOf(milestoneNumber));
+
+        restClientConfig.githubRestClient(oauthToken)
+            .patch()
+            .uri(url)
+            .body(Map.of("state", state))
+            .retrieve()
+            .body(Void.class);
+    }
+
 }

@@ -8,6 +8,8 @@ import soon.capstone.domain.milestone.entity.MilestoneStatus;
 import soon.capstone.domain.milestone.repository.MilestoneRepository;
 import soon.capstone.domain.milestone.service.dto.MilestoneUpdateDto;
 import soon.capstone.domain.milestone.service.dto.response.MilestoneResponse;
+import soon.capstone.domain.project.entity.Project;
+import soon.capstone.domain.team.entity.Team;
 import soon.capstone.global.exception.milestone.MilestoneInvalidDateException;
 import soon.capstone.infrastructure.github.service.milestone.GithubMilestoneUpdateService;
 
@@ -58,6 +60,22 @@ public class MilestoneUpdateService {
             .startDate(milestone.getStartDate())
             .status(milestone.getStatus().name())
             .build();
+    }
+
+    @Transactional
+    public void updateMilestoneStatus(Long milestoneId, MilestoneStatus status, Project project, Team team, String token) {
+        Milestone milestone = milestoneRepository.findById(milestoneId);
+        milestone.updateStatus(status);
+
+        if (MilestoneStatus.DONE.equals(status)) {
+            githubMilestoneUpdateService.updateMilestoneStatus(
+                team.getOrganizationName(),
+                project.getTitle(),
+                milestone.getGithubMilestoneId(),
+                token,
+                MilestoneStatus.toState(status)
+            );
+        }
     }
 
     private void validateMilestoneDates(LocalDateTime startDate, LocalDateTime dueDate) {
