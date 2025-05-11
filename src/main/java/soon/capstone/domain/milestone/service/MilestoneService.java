@@ -7,6 +7,7 @@ import soon.capstone.domain.milestone.entity.MilestoneStatus;
 import soon.capstone.domain.milestone.service.dto.MilestoneCreationDto;
 import soon.capstone.domain.milestone.service.dto.MilestoneUpdateDto;
 import soon.capstone.domain.milestone.service.dto.request.MilestoneCreateServiceRequest;
+import soon.capstone.domain.milestone.service.dto.request.MilestoneStatusUpdateServiceRequest;
 import soon.capstone.domain.milestone.service.dto.request.MilestoneUpdateServiceRequest;
 import soon.capstone.domain.milestone.service.dto.response.MilestoneDetailResponse;
 import soon.capstone.domain.milestone.service.dto.response.MilestoneIssueResponse;
@@ -100,15 +101,15 @@ public class MilestoneService {
         return milestoneUpdateService.updateMilestone(milestoneId, milestoneUpdateDto);
     }
 
-    public void updateMilestoneStatus(Long memberId, Long teamId, Long milestoneId, String status) {
-        Member member = milestonePort.getMember(memberId);
-        Team team = milestonePort.getTeam(teamId);
-        Project project = milestonePort.getProject(milestoneId);
-        OAuthToken oAuthToken = milestonePort.getOAuthToken(memberId);
+    public void updateMilestoneStatus(MilestoneStatusUpdateServiceRequest request) {
+        Member member = milestonePort.getMember(request.memberId());
+        Team team = milestonePort.getTeam(request.teamId());
+        Project project = milestonePort.getProject(request.projectId());
+        OAuthToken oAuthToken = milestonePort.getOAuthToken(request.memberId());
 
         teamMemberValidator.validateTeamMember(member, team);
 
-        milestoneUpdateService.updateMilestoneStatus(milestoneId, MilestoneStatus.from(status), project, team, oAuthToken.getToken());
+        milestoneUpdateService.updateMilestoneStatus(request.milestoneId(), MilestoneStatus.from(request.status()), project, team, oAuthToken.getToken());
     }
 
     public List<MilestoneIssueResponse> getMilestoneWithIssuesDueTomorrow(Long teamId) {

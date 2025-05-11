@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import soon.capstone.ControllerTestSupport;
 import soon.capstone.domain.issue.service.dto.response.IssueDetailResponse;
+import soon.capstone.domain.milestone.controller.dto.MilestoneStatusUpdateRequest;
 import soon.capstone.domain.milestone.controller.dto.request.MilestoneCreateRequest;
 import soon.capstone.domain.milestone.controller.dto.request.MilestoneUpdateRequest;
 import soon.capstone.domain.milestone.service.dto.response.MilestoneDetailResponse;
@@ -338,6 +339,25 @@ class MilestoneControllerTest extends ControllerTestSupport {
             .andExpect(jsonPath("$[0].milestone.milestoneId").value(1L))
             .andExpect(jsonPath("$[0].issues[0].issueId").value(1L))
             .andExpect(jsonPath("$[0].issues[1].issueId").value(2L));
+    }
+
+    @TestMember
+    @DisplayName("마일스톤 상태를 업데이트한다.")
+    @Test
+    void updateMilestoneStatus() throws Exception {
+        // given
+        MilestoneStatusUpdateRequest request = MilestoneStatusUpdateRequest.builder()
+            .status("DONE")
+            .build();
+
+        // expected
+        mockMvc.perform(
+                patch(BASE_URL + "/projects/{projectId}/milestones/{milestoneId}/status", PROJECT_ID, MILESTONE_ID)
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+            .andDo(print())
+            .andExpect(status().isNoContent());
     }
 
     private MilestoneResponse createMilestoneResponse(Long milestoneId, LocalDateTime startDate, LocalDateTime dueDate) {
