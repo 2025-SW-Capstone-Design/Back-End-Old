@@ -28,6 +28,8 @@ import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 @SpringBootTest
 class MilestoneUpdateServiceTest extends IntegrationTestSupport {
@@ -174,6 +176,100 @@ class MilestoneUpdateServiceTest extends IntegrationTestSupport {
         assertThatThrownBy(() -> milestoneUpdateService.updateMilestone(milestoneId, milestoneUpdateDto))
             .isInstanceOf(MilestoneInvalidDateException.class)
             .hasMessage("마일스톤의 시작일과 종료일이 올바르지 않습니다.");
+    }
+
+    @DisplayName("마일스톤의 상태가 DONE일 때 깃허브의 상태를 업데이트한다.")
+    @Test
+    void updateMilestoneStatus() {
+        // given
+        Member member = createMember();
+        memberRepository.save(member);
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        OAuthToken oauthToken = createOAuthToken(member);
+        oAuthTokenRepository.save(oauthToken);
+
+        Project project = createProject(member.getNickname(), team);
+        projectRepository.save(project);
+
+        Milestone milestone = Milestone.builder()
+            .title("title")
+            .description("description")
+            .dueDate(LocalDateTime.now().plusDays(7))
+            .creator(member.getNickname())
+            .startDate(LocalDateTime.now())
+            .githubMilestoneId(1)
+            .project(project)
+            .status(MilestoneStatus.NOT_STARTED)
+            .build();
+        milestoneRepository.save(milestone);
+
+        // when
+        milestoneUpdateService.updateMilestoneStatus(
+            milestone.getId(),
+            MilestoneStatus.DONE,
+            project,
+            team,
+            oauthToken.getToken()
+        );
+
+        // then
+        Milestone updatedMilestone = milestoneRepository.findById(milestone.getId());
+        assertThat(updatedMilestone.getStatus()).isEqualTo(MilestoneStatus.DONE);
+
+        verify(githubMilestoneUpdateService).updateMilestoneStatus(
+            team.getOrganizationName(),
+            project.getTitle(),
+            updatedMilestone.getGithubMilestoneId(),
+            oauthToken.getToken(),
+            "closed"
+        );
+    }
+
+    @DisplayName("마일스톤의 상태가 DONE이 아니라면 깃허브 상태를 업데이트하지 않는다.")
+    @Test
+    void updateMilestoneStatusDoesNotGithubState() {
+        // given
+        Member member = createMember();
+        memberRepository.save(member);
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        OAuthToken oauthToken = createOAuthToken(member);
+        oAuthTokenRepository.save(oauthToken);
+
+        Project project = createProject(member.getNickname(), team);
+        projectRepository.save(project);
+
+        Milestone milestone = Milestone.builder()
+            .title("title")
+            .description("description")
+            .dueDate(LocalDateTime.now().plusDays(7))
+            .creator(member.getNickname())
+            .startDate(LocalDateTime.now())
+            .githubMilestoneId(1)
+            .project(project)
+            .status(MilestoneStatus.NOT_STARTED)
+            .build();
+        milestoneRepository.save(milestone);
+
+        // when
+        milestoneUpdateService.updateMilestoneStatus(
+            milestone.getId(),
+            MilestoneStatus.IN_PROGRESS,
+            project,
+            team,
+            oauthToken.getToken()
+        );
+
+        // then
+        Milestone updatedMilestone = milestoneRepository.findById(milestone.getId());
+        assertThat(updatedMilestone.getStatus()).isEqualTo(MilestoneStatus.IN_PROGRESS);
+
+        verifyNoInteractions(githubMilestoneUpdateService);
     }
 
     private Member createMember() {

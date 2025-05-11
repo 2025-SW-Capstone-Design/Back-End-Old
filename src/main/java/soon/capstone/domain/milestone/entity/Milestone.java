@@ -66,4 +66,8 @@ public class Milestone extends BaseTimeEntity {
         this.startDate = startDate;
     }
 
+    public void updateStatus(MilestoneStatus status) {
+        this.status = status;
+    }
+
 }
