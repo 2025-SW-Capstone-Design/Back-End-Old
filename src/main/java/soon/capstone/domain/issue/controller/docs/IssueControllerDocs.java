@@ -15,6 +15,7 @@ import soon.capstone.domain.issue.controller.dto.IssueClosedRequest;
 import soon.capstone.domain.issue.controller.dto.IssueCreateRequest;
 import soon.capstone.domain.issue.controller.dto.IssueUpdateRequest;
 import soon.capstone.domain.issue.service.dto.response.IssueDetailResponse;
+import soon.capstone.domain.issue.service.dto.response.IssueDetailWrapperResponse;
 import soon.capstone.global.swagger.annotation.ApiExceptions;
 
 import java.util.List;
@@ -170,7 +171,7 @@ public interface IssueControllerDocs {
         TEAM_NOT_AUTHORIZED,
         GITHUB_HTTP_CLIENT_ERROR
     })
-    ResponseEntity<IssueDetailResponse> getIssueDetail(
+    ResponseEntity<IssueDetailWrapperResponse> getIssueDetail(
         Long memberId,
         Long teamId,
         Long issueId,
