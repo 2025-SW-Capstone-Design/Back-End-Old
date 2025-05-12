@@ -251,8 +251,7 @@ class IssueServiceTest extends IntegrationTestSupport {
             member.getId(),
             issue.getId(),
             team.getOrganizationName(),
-            project.getTitle()
-        );
+            project.getTitle());
 
         // then
         assertThat(response)
