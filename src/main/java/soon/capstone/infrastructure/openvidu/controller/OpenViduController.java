@@ -29,9 +29,9 @@ public class OpenViduController {
     @PostMapping(value = "/webhook", consumes = "application/webhook+json")
     public ResponseEntity<Long> receiveWebhook(
         @Valid @RequestBody OpenViduWebhookEventRequest request,
-        @RequestHeader(value = "X-OpenVidu-Token") String openViduToken
+        @RequestHeader(value = "Authorization") String openViduToken
     ) {
-        Long chatRoomId = openViduApiService.handleWebhookEvent(request.toServiceRequest(1L, openViduToken));
+        Long chatRoomId = openViduApiService.handleWebhookEvent(request.toServiceRequest(2L, openViduToken));
         return ResponseEntity.ok(chatRoomId);
     }
 
