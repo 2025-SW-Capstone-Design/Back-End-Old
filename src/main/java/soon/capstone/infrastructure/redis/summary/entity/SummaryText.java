@@ -14,7 +14,7 @@ import org.springframework.data.redis.core.index.Indexed;
 public class SummaryText {
 
     @Id
-    private String id; // chatRoomId + _ + index
+    private String id;
 
     @Indexed
     private Long chatRoomId;
@@ -25,7 +25,7 @@ public class SummaryText {
 
     @Builder
     private SummaryText(Long chatRoomId, int index, String summary) {
-        this.id = chatRoomId + "_" + index;
+        this.id = chatRoomId + ":" + index;
         this.chatRoomId = chatRoomId;
         this.index = index;
         this.summary = summary;
