@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import soon.capstone.IntegrationTestSupport;
 import soon.capstone.infrastructure.redis.summary.entity.SummaryText;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 class SummaryTextRepositoryTest extends IntegrationTestSupport {
@@ -53,6 +55,23 @@ class SummaryTextRepositoryTest extends IntegrationTestSupport {
 
         assertThat(secondSaved.getIndex()).isEqualTo(2);
         assertThat(secondSaved.getId()).isEqualTo("1:2");
+    }
+
+    @DisplayName("findAllByChatRoomId는 chatRoomId로 SummaryText를 오름차순으로 반환한다")
+    @Test
+    void findAllByChatRoomIdReturnsSortedSummaryTexts() {
+        // given
+        Long chatRoomId = 1L;
+        summaryTextRepository.save(chatRoomId, "First summary");
+        summaryTextRepository.save(chatRoomId, "Second summary");
+
+        // when
+        List<SummaryText> summaries = summaryTextRepository.findAllByChatRoomId(chatRoomId);
+
+        // then
+        assertThat(summaries).hasSize(2);
+        assertThat(summaries.get(0).getIndex()).isEqualTo(1);
+        assertThat(summaries.get(1).getIndex()).isEqualTo(2);
     }
 
 }

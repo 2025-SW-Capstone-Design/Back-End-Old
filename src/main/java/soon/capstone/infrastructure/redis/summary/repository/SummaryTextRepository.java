@@ -5,6 +5,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 import soon.capstone.infrastructure.redis.summary.entity.SummaryText;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 @Repository
 public class SummaryTextRepository {
@@ -27,6 +29,10 @@ public class SummaryTextRepository {
     public void resetIndex(Long chatRoomId) {
         String key = INDEX_KEY_PREFIX + chatRoomId;
         redisTemplate.delete(key);
+    }
+
+    public List<SummaryText> findAllByChatRoomId(Long chatRoomId) {
+        return summaryTextRedisRepository.findAllByChatRoomIdOrderByIndexAsc(chatRoomId);
     }
 
     public void deleteAll() {
