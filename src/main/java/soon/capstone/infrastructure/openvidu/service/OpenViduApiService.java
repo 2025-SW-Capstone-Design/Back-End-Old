@@ -52,7 +52,7 @@ public class OpenViduApiService {
 
     public Long handleWebhookEvent(OpenViduWebhookEventServiceRequest request) {
         try {
-            log.info("웹훅 요청 처리 시작 - memberId: {}, openViduToken: {}", request.memberId(), request.openViduToken());
+            log.info("웹훅 요청 처리 시작 - body{} memberId: {}, openViduToken: {}", request.body(), request.memberId(), request.openViduToken());
 
             WebhookEvent event = webhookReceiver.receive(request.body(), request.openViduToken());
 
