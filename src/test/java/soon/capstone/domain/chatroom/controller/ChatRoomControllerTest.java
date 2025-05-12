@@ -2,7 +2,9 @@ package soon.capstone.domain.chatroom.controller;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.MediaType;
 import soon.capstone.ControllerTestSupport;
+import soon.capstone.domain.chatroom.controller.dto.ChatRoomSummarizeRequest;
 import soon.capstone.domain.chatroom.service.dto.response.ChatRoomDetailsResponse;
 import soon.capstone.global.anootation.TestMember;
 
@@ -12,6 +14,7 @@ import java.util.List;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -67,6 +70,30 @@ class ChatRoomControllerTest extends ControllerTestSupport {
             .andExpect(jsonPath("$").isArray())
             .andExpect(jsonPath("$[0].id").value(1))
             .andExpect(jsonPath("$[1].id").value(2));
+    }
+
+    @TestMember
+    @DisplayName("채팅방 요약을 성공적으로 저장한다")
+    @Test
+    void summarizeChatroom() throws Exception {
+        // given
+        Long teamId = 1L;
+        Long chatRoomId = 1L;
+        String summaryText = "This is a summary.";
+
+        ChatRoomSummarizeRequest request = ChatRoomSummarizeRequest.builder()
+            .text(summaryText)
+            .isFinal(false)
+            .build();
+
+        // expected
+        mockMvc.perform(
+                post(BASE_URL + "/{chatRoomId}/summary", teamId, chatRoomId)
+                    .content(objectMapper.writeValueAsString(request))
+                    .contentType(MediaType.APPLICATION_JSON)
+            )
+            .andDo(print())
+            .andExpect(status().isOk());
     }
 
     private ChatRoomDetailsResponse createChatRoomDetailsResponse(Long chatRoomId) {
