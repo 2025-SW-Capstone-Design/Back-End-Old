@@ -149,7 +149,8 @@ class IssueServiceTest extends IntegrationTestSupport {
                 anyList(),
                 anyLong(),
                 anyString(),
-                anyString()
+                anyString(),
+                any(Project.class)
             );
     }
 
