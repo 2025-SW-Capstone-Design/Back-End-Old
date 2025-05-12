@@ -10,6 +10,7 @@ import soon.capstone.infrastructure.openvidu.controller.dto.request.OpenViduWebh
 import soon.capstone.infrastructure.openvidu.service.OpenViduApiService;
 import soon.capstone.infrastructure.openvidu.service.dto.response.OpenViduGenerateTokenResponse;
 
+@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/open-vidu")
 @RestController
