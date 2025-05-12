@@ -7,6 +7,12 @@ import org.springframework.stereotype.Component;
 import soon.capstone.domain.chatroom.service.ChatRoomService;
 import soon.capstone.infrastructure.openvidu.mapper.OpenViduWebhookEventMapper;
 import soon.capstone.infrastructure.openvidu.service.dto.request.OpenViduWebhookEventServiceRequest;
+import soon.capstone.infrastructure.redis.summary.service.SummaryTextService;
+
+import java.util.stream.Collectors;
+
+import static soon.capstone.infrastructure.openvidu.mapper.OpenViduWebhookEventMapper.toChatRoomFinishServiceRequest;
+import static soon.capstone.infrastructure.openvidu.mapper.OpenViduWebhookEventMapper.toChatRoomSummarizeServiceRequest;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -14,6 +20,7 @@ import soon.capstone.infrastructure.openvidu.service.dto.request.OpenViduWebhook
 public class RoomFinishedEventHandler implements OpenViduWebhookEventHandler {
 
     private final ChatRoomService chatRoomService;
+    private final SummaryTextService summaryTextService;
 
     @Override
     public boolean support(String eventType) {
@@ -22,10 +29,16 @@ public class RoomFinishedEventHandler implements OpenViduWebhookEventHandler {
 
     @Override
     public Long handle(LivekitWebhook.WebhookEvent event, OpenViduWebhookEventServiceRequest request) {
-        log.info("회의 종료: {}", event.getRoom().getName());
+        Long chatRoomId = chatRoomService.finishRoom(toChatRoomFinishServiceRequest(event, request));
+        String combinedSummary = summaryTextService.findAllByChatRoomId(chatRoomId).stream()
+            .map(summaryText -> summaryText.getSummary() + "\n")
+            .collect(Collectors.joining());
 
-        // TODO: 회의록 요약 요청
-        return chatRoomService.finishRoom(OpenViduWebhookEventMapper.toChatRoomFinishServiceRequest(event, request));
+        chatRoomService.summarizeChatroom(toChatRoomSummarizeServiceRequest(request, combinedSummary, chatRoomId));
+        summaryTextService.resetIndex(chatRoomId);
+
+        log.info("회의 종료: {} : chatRoomId: {}", event.getRoom().getName(), chatRoomId);
+        return chatRoomId;
     }
 
 }
