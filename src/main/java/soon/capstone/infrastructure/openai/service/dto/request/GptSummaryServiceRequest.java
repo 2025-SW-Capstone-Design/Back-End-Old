@@ -17,7 +17,9 @@ public record GptSummaryServiceRequest(
     public record Message(String role, String content) {
     }
 
-    public static GptSummaryServiceRequest of(String text, String model, PromptType promptType) {
+    public static GptSummaryServiceRequest of(String text, String model, boolean isFinal) {
+        PromptType promptType = (isFinal) ? PromptType.FINAL_SUMMARY : PromptType.INTERMEDIATE_SUMMARY;
+
         return GptSummaryServiceRequest.builder()
             .model(model)
             .messages(List.of(
