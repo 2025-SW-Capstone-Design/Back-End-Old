@@ -10,7 +10,6 @@ import soon.capstone.infrastructure.openvidu.controller.dto.request.OpenViduWebh
 import soon.capstone.infrastructure.openvidu.service.OpenViduApiService;
 import soon.capstone.infrastructure.openvidu.service.dto.response.OpenViduGenerateTokenResponse;
 
-
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/open-vidu")
 @RestController
@@ -27,14 +26,12 @@ public class OpenViduController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping(value = "/webhook/{teamId}", consumes = "application/webhook+json")
+    @PostMapping(value = "/webhook", consumes = "application/webhook+json")
     public ResponseEntity<Long> receiveWebhook(
         @Valid @RequestBody OpenViduWebhookEventRequest request,
-        @RequestHeader(value = "X-OpenVidu-Token") String openViduToken,
-        @AuthMemberId Long memberId,
-        @PathVariable Long teamId
+        @RequestHeader(value = "X-OpenVidu-Token") String openViduToken
     ) {
-        Long chatRoomId = openViduApiService.handleWebhookEvent(request.toServiceRequest(memberId, teamId, openViduToken));
+        Long chatRoomId = openViduApiService.handleWebhookEvent(request.toServiceRequest(1L, openViduToken));
         return ResponseEntity.ok(chatRoomId);
     }
 

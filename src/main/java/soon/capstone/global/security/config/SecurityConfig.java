@@ -59,7 +59,8 @@ public class SecurityConfig {
                             .requestMatchers(
                                     "/oauth2/**", "/login/oauth2/**", "/api/v1/auth/reissue",
                                     "/swagger-ui/**", "/v3/api-docs/**", "/h2-console/**",
-                                    "/favicon.ico", "/api-docs/**", "/api/v1/health"
+                                    "/favicon.ico", "/api-docs/**", "/api/v1/health",
+                                "/api/v1/open-vidu/webhook/**"
                             ).permitAll()
                             .anyRequest().authenticated();
                 });

@@ -57,13 +57,18 @@ class OpenViduControllerTest extends ControllerTestSupport {
     @Test
     void processesWebhookEvent() throws Exception {
         OpenViduWebhookEventRequest request = OpenViduWebhookEventRequest.builder()
-            .body("{\"event\":\"room_started\"}")
+            .body(objectMapper.createObjectNode()
+                .put("event", "room_started")
+                .put("room", "testRoom")
+                .put("participantIdentity", "testParticipant")
+            )
+            .teamId(1L)
             .reservedAt(LocalDateTime.now().plusDays(1L))
             .build();
         String openViduToken = "testToken";
 
         mockMvc.perform(
-                post(BASE_URL + "/webhook/1")
+                post(BASE_URL + "/webhook")
                     .content(objectMapper.writeValueAsString(request))
                     .contentType("application/webhook+json")
                     .header("X-OpenVidu-Token", openViduToken)
