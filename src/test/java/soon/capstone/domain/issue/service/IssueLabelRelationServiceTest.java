@@ -110,7 +110,8 @@ class IssueLabelRelationServiceTest extends IntegrationTestSupport {
             List.of("title1", "title2"),
             member.getId(),
             "organizationName",
-            "repositoryName"
+            "repositoryName",
+            project
         );
 
         // then
@@ -146,7 +147,8 @@ class IssueLabelRelationServiceTest extends IntegrationTestSupport {
             List.of(),
             member.getId(),
             "organizationName",
-            "repositoryName"
+            "repositoryName",
+            project
         );
 
         // then

@@ -70,7 +70,7 @@ public class IssueService {
         Issue newIssue = Issue.createNewIssue(title, content, githubIssueNumber, teamMember, milestone, project);
         Long savedIssueNumber = issueRepository.save(newIssue);
 
-        issueLabelRelationService.linkIssueWithLabels(newIssue, labels, memberId, organizationName, repositoryName);
+        issueLabelRelationService.linkIssueWithLabels(newIssue, labels, memberId, organizationName, repositoryName, project);
 
         return savedIssueNumber;
     }

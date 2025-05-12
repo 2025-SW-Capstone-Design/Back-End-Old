@@ -13,7 +13,7 @@ public interface IssueLabelJpaRepository extends JpaRepository<IssueLabel, Long>
 
     List<IssueLabel> findAllByProject(Project project);
 
-    Optional<IssueLabel> findByTitle(String title);
+    Optional<IssueLabel> findByTitleAndProject(String title, Project project);
 
     List<IssueLabel> findAllByTitleIn(List<String> titles);
 
