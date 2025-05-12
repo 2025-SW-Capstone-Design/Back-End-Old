@@ -10,6 +10,8 @@ import soon.capstone.domain.chatroom.service.dto.response.ChatRoomDetailsRespons
 import soon.capstone.domain.team.entity.Team;
 import soon.capstone.domain.team.repository.TeamRepository;
 import soon.capstone.domain.teammember.service.TeamMemberValidator;
+import soon.capstone.infrastructure.openai.service.GptSummaryService;
+import soon.capstone.infrastructure.redis.summary.repository.SummaryTextRepository;
 
 import java.util.List;
 
@@ -19,8 +21,10 @@ public class ChatRoomService {
 
     private final ChatRoomRepository chatRoomRepository;
     private final ChatRoomTeamMemberService chatRoomTeamMemberService;
+    private final GptSummaryService gptSummaryService;
     private final TeamRepository teamRepository;
     private final TeamMemberValidator teamMemberValidator;
+    private final SummaryTextRepository summaryTextRepository;
 
     public Long createRoom(ChatRoomCreateServiceRequest request) {
         teamMemberValidator.validateTeamMember(request.teamId(), request.memberId());
@@ -58,6 +62,13 @@ public class ChatRoomService {
         return chatRoomRepository.findAllByTeamId(request.teamId()).stream()
             .map(ChatRoomDetailsResponse::from)
             .toList();
+    }
+
+    public void summarizeChatroom(ChatRoomSummarizeServiceRequest request) {
+        teamMemberValidator.validateTeamMember(request.teamId(), request.memberId());
+
+        String summaryToText = gptSummaryService.summaryToText(request.text(), request.isFinal());
+        summaryTextRepository.save(request.chatRoomId(), summaryToText);
     }
 
     private void addMemberToChatRoom(ChatRoomCreateServiceRequest request, ChatRoom chatRoom, Team team) {

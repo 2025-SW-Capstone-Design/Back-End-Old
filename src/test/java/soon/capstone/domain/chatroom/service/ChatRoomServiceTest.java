@@ -4,15 +4,13 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import soon.capstone.IntegrationTestSupport;
 import soon.capstone.domain.chatroom.entity.ChatRoom;
 import soon.capstone.domain.chatroom.entity.ChatRoomTeamMember;
 import soon.capstone.domain.chatroom.repository.chatroom.ChatRoomRepository;
 import soon.capstone.domain.chatroom.repository.member.ChatRoomTeamMemberRepository;
-import soon.capstone.domain.chatroom.service.dto.request.ChatRoomCreateServiceRequest;
-import soon.capstone.domain.chatroom.service.dto.request.ChatRoomDetailsServiceRequest;
-import soon.capstone.domain.chatroom.service.dto.request.ChatRoomFinishServiceRequest;
-import soon.capstone.domain.chatroom.service.dto.request.ChatRoomResumeServiceRequest;
+import soon.capstone.domain.chatroom.service.dto.request.*;
 import soon.capstone.domain.chatroom.service.dto.response.ChatRoomDetailsResponse;
 import soon.capstone.domain.member.entity.Member;
 import soon.capstone.domain.member.repository.MemberRepository;
@@ -21,6 +19,8 @@ import soon.capstone.domain.team.repository.TeamRepository;
 import soon.capstone.domain.teammember.entity.TeamMember;
 import soon.capstone.domain.teammember.repository.TeamMemberRepository;
 import soon.capstone.global.exception.common.InvalidRequest;
+import soon.capstone.infrastructure.openai.service.GptSummaryService;
+import soon.capstone.infrastructure.redis.summary.repository.SummaryTextRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,6 +28,8 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
 
 class ChatRoomServiceTest extends IntegrationTestSupport {
 
@@ -49,6 +51,12 @@ class ChatRoomServiceTest extends IntegrationTestSupport {
     @Autowired
     private MemberRepository memberRepository;
 
+    @Autowired
+    private SummaryTextRepository summaryTextRepository;
+
+    @MockitoBean
+    private GptSummaryService gptSummaryService;
+
     @AfterEach
     void tearDown() {
         chatRoomTeamMemberRepository.deleteAllInBatch();
@@ -56,6 +64,7 @@ class ChatRoomServiceTest extends IntegrationTestSupport {
         teamMemberRepository.deleteAllInBatch();
         teamRepository.deleteAllInBatch();
         memberRepository.deleteAllInBatch();
+        summaryTextRepository.deleteAll();
     }
 
     @DisplayName("채팅방을 생성한다")
@@ -220,6 +229,41 @@ class ChatRoomServiceTest extends IntegrationTestSupport {
                 tuple(chatRoom1.getId(), chatRoom1.getReservedAt()),
                 tuple(chatRoom2.getId(), chatRoom2.getReservedAt())
             );
+    }
+
+    @DisplayName("채팅방의 텍스트를 중간 요약한다.")
+    @Test
+    void summarizeChatroom() {
+        // given
+        Member member = createMember("email", "nickname");
+        memberRepository.save(member);
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        TeamMember leader = TeamMember.createLeader(member, team);
+        teamMemberRepository.save(leader);
+
+        ChatRoom chatRoom = createChatRoom(team, LocalDateTime.now().plusDays(3));
+        chatRoomRepository.save(chatRoom);
+
+        String text = "long text";
+        boolean isFinal = false;
+        var request = ChatRoomSummarizeServiceRequest.builder()
+            .chatRoomId(chatRoom.getId())
+            .teamId(team.getId())
+            .memberId(member.getId())
+            .text(text)
+            .isFinal(isFinal)
+            .build();
+
+        given(gptSummaryService.summaryToText(text, isFinal)).willReturn("Processed Summary");
+
+        // when
+        chatRoomService.summarizeChatroom(request);
+
+        // then
+        verify(gptSummaryService).summaryToText(text, isFinal);
     }
 
     private Member createMember(String email, String nickname) {
