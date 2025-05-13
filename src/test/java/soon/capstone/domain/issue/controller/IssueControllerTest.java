@@ -8,6 +8,7 @@ import soon.capstone.domain.issue.controller.dto.IssueClosedRequest;
 import soon.capstone.domain.issue.controller.dto.IssueCreateRequest;
 import soon.capstone.domain.issue.controller.dto.IssueUpdateRequest;
 import soon.capstone.domain.issue.service.dto.response.IssueDetailResponse;
+import soon.capstone.domain.issue.service.dto.response.IssueDetailWrapperResponse;
 import soon.capstone.domain.issue.service.dto.response.IssueLabelDetailResponse;
 import soon.capstone.global.anootation.TestMember;
 
@@ -190,13 +191,16 @@ class IssueControllerTest extends ControllerTestSupport {
             createIssueLabelDetailResponse(2L)
         );
 
-        var response = IssueDetailResponse.builder()
-            .issueId(1L)
-            .title("title")
-            .content("content")
-            .creator("creator")
-            .status("open")
-            .labels(labelResponse)
+        var response = IssueDetailWrapperResponse.builder()
+            .issueDetail(IssueDetailResponse.builder()
+                .issueId(1L)
+                .title("title")
+                .content("content")
+                .creator("creator")
+                .status("open")
+                .labels(labelResponse)
+                .build())
+            .teamMemberId(1L)
             .build();
 
         given(issueManagementService.getIssueDetail(any()))
@@ -209,14 +213,14 @@ class IssueControllerTest extends ControllerTestSupport {
             )
             .andDo(print())
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.issueId").value(1L))
-            .andExpect(jsonPath("$.title").value("title"))
-            .andExpect(jsonPath("$.content").value("content"))
-            .andExpect(jsonPath("$.creator").value("creator"))
-            .andExpect(jsonPath("$.status").value("open"))
-            .andExpect(jsonPath("$.labels").isArray())
-            .andExpect(jsonPath("$.labels[0].labelId").value(1L))
-            .andExpect(jsonPath("$.labels[1].labelId").value(2L));
+            .andExpect(jsonPath("$.issueDetail.issueId").value(1L))
+            .andExpect(jsonPath("$.issueDetail.title").value("title"))
+            .andExpect(jsonPath("$.issueDetail.content").value("content"))
+            .andExpect(jsonPath("$.issueDetail.creator").value("creator"))
+            .andExpect(jsonPath("$.issueDetail.status").value("open"))
+            .andExpect(jsonPath("$.issueDetail.labels").isArray())
+            .andExpect(jsonPath("$.issueDetail.labels[0].labelId").value(1L))
+            .andExpect(jsonPath("$.issueDetail.labels[1].labelId").value(2L));
     }
 
     @TestMember

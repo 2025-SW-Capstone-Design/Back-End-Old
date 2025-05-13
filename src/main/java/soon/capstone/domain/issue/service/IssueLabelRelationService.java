@@ -11,6 +11,7 @@ import soon.capstone.domain.issue.repository.issueLabelRelation.IssueLabelRelati
 import soon.capstone.domain.issue.repository.issuelabel.IssueLabelRepository;
 import soon.capstone.domain.issue.service.dto.response.IssueLabelDetailResponse;
 import soon.capstone.domain.project.entity.Project;
+import soon.capstone.domain.team.entity.Team;
 import soon.capstone.infrastructure.github.service.dto.GithubIssueLabelAppendServiceRequest;
 import soon.capstone.infrastructure.github.service.issue.GithubIssueLabelService;
 
@@ -55,12 +56,12 @@ public class IssueLabelRelationService {
     }
 
     @Transactional
-    public void updateIssueRelation(Issue issue, List<String> labels) {
+    public void updateIssueRelation(Issue issue, List<String> labels, Project project) {
         List<IssueLabelRelation> existingRelations = issueLabelRelationRepository.findAllByIssue(issue);
-        Map<String, IssueLabel> issueLabelMap = getIssueLabelMap(labels);
+        Map<String, IssueLabel> issueLabelMap = getIssueLabelMap(labels, project);
 
         List<IssueLabelRelation> relationsToRemove = getRelationsToRemove(existingRelations, issueLabelMap);
-        List<IssueLabelRelation> relationsToAdd = getRelationsToAdd(issue, issueLabelMap);
+        List<IssueLabelRelation> relationsToAdd = getRelationsToAdd(issue, issueLabelMap, existingRelations);
 
         if (!relationsToRemove.isEmpty()) {
             issueLabelRelationRepository.deleteAllInBatch(relationsToRemove);
@@ -88,8 +89,8 @@ public class IssueLabelRelationService {
         githubIssueLabelService.appendLabelToIssue(githubRequest);
     }
 
-    private Map<String, IssueLabel> getIssueLabelMap(List<String> labels) {
-        List<IssueLabel> issueLabels = issueLabelRepository.findAllByTitleIn(labels);
+    private Map<String, IssueLabel> getIssueLabelMap(List<String> labels, Project project) {
+        List<IssueLabel> issueLabels = issueLabelRepository.findAllByTitleInAndProject(labels, project);
         return issueLabels.stream()
             .collect(Collectors
                 .toMap(IssueLabel::getTitle, label -> label)
@@ -106,10 +107,8 @@ public class IssueLabelRelationService {
             String currentLabel = relation.getIssueLabel().getTitle();
             if (!issueLabelMap.containsKey(currentLabel)) {
                 relationsToRemove.add(relation);
-            } else {
-                relation.updateIssueLabel(issueLabelMap.get(currentLabel));
-                issueLabelMap.remove(currentLabel);
             }
+
         }
 
         return relationsToRemove;
@@ -117,11 +116,18 @@ public class IssueLabelRelationService {
 
     private List<IssueLabelRelation> getRelationsToAdd(
         Issue issue,
-        Map<String, IssueLabel> issueLabelMap
+        Map<String, IssueLabel> issueLabelMap,
+        List<IssueLabelRelation> existingRelations
     ) {
-        return issueLabelMap.values().stream()
-            .map(label -> IssueLabelRelation.createMapping(issue, label))
-            .toList();
+        List<IssueLabelRelation> relationsToAdd = new ArrayList<>();
+        for (IssueLabel label : issueLabelMap.values()) {
+            boolean alreadyExists = existingRelations.stream()
+                .anyMatch(relation -> relation.getIssueLabel().equals(label));
+            if (!alreadyExists) {
+                relationsToAdd.add(IssueLabelRelation.createMapping(issue, label));
+            }
+        }
+        return relationsToAdd;
     }
 
 }
