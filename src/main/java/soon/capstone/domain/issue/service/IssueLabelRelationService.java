@@ -11,6 +11,7 @@ import soon.capstone.domain.issue.repository.issueLabelRelation.IssueLabelRelati
 import soon.capstone.domain.issue.repository.issuelabel.IssueLabelRepository;
 import soon.capstone.domain.issue.service.dto.response.IssueLabelDetailResponse;
 import soon.capstone.domain.project.entity.Project;
+import soon.capstone.domain.team.entity.Team;
 import soon.capstone.infrastructure.github.service.dto.GithubIssueLabelAppendServiceRequest;
 import soon.capstone.infrastructure.github.service.issue.GithubIssueLabelService;
 
@@ -55,9 +56,9 @@ public class IssueLabelRelationService {
     }
 
     @Transactional
-    public void updateIssueRelation(Issue issue, List<String> labels) {
+    public void updateIssueRelation(Issue issue, List<String> labels, Team team) {
         List<IssueLabelRelation> existingRelations = issueLabelRelationRepository.findAllByIssue(issue);
-        Map<String, IssueLabel> issueLabelMap = getIssueLabelMap(labels);
+        Map<String, IssueLabel> issueLabelMap = getIssueLabelMap(labels, team);
 
         List<IssueLabelRelation> relationsToRemove = getRelationsToRemove(existingRelations, issueLabelMap);
         List<IssueLabelRelation> relationsToAdd = getRelationsToAdd(issue, issueLabelMap);
@@ -88,8 +89,8 @@ public class IssueLabelRelationService {
         githubIssueLabelService.appendLabelToIssue(githubRequest);
     }
 
-    private Map<String, IssueLabel> getIssueLabelMap(List<String> labels) {
-        List<IssueLabel> issueLabels = issueLabelRepository.findAllByTitleIn(labels);
+    private Map<String, IssueLabel> getIssueLabelMap(List<String> labels, Team team) {
+        List<IssueLabel> issueLabels = issueLabelRepository.findAllByTitleIn(labels, team);
         return issueLabels.stream()
             .collect(Collectors
                 .toMap(IssueLabel::getTitle, label -> label)
