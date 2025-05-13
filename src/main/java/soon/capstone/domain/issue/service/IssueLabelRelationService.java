@@ -61,7 +61,7 @@ public class IssueLabelRelationService {
         Map<String, IssueLabel> issueLabelMap = getIssueLabelMap(labels, project);
 
         List<IssueLabelRelation> relationsToRemove = getRelationsToRemove(existingRelations, issueLabelMap);
-        List<IssueLabelRelation> relationsToAdd = getRelationsToAdd(issue, issueLabelMap);
+        List<IssueLabelRelation> relationsToAdd = getRelationsToAdd(issue, issueLabelMap, existingRelations);
 
         if (!relationsToRemove.isEmpty()) {
             issueLabelRelationRepository.deleteAllInBatch(relationsToRemove);
@@ -108,6 +108,7 @@ public class IssueLabelRelationService {
             if (!issueLabelMap.containsKey(currentLabel)) {
                 relationsToRemove.add(relation);
             }
+
         }
 
         return relationsToRemove;
@@ -115,11 +116,18 @@ public class IssueLabelRelationService {
 
     private List<IssueLabelRelation> getRelationsToAdd(
         Issue issue,
-        Map<String, IssueLabel> issueLabelMap
+        Map<String, IssueLabel> issueLabelMap,
+        List<IssueLabelRelation> existingRelations
     ) {
-        return issueLabelMap.values().stream()
-            .map(label -> IssueLabelRelation.createMapping(issue, label))
-            .toList();
+        List<IssueLabelRelation> relationsToAdd = new ArrayList<>();
+        for (IssueLabel label : issueLabelMap.values()) {
+            boolean alreadyExists = existingRelations.stream()
+                .anyMatch(relation -> relation.getIssueLabel().equals(label));
+            if (!alreadyExists) {
+                relationsToAdd.add(IssueLabelRelation.createMapping(issue, label));
+            }
+        }
+        return relationsToAdd;
     }
 
 }
