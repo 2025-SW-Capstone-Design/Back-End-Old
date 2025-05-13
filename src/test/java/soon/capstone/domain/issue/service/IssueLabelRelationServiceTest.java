@@ -187,7 +187,7 @@ class IssueLabelRelationServiceTest extends IntegrationTestSupport {
         issueLabelRelationRepository.save(relation);
 
         // when
-        issueLabelRelationService.updateIssueRelation(issue, List.of("label2", "label3"));
+        issueLabelRelationService.updateIssueRelation(issue, List.of("label2", "label3"), project);
 
         // then
         List<IssueLabelRelation> relations = issueLabelRelationRepository.findAllByIssue(issue);
