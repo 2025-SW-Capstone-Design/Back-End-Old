@@ -36,16 +36,17 @@ public class OpenViduController {
     @PostMapping(value = "/webhook", consumes = "application/webhook+json")
     public ResponseEntity<Long> receiveWebhook(
         HttpServletRequest servletRequest,
-        @Valid @RequestBody OpenViduWebhookEventRequest request,
+//        @Valid @RequestBody OpenViduWebhookEventRequest request,
         @RequestHeader(value = "Authorization") String openViduToken
     ) throws IOException {
         ContentCachingRequestWrapper wrapper = new ContentCachingRequestWrapper(servletRequest);
         wrapper.getInputStream().readAllBytes();
         String requestBody = new String(wrapper.getContentAsByteArray());
         log.info("requestBody: {}", requestBody);
+        log.info("openViduToken: {}", openViduToken);
 
-        Long chatRoomId = openViduApiService.handleWebhookEvent(request.toServiceRequest(openViduToken));
-        return ResponseEntity.ok(chatRoomId);
+//        Long chatRoomId = openViduApiService.handleWebhookEvent(request.toServiceRequest(openViduToken));
+        return ResponseEntity.ok(1L);
     }
 
 }
