@@ -56,9 +56,9 @@ public class IssueLabelRelationService {
     }
 
     @Transactional
-    public void updateIssueRelation(Issue issue, List<String> labels, Team team) {
+    public void updateIssueRelation(Issue issue, List<String> labels, Project project) {
         List<IssueLabelRelation> existingRelations = issueLabelRelationRepository.findAllByIssue(issue);
-        Map<String, IssueLabel> issueLabelMap = getIssueLabelMap(labels, team);
+        Map<String, IssueLabel> issueLabelMap = getIssueLabelMap(labels, project);
 
         List<IssueLabelRelation> relationsToRemove = getRelationsToRemove(existingRelations, issueLabelMap);
         List<IssueLabelRelation> relationsToAdd = getRelationsToAdd(issue, issueLabelMap);
@@ -89,8 +89,8 @@ public class IssueLabelRelationService {
         githubIssueLabelService.appendLabelToIssue(githubRequest);
     }
 
-    private Map<String, IssueLabel> getIssueLabelMap(List<String> labels, Team team) {
-        List<IssueLabel> issueLabels = issueLabelRepository.findAllByTitleIn(labels, team);
+    private Map<String, IssueLabel> getIssueLabelMap(List<String> labels, Project project) {
+        List<IssueLabel> issueLabels = issueLabelRepository.findAllByTitleInAndProject(labels, project);
         return issueLabels.stream()
             .collect(Collectors
                 .toMap(IssueLabel::getTitle, label -> label)

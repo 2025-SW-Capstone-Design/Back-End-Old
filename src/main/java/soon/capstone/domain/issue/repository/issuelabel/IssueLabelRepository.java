@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import soon.capstone.domain.issue.entity.IssueLabel;
 import soon.capstone.domain.project.entity.Project;
-import soon.capstone.domain.team.entity.Team;
 import soon.capstone.global.exception.issue.label.IssueLabelNotFoundException;
 
 import java.util.List;
@@ -37,8 +36,8 @@ public class IssueLabelRepository {
             .orElseThrow(IssueLabelNotFoundException::new);
     }
 
-    public List<IssueLabel> findAllByTitleIn(List<String> titles, Team team) {
-        return issueLabelJpaRepository.findAllByTitleInAndTeam(titles, team);
+    public List<IssueLabel> findAllByTitleInAndProject(List<String> titles, Project project) {
+        return issueLabelJpaRepository.findAllByTitleInAndProject(titles, project);
     }
 
     public boolean existsByTitleAndProject(String title, Project project) {

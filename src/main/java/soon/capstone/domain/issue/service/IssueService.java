@@ -109,7 +109,7 @@ public class IssueService {
         );
 
         issue.updateIssue(title, content, state, milestone, teamMember);
-        issueLabelRelationService.updateIssueRelation(issue, labels, teamMember.getTeam());
+        issueLabelRelationService.updateIssueRelation(issue, labels, milestone.getProject());
     }
 
     @Caching(evict = {
