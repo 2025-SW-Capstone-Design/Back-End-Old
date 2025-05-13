@@ -106,9 +106,6 @@ public class IssueLabelRelationService {
             String currentLabel = relation.getIssueLabel().getTitle();
             if (!issueLabelMap.containsKey(currentLabel)) {
                 relationsToRemove.add(relation);
-            } else {
-                relation.updateIssueLabel(issueLabelMap.get(currentLabel));
-                issueLabelMap.remove(currentLabel);
             }
         }
 
