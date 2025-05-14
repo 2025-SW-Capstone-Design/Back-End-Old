@@ -40,13 +40,14 @@ public class OpenViduApiService {
     public OpenViduGenerateTokenResponse generateOpenViduToken(OpenViduGenerateTokenServiceRequest request) {
         AccessToken token = new AccessToken(apiKey, apiSecret);
         token.setName(request.roomName());
-        token.setIdentity(String.valueOf(request.memberId()));
+        token.setIdentity(request.memberId() + ":" + request.teamId());
         token.addGrants(new RoomJoin(true), new RoomName(request.roomName()));
 
         return OpenViduGenerateTokenResponse.builder()
             .token(token.toJwt())
             .roomName(request.roomName())
             .memberId(request.memberId())
+            .teamId(request.teamId())
             .build();
     }
 

@@ -6,13 +6,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import soon.capstone.IntegrationTestSupport;
 import soon.capstone.global.exception.common.InvalidRequest;
 import soon.capstone.infrastructure.openvidu.handler.ParticipantJoinedEventHandler;
 import soon.capstone.infrastructure.openvidu.service.dto.request.OpenViduGenerateTokenServiceRequest;
 import soon.capstone.infrastructure.openvidu.service.dto.request.OpenViduWebhookEventServiceRequest;
-import soon.capstone.infrastructure.openvidu.service.dto.response.OpenViduGenerateTokenResponse;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -24,9 +22,6 @@ class OpenViduApiServiceTest extends IntegrationTestSupport {
 
     @Autowired
     private OpenViduApiService openViduApiService;
-
-    @MockitoSpyBean
-    private OpenViduApiService spyOpenViduApiService;
 
     @MockitoBean
     private ParticipantJoinedEventHandler participantJoinedEventHandler;
@@ -40,23 +35,21 @@ class OpenViduApiServiceTest extends IntegrationTestSupport {
         // given
         var request = OpenViduGenerateTokenServiceRequest.builder()
             .roomName("roomName")
+            .teamId(1L)
             .memberId(1L)
             .build();
 
-        given(spyOpenViduApiService.generateOpenViduToken(request))
-            .willReturn(OpenViduGenerateTokenResponse.builder()
-                .token("jwt")
-                .roomName("roomName")
-                .memberId(1L)
-                .build());
-
         // when
-        var response = spyOpenViduApiService.generateOpenViduToken(request);
+        var response = openViduApiService.generateOpenViduToken(request);
 
         // then
-        assertThat(response).isNotNull()
-            .extracting("token", "roomName", "memberId")
-            .containsExactlyInAnyOrder("jwt", "roomName", 1L);
+        assertThat(response)
+            .isNotNull()
+            .extracting("roomName", "memberId", "teamId")
+            .containsExactlyInAnyOrder("roomName", 1L, 1L);
+
+        assertThat(response.token())
+            .isNotNull();
     }
 
     @DisplayName("방 참여 이벤트를 처리한다.")
