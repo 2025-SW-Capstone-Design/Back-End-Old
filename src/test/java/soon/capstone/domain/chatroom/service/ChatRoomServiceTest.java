@@ -20,10 +20,12 @@ import soon.capstone.domain.team.entity.Team;
 import soon.capstone.domain.team.repository.TeamRepository;
 import soon.capstone.domain.teammember.entity.TeamMember;
 import soon.capstone.domain.teammember.repository.TeamMemberRepository;
+import soon.capstone.global.exception.chatroom.ChatRoomAlreadyExistsForTeamException;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 
 class ChatRoomServiceTest extends IntegrationTestSupport {
@@ -55,9 +57,9 @@ class ChatRoomServiceTest extends IntegrationTestSupport {
         memberRepository.deleteAllInBatch();
     }
 
-    @DisplayName("채팅방을 생성한다")
+    @DisplayName("채팅방 생성 요청 시 동일한 SID로 이미 존재하는 경우 예외가 발생한다")
     @Test
-    void createChatRoom() {
+    void createRoomThrowsExceptionWhenChatRoomAlreadyExists() {
         // given
         Member member = createMember("email", "nickname");
         memberRepository.save(member);
@@ -68,19 +70,19 @@ class ChatRoomServiceTest extends IntegrationTestSupport {
         TeamMember leader = TeamMember.createLeader(member, team);
         teamMemberRepository.save(leader);
 
+        ChatRoom existingChatRoom = createChatRoom(team);
+        chatRoomRepository.save(existingChatRoom);
+
         var request = createChatRoomCreateServiceRequest(team, member);
 
-        // when
-        Long savedChatRoomId = chatRoomService.createRoom(request);
-
-        // then
-        ChatRoom chatRoom = chatRoomRepository.findById(savedChatRoomId);
-        assertThat(chatRoom).isNotNull();
+        // expected
+        assertThatThrownBy(() -> chatRoomService.createRoom(request))
+            .isInstanceOf(ChatRoomAlreadyExistsForTeamException.class);
     }
 
-    @DisplayName("채팅방 생성을 요청한 멤버는 생성된 채팅방에 추가된다.")
+    @DisplayName("채팅방 생성 요청 시 요청한 멤버가 채팅방에 추가된다")
     @Test
-    void createChatRoomWithAddedRequestMember() {
+    void createRoomAddsRequestingMemberToChatRoom() {
         // given
         Member member = createMember("email", "nickname");
         memberRepository.save(member);
@@ -94,10 +96,11 @@ class ChatRoomServiceTest extends IntegrationTestSupport {
         var request = createChatRoomCreateServiceRequest(team, member);
 
         // when
-        Long savedChatRoomId = chatRoomService.createRoom(request);
+        chatRoomService.createRoom(request);
 
         // then
-        ChatRoomTeamMember chatRoomTeamMember = chatRoomTeamMemberRepository.findByChatRoomIdAndTeamMemberId(savedChatRoomId, leader.getId());
+        ChatRoom chatRoom = chatRoomRepository.findBySid(request.sid());
+        ChatRoomTeamMember chatRoomTeamMember = chatRoomTeamMemberRepository.findByChatRoomIdAndTeamMemberId(chatRoom.getId(), leader.getId());
         assertThat(chatRoomTeamMember).isNotNull();
     }
 

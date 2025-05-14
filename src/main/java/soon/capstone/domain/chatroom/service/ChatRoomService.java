@@ -10,6 +10,7 @@ import soon.capstone.domain.chatroom.service.dto.response.ChatRoomDetailsRespons
 import soon.capstone.domain.team.entity.Team;
 import soon.capstone.domain.team.repository.TeamRepository;
 import soon.capstone.domain.teammember.service.TeamMemberValidator;
+import soon.capstone.global.exception.chatroom.ChatRoomAlreadyExistsForTeamException;
 
 import java.util.List;
 
@@ -22,16 +23,18 @@ public class ChatRoomService {
     private final TeamRepository teamRepository;
     private final TeamMemberValidator teamMemberValidator;
 
-    public Long createRoom(ChatRoomCreateServiceRequest request) {
+    public void createRoom(ChatRoomCreateServiceRequest request) {
         teamMemberValidator.validateTeamMember(request.teamId(), request.memberId());
+
+        if (chatRoomRepository.existsByTeamIdAndSid(request.teamId(), request.sid())) {
+            throw new ChatRoomAlreadyExistsForTeamException();
+        }
 
         Team team = teamRepository.findById(request.teamId());
         ChatRoom chatRoom = ChatRoom.create(request.title(), team, request.sid());
-        Long savedChatRoomId = chatRoomRepository.save(chatRoom);
+        chatRoomRepository.save(chatRoom);
 
         addMemberToChatRoom(request, chatRoom, team);
-
-        return savedChatRoomId;
     }
 
     @Transactional
