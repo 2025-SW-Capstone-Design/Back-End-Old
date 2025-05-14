@@ -11,7 +11,7 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
-import soon.capstone.domain.issue.controller.dto.IssueClosedRequest;
+import soon.capstone.domain.issue.controller.dto.IssueUpdateStatusRequest;
 import soon.capstone.domain.issue.controller.dto.IssueCreateRequest;
 import soon.capstone.domain.issue.controller.dto.IssueUpdateRequest;
 import soon.capstone.domain.issue.service.dto.response.IssueDetailResponse;
@@ -135,8 +135,8 @@ public interface IssueControllerDocs {
         TEAM_NOT_AUTHORIZED,
         GITHUB_HTTP_CLIENT_ERROR
     })
-    ResponseEntity<Void> closedIssue(
-        IssueClosedRequest request,
+    ResponseEntity<Void> updateIssueStatus(
+        IssueUpdateStatusRequest request,
         Long memberId,
         Long teamId,
         Long issueId

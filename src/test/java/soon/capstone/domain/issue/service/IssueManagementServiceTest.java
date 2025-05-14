@@ -750,16 +750,17 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
         Issue issue = createIssue(project, teamMember, milestone);
         issueRepository.save(issue);
 
-        var request = IssueClosedServiceRequest.builder()
+        var request = IssueUpdateStatusServiceRequest.builder()
             .memberId(member.getId())
             .teamId(team.getId())
             .issueId(issue.getId())
             .organizationName("organizationName")
             .repositoryName("repositoryName")
+            .status("CLOSED")
             .build();
 
         // when
-        issueManagementService.closedIssue(request);
+        issueManagementService.updateIssueStatus(request);
 
         // then
         verify(issueService).closedIssue(
