@@ -14,16 +14,12 @@ public final class OpenViduWebhookEventMapper {
         return ChatRoomCreateServiceRequest.builder()
             .sid(event.getRoom().getSid())
             .title(event.getRoom().getName())
-            .reservedAt(request.reservedAt())
-            .teamId(request.teamId())
             .build();
     }
 
     public static ChatRoomFinishServiceRequest toChatRoomFinishServiceRequest(WebhookEvent event, OpenViduWebhookEventServiceRequest request) {
         return ChatRoomFinishServiceRequest.builder()
             .sid(event.getRoom().getSid())
-            .teamId(request.teamId())
-            .memberId(request.memberId())
             .build();
     }
 

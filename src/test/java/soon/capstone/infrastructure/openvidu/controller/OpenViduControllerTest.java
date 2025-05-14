@@ -36,7 +36,7 @@ class OpenViduControllerTest extends ControllerTestSupport {
             .memberId(1L)
             .build();
 
-        given(openViduApiService.generateOpenViduToken(request.toServiceRequest(1L)))
+        given(openViduApiService.generateOpenViduToken(request.toServiceRequest(1L, 1L)))
             .willReturn(response);
 
         // expected
@@ -62,8 +62,6 @@ class OpenViduControllerTest extends ControllerTestSupport {
                 .put("room", "testRoom")
                 .put("participantIdentity", "testParticipant")
             )
-            .teamId(1L)
-            .reservedAt(LocalDateTime.now().plusDays(1L))
             .build();
         String openViduToken = "testToken";
 

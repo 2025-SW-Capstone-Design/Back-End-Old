@@ -50,6 +50,7 @@ class OpenViduApiServiceTest extends IntegrationTestSupport {
                 .token("jwt")
                 .roomName("roomName")
                 .memberId(1L)
+                .teamId(1L)
                 .build());
 
         // when
@@ -57,8 +58,8 @@ class OpenViduApiServiceTest extends IntegrationTestSupport {
 
         // then
         assertThat(response).isNotNull()
-            .extracting("token", "roomName", "memberId")
-            .containsExactlyInAnyOrder("jwt", "roomName", 1L);
+            .extracting("token", "roomName", "memberId", "teamId")
+            .containsExactlyInAnyOrder("jwt", "roomName", 1L, 1L);
     }
 
     @DisplayName("방 생성 이벤트를 처리한다.")
@@ -103,10 +104,7 @@ class OpenViduApiServiceTest extends IntegrationTestSupport {
     private OpenViduWebhookEventServiceRequest createOpenViduWebhookEventServiceRequest(String body) {
         return OpenViduWebhookEventServiceRequest.builder()
             .body(body)
-            .reservedAt(LocalDateTime.now())
-            .openViduToken("openViduToken")
-            .memberId(1L)
-            .teamId(1L)
+            .openViduToken("eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIyIiwiQXV0aG9yaXphdGlvbiI6IlJPTEVfVVNFUiIsImV4cCI6MTc0NzE2ODkyMywiaWF0IjoxNzQ3MTUwOTIzfQ.VSGAcIR4UT1umEB6tFCfx9JxE1-gPXblDWMrJGSSPsi1iCQWV_U-kvtC0NU3pOcAZ4-HB5UU04LYfSBcQXWanA")
             .build();
     }
 
