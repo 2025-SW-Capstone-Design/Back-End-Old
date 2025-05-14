@@ -53,8 +53,9 @@ public class OpenViduApiService {
 
     public void handleWebhookEvent(OpenViduWebhookEventServiceRequest request) {
         try {
+            log.info("웹훅 요청 수신 - body: {}", request.body());
             WebhookEvent event = webhookReceiver.receive(request.body(), request.openViduToken());
-            log.info("event: {}", event.getParticipant());
+            log.info("event: {}", event);
             String identity = event.getParticipant().getIdentity();
             String[] split = identity.split(":");
             Long memberId = Long.parseLong(split[0]);
