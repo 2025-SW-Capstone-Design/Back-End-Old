@@ -39,7 +39,7 @@ public class OpenViduController {
         @RequestBody JsonNode body,
         @RequestHeader(value = "Authorization") String openViduToken
     ) throws IOException {
-        log.info("eventType: {}, roomName: {}", body.get("eventType").asText(), body.get("roomName").asText());
+        log.info("body: {}", body);
         Long chatRoomId = openViduApiService.handleWebhookEvent(OpenViduWebhookEventRequest.toServiceRequest(body, openViduToken));
         return ResponseEntity.ok(chatRoomId);
     }
