@@ -9,8 +9,6 @@ import soon.capstone.domain.team.entity.Team;
 import soon.capstone.global.common.BaseTimeEntity;
 import soon.capstone.global.exception.common.InvalidRequest;
 
-import java.time.LocalDateTime;
-
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Table(name = "chat_rooms")
@@ -28,9 +26,6 @@ public class ChatRoom extends BaseTimeEntity {
     @Column(nullable = false)
     private boolean active;
 
-    @Column(name = "reserved_at", nullable = true)
-    private LocalDateTime reservedAt;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "team_id")
     private Team team;
@@ -39,21 +34,17 @@ public class ChatRoom extends BaseTimeEntity {
     private String sid; // OpenVidu에서 생성된 방의 고유 SID
 
     @Builder
-    private ChatRoom(String title, boolean active, LocalDateTime reservedAt, Team team, String sid) {
+    private ChatRoom(String title, boolean active, Team team, String sid) {
         this.title = title;
         this.active = active;
-        this.reservedAt = reservedAt;
         this.team = team;
         this.sid = sid;
     }
 
-    public static ChatRoom create(String title, LocalDateTime reservedAt, Team team, String sid) {
-        validateReservationTime(reservedAt);
-
+    public static ChatRoom create(String title, Team team, String sid) {
         return ChatRoom.builder()
             .title(title)
             .active(true)
-            .reservedAt(reservedAt)
             .team(team)
             .sid(sid)
             .build();
@@ -67,28 +58,12 @@ public class ChatRoom extends BaseTimeEntity {
         this.title = title;
     }
 
-    public void updateReservationTime(LocalDateTime newReservedAt) {
-        validateReservationTime(newReservedAt);
-
-        this.reservedAt = newReservedAt;
-    }
-
     public void finish() {
         this.active = false;
     }
 
     public void resume() {
         this.active = true;
-    }
-
-    private static void validateReservationTime(LocalDateTime reservedAt) {
-        if (reservedAt == null) {
-            throw new InvalidRequest("reservedAt", "예약 시간이 설정되어 있지 않습니다.");
-        }
-
-        if (reservedAt.isBefore(LocalDateTime.now())) {
-            throw new InvalidRequest("reservedAt", "예약 시간은 현재 시간보다 미래여야 합니다.");
-        }
     }
 
 }

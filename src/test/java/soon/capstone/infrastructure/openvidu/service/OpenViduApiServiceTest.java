@@ -14,8 +14,6 @@ import soon.capstone.infrastructure.openvidu.service.dto.request.OpenViduGenerat
 import soon.capstone.infrastructure.openvidu.service.dto.request.OpenViduWebhookEventServiceRequest;
 import soon.capstone.infrastructure.openvidu.service.dto.response.OpenViduGenerateTokenResponse;
 
-import java.time.LocalDateTime;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
@@ -103,7 +101,6 @@ class OpenViduApiServiceTest extends IntegrationTestSupport {
     private OpenViduWebhookEventServiceRequest createOpenViduWebhookEventServiceRequest(String body) {
         return OpenViduWebhookEventServiceRequest.builder()
             .body(body)
-            .reservedAt(LocalDateTime.now())
             .openViduToken("openViduToken")
             .memberId(1L)
             .teamId(1L)

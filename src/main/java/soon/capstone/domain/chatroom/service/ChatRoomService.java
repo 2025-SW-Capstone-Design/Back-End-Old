@@ -26,7 +26,7 @@ public class ChatRoomService {
         teamMemberValidator.validateTeamMember(request.teamId(), request.memberId());
 
         Team team = teamRepository.findById(request.teamId());
-        ChatRoom chatRoom = ChatRoom.create(request.title(), request.reservedAt(), team, request.sid());
+        ChatRoom chatRoom = ChatRoom.create(request.title(), team, request.sid());
         Long savedChatRoomId = chatRoomRepository.save(chatRoom);
 
         addMemberToChatRoom(request, chatRoom, team);
