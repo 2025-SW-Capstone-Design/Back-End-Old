@@ -9,7 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import soon.capstone.global.exception.common.InvalidRequest;
-import soon.capstone.global.security.jwt.util.JwtUtil;
 import soon.capstone.infrastructure.openvidu.handler.OpenViduWebhookEventHandler;
 import soon.capstone.infrastructure.openvidu.service.dto.request.OpenViduGenerateTokenServiceRequest;
 import soon.capstone.infrastructure.openvidu.service.dto.request.OpenViduWebhookEventServiceRequest;
@@ -53,13 +52,14 @@ public class OpenViduApiService {
     }
 
     public Long handleWebhookEvent(OpenViduWebhookEventServiceRequest request) {
-        String identity = JwtUtil.extractIdentity(request.openViduToken(), apiSecret);
-        String[] parts = identity.split(":");
-        Long memberId = Long.valueOf(parts[0]);
-        Long teamId = Long.valueOf(parts[1]);
+//        String identity = JwtUtil.extractIdentity(request.openViduToken(), apiSecret);
+//        String[] parts = identity.split(":");
+//        Long memberId = Long.valueOf(parts[0]);
+//        Long teamId = Long.valueOf(parts[1]);
+        log.info("openViduToken: {}", request.openViduToken());
 
         try {
-            log.info("웹훅 요청 처리 시작 - body{} memberId: {}, openViduToken: {}, teamId: {}", request.body(), memberId, request.openViduToken(), teamId);
+            log.info("웹훅 요청 처리 시작 - body{} memberId: {}, openViduToken: {}, teamId: {}", request.body(), 2, request.openViduToken(), 1);
 
             WebhookEvent event = webhookReceiver.receive(request.body(), request.openViduToken());
 
@@ -67,15 +67,15 @@ public class OpenViduApiService {
                 .filter(handler -> handler.support(event.getEvent()))
                 .findFirst()
                 .map(handler -> {
-                    log.info("이벤트 처리 중 - memberId: {}, event: {}", memberId, event.getEvent());
+                    log.info("이벤트 처리 중 - memberId: {}, event: {}", 2, event.getEvent());
                     return handler.handle(event, request);
                 })
                 .orElseThrow(() -> {
-                    log.error("지원하지 않는 이벤트 타입 - memberId: {}, event: {}", memberId, event.getEvent());
+                    log.error("지원하지 않는 이벤트 타입 - memberId: {}, event: {}", 2, event.getEvent());
                     return new InvalidRequest();
                 });
         } catch (Exception e) {
-            log.error("웹훅 이벤트 처리 중 오류 발생 - memberId: {}, 오류: {}", memberId, e.getMessage());
+            log.error("웹훅 이벤트 처리 중 오류 발생 - memberId: {}, 오류: {}", 2, e.getMessage());
             throw new InvalidRequest();
         }
     }
