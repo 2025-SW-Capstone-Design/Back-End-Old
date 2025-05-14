@@ -32,14 +32,15 @@ class OpenViduControllerTest extends ControllerTestSupport {
             .token("testToken")
             .roomName("testRoom")
             .memberId(1L)
+            .teamId(1L)
             .build();
 
-        given(openViduApiService.generateOpenViduToken(request.toServiceRequest(1L)))
+        given(openViduApiService.generateOpenViduToken(request.toServiceRequest(1L, 1L)))
             .willReturn(response);
 
         // expected
         mockMvc.perform(
-                post(BASE_URL + "/token")
+                post(BASE_URL + "/{teamId}/token", 1L)
                     .content(objectMapper.writeValueAsString(request))
                     .contentType(MediaType.APPLICATION_JSON)
             )
@@ -47,7 +48,8 @@ class OpenViduControllerTest extends ControllerTestSupport {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.token").value("testToken"))
             .andExpect(jsonPath("$.roomName").value("testRoom"))
-            .andExpect(jsonPath("$.memberId").value(1L));
+            .andExpect(jsonPath("$.memberId").value(1L))
+            .andExpect(jsonPath("$.teamId").value(1L));
     }
 
     @TestMember

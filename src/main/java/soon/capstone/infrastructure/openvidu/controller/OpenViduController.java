@@ -18,12 +18,13 @@ public class OpenViduController {
 
     private final OpenViduApiService openViduApiService;
 
-    @PostMapping("/token")
+    @PostMapping("/{teamId}/token")
     public ResponseEntity<OpenViduGenerateTokenResponse> createToken(
         @Valid @RequestBody OpenViduGenerateTokenRequest request,
-        @AuthMemberId Long memberId
+        @AuthMemberId Long memberId,
+        @PathVariable Long teamId
     ) {
-        OpenViduGenerateTokenResponse response = openViduApiService.generateOpenViduToken(request.toServiceRequest(memberId));
+        OpenViduGenerateTokenResponse response = openViduApiService.generateOpenViduToken(request.toServiceRequest(memberId, teamId));
         return ResponseEntity.ok(response);
     }
 
