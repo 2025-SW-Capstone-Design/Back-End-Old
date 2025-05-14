@@ -54,11 +54,19 @@ public class OpenViduApiService {
     public void handleWebhookEvent(OpenViduWebhookEventServiceRequest request) {
         try {
             WebhookEvent event = webhookReceiver.receive(request.body(), request.openViduToken());
+
             String identity = event.getParticipant().getIdentity();
             log.info("identity: {}", identity);
+
+            if (identity == null || identity.isBlank() || !identity.contains(":")) {
+                log.error("잘못된 identity 값: {}", identity);
+                throw new IllegalArgumentException("잘못된 identity 값이 전달되었습니다.");
+            }
+
             String[] split = identity.split(":");
             Long memberId = Long.parseLong(split[0]);
             Long teamId = Long.parseLong(split[1]);
+
 
             log.info("웹훅 요청 처리 시작 - body{} memberId: {}, openViduToken: {}, teamId: {}", request.body(), memberId, request.openViduToken(), teamId);
 
