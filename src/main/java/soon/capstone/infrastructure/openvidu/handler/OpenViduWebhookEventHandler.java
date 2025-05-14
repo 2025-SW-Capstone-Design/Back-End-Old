@@ -7,6 +7,6 @@ public interface OpenViduWebhookEventHandler {
 
     boolean support(String eventType);
 
-    Long handle(WebhookEvent event, OpenViduWebhookEventServiceRequest request);
+    void handle(WebhookEvent event, OpenViduWebhookEventServiceRequest request);
 
 }

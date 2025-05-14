@@ -21,11 +21,11 @@ public class RoomFinishedEventHandler implements OpenViduWebhookEventHandler {
     }
 
     @Override
-    public Long handle(LivekitWebhook.WebhookEvent event, OpenViduWebhookEventServiceRequest request) {
+    public void handle(LivekitWebhook.WebhookEvent event, OpenViduWebhookEventServiceRequest request) {
         log.info("회의 종료: {}", event.getRoom().getName());
 
         // TODO: 회의록 요약 요청
-        return chatRoomService.finishRoom(OpenViduWebhookEventMapper.toChatRoomFinishServiceRequest(event, request));
+        chatRoomService.finishRoom(OpenViduWebhookEventMapper.toChatRoomFinishServiceRequest(event, request));
     }
 
 }

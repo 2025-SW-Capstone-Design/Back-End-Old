@@ -21,11 +21,9 @@ public class RoomStartedEventHandler implements OpenViduWebhookEventHandler {
     }
 
     @Override
-    public Long handle(WebhookEvent event, OpenViduWebhookEventServiceRequest request) {
+    public void handle(WebhookEvent event, OpenViduWebhookEventServiceRequest request) {
         Long roomId = chatRoomService.createRoom(OpenViduWebhookEventMapper.toChatRoomServiceRequest(event, request));
         log.info("방 생성{}: {}", roomId, event.getRoom().getName());
-
-        return roomId;
     }
 
 }

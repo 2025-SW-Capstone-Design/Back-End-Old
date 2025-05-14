@@ -34,14 +34,12 @@ public class OpenViduController {
     }
 
     @PostMapping(value = "/webhook", consumes = "application/webhook+json")
-    public ResponseEntity<Long> receiveWebhook(
-//        @Valid @RequestBody OpenViduWebhookEventRequest request,
+    public ResponseEntity<Void> receiveWebhook(
         @RequestBody JsonNode body,
         @RequestHeader(value = "Authorization") String openViduToken
-    ) throws IOException {
-        log.info("body: {}", body);
-        Long chatRoomId = openViduApiService.handleWebhookEvent(OpenViduWebhookEventRequest.toServiceRequest(body, openViduToken));
-        return ResponseEntity.ok(chatRoomId);
+    ) {
+        openViduApiService.handleWebhookEvent(OpenViduWebhookEventRequest.toServiceRequest(body, openViduToken));
+        return ResponseEntity.ok().build();
     }
 
 }

@@ -15,10 +15,8 @@ public class ParticipantLeftEventHandler implements OpenViduWebhookEventHandler 
     }
 
     @Override
-    public Long handle(LivekitWebhook.WebhookEvent event, OpenViduWebhookEventServiceRequest request) {
+    public void handle(LivekitWebhook.WebhookEvent event, OpenViduWebhookEventServiceRequest request) {
         log.info("참가자 퇴장: {}, 채팅방: {}", event.getParticipant().getIdentity(), event.getRoom().getName());
-
-        return null;
     }
 
 }

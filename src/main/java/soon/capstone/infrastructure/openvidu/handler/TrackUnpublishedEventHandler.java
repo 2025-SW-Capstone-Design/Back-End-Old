@@ -17,15 +17,12 @@ public class TrackUnpublishedEventHandler implements OpenViduWebhookEventHandler
     }
 
     @Override
-    public Long handle(LivekitWebhook.WebhookEvent event, OpenViduWebhookEventServiceRequest request) {
+    public void handle(LivekitWebhook.WebhookEvent event, OpenViduWebhookEventServiceRequest request) {
         log.info("트랙이 중단되었습니다 - 방 이름: {}, 참가자: {}, 트랙 SID: {}",
             event.getRoom().getName(),
             event.getParticipant().getIdentity(),
             event.getTrack().getSid()
         );
-
-
-        return null;
     }
 
 }
