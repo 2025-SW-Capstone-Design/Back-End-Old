@@ -73,7 +73,7 @@ public class OpenViduApiService {
                     return new InvalidRequest();
                 });
         } catch (Exception e) {
-            log.error("웹훅 이벤트 처리 중 오류 발생 - 오류: {}", e.getMessage());
+            log.error("웹훅 이벤트 처리 중 오류 발생 - 오류: ", e);
             throw new InvalidRequest();
         }
     }
