@@ -6,7 +6,6 @@ import soon.capstone.ControllerTestSupport;
 import soon.capstone.domain.chatroom.service.dto.response.ChatRoomDetailsResponse;
 import soon.capstone.global.anootation.TestMember;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
@@ -74,7 +73,6 @@ class ChatRoomControllerTest extends ControllerTestSupport {
             .id(chatRoomId)
             .title("title")
             .active(true)
-            .reservedAt(LocalDateTime.now())
             .build();
     }
 

@@ -9,12 +9,10 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import soon.capstone.IntegrationTestSupport;
 import soon.capstone.global.exception.common.InvalidRequest;
-import soon.capstone.infrastructure.openvidu.handler.RoomStartedEventHandler;
+import soon.capstone.infrastructure.openvidu.handler.ParticipantJoinedEventHandler;
 import soon.capstone.infrastructure.openvidu.service.dto.request.OpenViduGenerateTokenServiceRequest;
 import soon.capstone.infrastructure.openvidu.service.dto.request.OpenViduWebhookEventServiceRequest;
 import soon.capstone.infrastructure.openvidu.service.dto.response.OpenViduGenerateTokenResponse;
-
-import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -31,7 +29,7 @@ class OpenViduApiServiceTest extends IntegrationTestSupport {
     private OpenViduApiService spyOpenViduApiService;
 
     @MockitoBean
-    private RoomStartedEventHandler roomStartedEventHandler;
+    private ParticipantJoinedEventHandler participantJoinedEventHandler;
 
     @MockitoBean
     private WebhookReceiver receiver;
@@ -61,26 +59,26 @@ class OpenViduApiServiceTest extends IntegrationTestSupport {
             .containsExactlyInAnyOrder("jwt", "roomName", 1L);
     }
 
-    @DisplayName("방 생성 이벤트를 처리한다.")
+    @DisplayName("방 참여 이벤트를 처리한다.")
     @Test
     void handleWebhookEvent() {
         // given
-        String body = "{\"event\":\"room_started\"}";
+        String body = "{\"event\":\"participant_joined\"}";
         OpenViduWebhookEventServiceRequest request = createOpenViduWebhookEventServiceRequest(body);
 
         WebhookEvent event = WebhookEvent.newBuilder()
-            .setEvent("room_started")
+            .setEvent("participant_joined")
             .build();
         given(receiver.receive(body, request.openViduToken())).willReturn(event);
-        given(roomStartedEventHandler.support("room_started")).willReturn(true);
-        given(roomStartedEventHandler.handle(event, request)).willReturn(123L);
+        given(participantJoinedEventHandler.support("participant_joined")).willReturn(true);
+        given(participantJoinedEventHandler.handle(event, request)).willReturn(123L);
 
         // when
         Long roomId = openViduApiService.handleWebhookEvent(request);
 
         // then
         assertThat(roomId).isNotNull().isEqualTo(123L);
-        verify(roomStartedEventHandler).handle(event, request);
+        verify(participantJoinedEventHandler).handle(event, request);
     }
 
     @DisplayName("지원되지 않는 이벤트를 처리 할 경우 예외가 발생한다.")
@@ -103,7 +101,6 @@ class OpenViduApiServiceTest extends IntegrationTestSupport {
     private OpenViduWebhookEventServiceRequest createOpenViduWebhookEventServiceRequest(String body) {
         return OpenViduWebhookEventServiceRequest.builder()
             .body(body)
-            .reservedAt(LocalDateTime.now())
             .openViduToken("openViduToken")
             .memberId(1L)
             .teamId(1L)

@@ -69,6 +69,7 @@ public enum ErrorDetail {
     // 채팅방 관련
     CHAT_ROOM_NOT_FOUND(404, "해당 채팅방을 찾을 수 없습니다."),
     CHAT_ROOM_TEAM_MEMBER_NOT_FOUND(404, "해당 채팅방에서 팀 멤버를 찾을 수 없습니다."),
+    CHAT_ROOM_ALREADY_EXISTS_FOR_TEAM(409, "해당 팀에 이미 존재하는 채팅방입니다."),
 
     ;
 

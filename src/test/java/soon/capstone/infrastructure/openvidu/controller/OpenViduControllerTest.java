@@ -9,8 +9,6 @@ import soon.capstone.infrastructure.openvidu.controller.dto.request.OpenViduGene
 import soon.capstone.infrastructure.openvidu.controller.dto.request.OpenViduWebhookEventRequest;
 import soon.capstone.infrastructure.openvidu.service.dto.response.OpenViduGenerateTokenResponse;
 
-import java.time.LocalDateTime;
-
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -58,7 +56,6 @@ class OpenViduControllerTest extends ControllerTestSupport {
     void processesWebhookEvent() throws Exception {
         OpenViduWebhookEventRequest request = OpenViduWebhookEventRequest.builder()
             .body("{\"event\":\"room_started\"}")
-            .reservedAt(LocalDateTime.now().plusDays(1L))
             .build();
         String openViduToken = "testToken";
 

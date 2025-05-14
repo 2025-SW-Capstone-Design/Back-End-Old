@@ -18,8 +18,6 @@ import soon.capstone.domain.team.repository.TeamRepository;
 import soon.capstone.domain.teammember.entity.TeamMember;
 import soon.capstone.domain.teammember.repository.TeamMemberRepository;
 
-import java.time.LocalDateTime;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 
@@ -65,7 +63,7 @@ class ChatRoomTeamMemberServiceTest extends IntegrationTestSupport {
         TeamMember leader = TeamMember.createLeader(member, team);
         teamMemberRepository.save(leader);
 
-        ChatRoom chatRoom = ChatRoom.create("title", LocalDateTime.now().plusDays(3L), team, "sid");
+        ChatRoom chatRoom = ChatRoom.create("title", team, "sid");
         chatRoomRepository.save(chatRoom);
 
         var request = ChatRoomAddMemberServiceRequest.builder()
@@ -95,7 +93,7 @@ class ChatRoomTeamMemberServiceTest extends IntegrationTestSupport {
         TeamMember teamMember = TeamMember.createMember(member, team);
         teamMemberRepository.save(teamMember);
 
-        ChatRoom chatRoom = ChatRoom.create("title", LocalDateTime.now().plusDays(3L), team, "sid");
+        ChatRoom chatRoom = ChatRoom.create("title", team, "sid");
         chatRoomRepository.save(chatRoom);
 
         ChatRoomTeamMember chatRoomTeamMember = ChatRoomTeamMember.builder()

@@ -20,9 +20,8 @@ import soon.capstone.domain.team.entity.Team;
 import soon.capstone.domain.team.repository.TeamRepository;
 import soon.capstone.domain.teammember.entity.TeamMember;
 import soon.capstone.domain.teammember.repository.TeamMemberRepository;
-import soon.capstone.global.exception.common.InvalidRequest;
+import soon.capstone.global.exception.chatroom.ChatRoomAlreadyExistsForTeamException;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -58,9 +57,9 @@ class ChatRoomServiceTest extends IntegrationTestSupport {
         memberRepository.deleteAllInBatch();
     }
 
-    @DisplayName("채팅방을 생성한다")
+    @DisplayName("채팅방 생성 요청 시 동일한 SID로 이미 존재하는 경우 예외가 발생한다")
     @Test
-    void createChatRoom() {
+    void createRoomThrowsExceptionWhenChatRoomAlreadyExists() {
         // given
         Member member = createMember("email", "nickname");
         memberRepository.save(member);
@@ -71,58 +70,38 @@ class ChatRoomServiceTest extends IntegrationTestSupport {
         TeamMember leader = TeamMember.createLeader(member, team);
         teamMemberRepository.save(leader);
 
-        var request = createChatRoomCreateServiceRequest(team, member, LocalDateTime.now().plusDays(3));
+        ChatRoom existingChatRoom = createChatRoom(team);
+        chatRoomRepository.save(existingChatRoom);
 
-        // when
-        Long savedChatRoomId = chatRoomService.createRoom(request);
-
-        // then
-        ChatRoom chatRoom = chatRoomRepository.findById(savedChatRoomId);
-        assertThat(chatRoom).isNotNull();
-    }
-
-    @DisplayName("채팅방 생성을 요청한 멤버는 생성된 채팅방에 추가된다.")
-    @Test
-    void createChatRoomWithAddedRequestMember() {
-        // given
-        Member member = createMember("email", "nickname");
-        memberRepository.save(member);
-
-        Team team = createTeam();
-        teamRepository.save(team);
-
-        TeamMember leader = TeamMember.createLeader(member, team);
-        teamMemberRepository.save(leader);
-
-        var request = createChatRoomCreateServiceRequest(team, member, LocalDateTime.now().plusDays(3));
-
-        // when
-        Long savedChatRoomId = chatRoomService.createRoom(request);
-
-        // then
-        ChatRoomTeamMember chatRoomTeamMember = chatRoomTeamMemberRepository.findByChatRoomIdAndTeamMemberId(savedChatRoomId, leader.getId());
-        assertThat(chatRoomTeamMember).isNotNull();
-    }
-
-    @DisplayName("채팅방 생성 시 예약시간은 현재보다 미래여야 한다.")
-    @Test
-    void createChatRoomWithoutReservedAt() {
-        // given
-        Member member = createMember("email", "nickname");
-        memberRepository.save(member);
-
-        Team team = createTeam();
-        teamRepository.save(team);
-
-        TeamMember leader = TeamMember.createLeader(member, team);
-        teamMemberRepository.save(leader);
-
-        var request = createChatRoomCreateServiceRequest(team, member, LocalDateTime.now().minusDays(3));
+        var request = createChatRoomCreateServiceRequest(team, member);
 
         // expected
         assertThatThrownBy(() -> chatRoomService.createRoom(request))
-            .isInstanceOf(InvalidRequest.class)
-            .hasMessageContaining("잘못된 요청입니다.");
+            .isInstanceOf(ChatRoomAlreadyExistsForTeamException.class);
+    }
+
+    @DisplayName("채팅방 생성 요청 시 요청한 멤버가 채팅방에 추가된다")
+    @Test
+    void createRoomAddsRequestingMemberToChatRoom() {
+        // given
+        Member member = createMember("email", "nickname");
+        memberRepository.save(member);
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        TeamMember leader = TeamMember.createLeader(member, team);
+        teamMemberRepository.save(leader);
+
+        var request = createChatRoomCreateServiceRequest(team, member);
+
+        // when
+        chatRoomService.createRoom(request);
+
+        // then
+        ChatRoom chatRoom = chatRoomRepository.findBySid(request.sid());
+        ChatRoomTeamMember chatRoomTeamMember = chatRoomTeamMemberRepository.findByChatRoomIdAndTeamMemberId(chatRoom.getId(), leader.getId());
+        assertThat(chatRoomTeamMember).isNotNull();
     }
 
     @DisplayName("채팅방을 종료한다")
@@ -138,7 +117,7 @@ class ChatRoomServiceTest extends IntegrationTestSupport {
         TeamMember leader = TeamMember.createLeader(member, team);
         teamMemberRepository.save(leader);
 
-        ChatRoom chatRoom = createChatRoom(team, LocalDateTime.now().plusDays(3));
+        ChatRoom chatRoom = createChatRoom(team);
         chatRoomRepository.save(chatRoom);
 
         var request = ChatRoomFinishServiceRequest.builder()
@@ -169,7 +148,7 @@ class ChatRoomServiceTest extends IntegrationTestSupport {
         TeamMember leader = TeamMember.createLeader(member, team);
         teamMemberRepository.save(leader);
 
-        ChatRoom chatRoom = createChatRoom(team, LocalDateTime.now().plusDays(3));
+        ChatRoom chatRoom = createChatRoom(team);
         chatRoom.finish();
         chatRoomRepository.save(chatRoom);
 
@@ -201,8 +180,8 @@ class ChatRoomServiceTest extends IntegrationTestSupport {
         TeamMember leader = TeamMember.createLeader(member, team);
         teamMemberRepository.save(leader);
 
-        ChatRoom chatRoom1 = createChatRoom(team, LocalDateTime.now().plusDays(3));
-        ChatRoom chatRoom2 = createChatRoom(team, LocalDateTime.now().plusDays(5));
+        ChatRoom chatRoom1 = createChatRoom(team);
+        ChatRoom chatRoom2 = createChatRoom(team);
         chatRoomRepository.saveAll(List.of(chatRoom1, chatRoom2));
 
         var request = ChatRoomDetailsServiceRequest.builder()
@@ -215,10 +194,10 @@ class ChatRoomServiceTest extends IntegrationTestSupport {
 
         // then
         assertThat(chatRoomDetails).hasSize(2)
-            .extracting("id", "reservedAt")
+            .extracting("id", "title")
             .containsExactlyInAnyOrder(
-                tuple(chatRoom1.getId(), chatRoom1.getReservedAt()),
-                tuple(chatRoom2.getId(), chatRoom2.getReservedAt())
+                tuple(chatRoom1.getId(), chatRoom1.getTitle()),
+                tuple(chatRoom2.getId(), chatRoom2.getTitle())
             );
     }
 
@@ -238,19 +217,17 @@ class ChatRoomServiceTest extends IntegrationTestSupport {
             .build();
     }
 
-    private ChatRoom createChatRoom(Team team, LocalDateTime reservedAt) {
+    private ChatRoom createChatRoom(Team team) {
         return ChatRoom.builder()
             .title("title")
-            .reservedAt(reservedAt)
             .team(team)
             .sid("sid")
             .build();
     }
 
-    private ChatRoomCreateServiceRequest createChatRoomCreateServiceRequest(Team team, Member member, LocalDateTime reservedAt) {
+    private ChatRoomCreateServiceRequest createChatRoomCreateServiceRequest(Team team, Member member) {
         return ChatRoomCreateServiceRequest.builder()
             .title("title")
-            .reservedAt(reservedAt)
             .teamId(team.getId())
             .memberId(member.getId())
             .sid("sid")

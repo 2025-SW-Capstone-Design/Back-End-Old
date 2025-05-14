@@ -14,7 +14,6 @@ public final class OpenViduWebhookEventMapper {
         return ChatRoomCreateServiceRequest.builder()
             .sid(event.getRoom().getSid())
             .title(event.getRoom().getName())
-            .reservedAt(request.reservedAt())
             .teamId(request.teamId())
             .build();
     }
