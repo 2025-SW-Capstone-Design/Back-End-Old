@@ -45,14 +45,14 @@ public class IssueController implements IssueControllerDocs {
             .build();
     }
 
-    @PatchMapping("/issues/{issueId}/closed")
-    public ResponseEntity<Void> closedIssue(
-        @Valid @RequestBody IssueClosedRequest request,
+    @PatchMapping("/issues/{issueId}/status")
+    public ResponseEntity<Void> updateIssueStatus(
+        @Valid @RequestBody IssueUpdateStatusRequest request,
         @AuthMemberId Long memberId,
         @PathVariable Long teamId,
         @PathVariable Long issueId
     ) {
-        issueManagementService.closedIssue(request.toServiceRequest(memberId, teamId, issueId));
+        issueManagementService.updateIssueStatus(request.toServiceRequest(memberId, teamId, issueId));
 
         return ResponseEntity.noContent()
             .build();
