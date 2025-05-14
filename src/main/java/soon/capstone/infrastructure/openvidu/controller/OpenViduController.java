@@ -1,12 +1,11 @@
 package soon.capstone.infrastructure.openvidu.controller;
 
-import jakarta.servlet.http.HttpServletRequest;
+import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.util.ContentCachingRequestWrapper;
 import soon.capstone.global.anootation.AuthMemberId;
 import soon.capstone.infrastructure.openvidu.controller.dto.request.OpenViduGenerateTokenRequest;
 import soon.capstone.infrastructure.openvidu.controller.dto.request.OpenViduWebhookEventRequest;
@@ -24,29 +23,25 @@ public class OpenViduController {
 
     private final OpenViduApiService openViduApiService;
 
-    @PostMapping("/token")
+    @PostMapping("/{teamId}/token")
     public ResponseEntity<OpenViduGenerateTokenResponse> createToken(
         @Valid @RequestBody OpenViduGenerateTokenRequest request,
-        @AuthMemberId Long memberId
+        @AuthMemberId Long memberId,
+        @PathVariable Long teamId
     ) {
-        OpenViduGenerateTokenResponse response = openViduApiService.generateOpenViduToken(request.toServiceRequest(memberId));
+        OpenViduGenerateTokenResponse response = openViduApiService.generateOpenViduToken(request.toServiceRequest(memberId, teamId));
         return ResponseEntity.ok(response);
     }
 
     @PostMapping(value = "/webhook", consumes = "application/webhook+json")
     public ResponseEntity<Long> receiveWebhook(
-        HttpServletRequest servletRequest,
 //        @Valid @RequestBody OpenViduWebhookEventRequest request,
+        @RequestBody JsonNode body,
         @RequestHeader(value = "Authorization") String openViduToken
     ) throws IOException {
-        ContentCachingRequestWrapper wrapper = new ContentCachingRequestWrapper(servletRequest);
-        wrapper.getInputStream().readAllBytes();
-        String requestBody = new String(wrapper.getContentAsByteArray());
-        log.info("requestBody: {}", requestBody);
-        log.info("openViduToken: {}", openViduToken);
-
-//        Long chatRoomId = openViduApiService.handleWebhookEvent(request.toServiceRequest(openViduToken));
-        return ResponseEntity.ok(1L);
+        log.info("eventType: {}, roomName: {}", body.get("eventType").asText(), body.get("roomName").asText());
+        Long chatRoomId = openViduApiService.handleWebhookEvent(OpenViduWebhookEventRequest.toServiceRequest(body, openViduToken));
+        return ResponseEntity.ok(chatRoomId);
     }
 
 }

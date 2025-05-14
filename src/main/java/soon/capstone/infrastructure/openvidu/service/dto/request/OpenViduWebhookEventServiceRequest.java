@@ -8,9 +8,6 @@ import java.time.LocalDateTime;
 public record OpenViduWebhookEventServiceRequest(
 
     String body,
-    Long memberId,
-    Long teamId,
-    LocalDateTime reservedAt,
     String openViduToken
 
 ) {
