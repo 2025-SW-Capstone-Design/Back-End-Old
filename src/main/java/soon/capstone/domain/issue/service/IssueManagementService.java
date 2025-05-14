@@ -2,6 +2,7 @@ package soon.capstone.domain.issue.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import soon.capstone.domain.issue.entity.IssueStatus;
 import soon.capstone.domain.issue.service.dto.ScopeType;
 import soon.capstone.domain.issue.service.dto.request.*;
 import soon.capstone.domain.issue.service.dto.response.IssueDetailResponse;
@@ -82,18 +83,26 @@ public class IssueManagementService {
         );
     }
 
-    public void closedIssue(IssueClosedServiceRequest request) {
+    public void updateIssueStatus(IssueUpdateStatusServiceRequest request) {
         Member member = memberRepository.findById(request.memberId());
         Team team = teamRepository.findById(request.teamId());
 
         validateTeamMembership(member, team);
 
-        issueService.closedIssue(
-            member.getId(),
-            request.issueId(),
-            request.organizationName(),
-            request.repositoryName()
-        );
+        switch (IssueStatus.from(request.status())) {
+            case CLOSED -> issueService.closedIssue(
+                member.getId(),
+                request.issueId(),
+                request.organizationName(),
+                request.repositoryName()
+            );
+            case OPEN -> issueService.reopenIssue(
+                member.getId(),
+                request.issueId(),
+                request.organizationName(),
+                request.repositoryName()
+            );
+        }
     }
 
     public IssueDetailWrapperResponse getIssueDetail(IssueDetailServiceRequest request) {

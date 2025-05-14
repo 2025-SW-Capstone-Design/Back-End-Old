@@ -87,4 +87,8 @@ public class Issue extends BaseTimeEntity {
         this.status = IssueStatus.CLOSED;
     }
 
+    public void reopen() {
+        this.status = IssueStatus.OPEN;
+    }
+
 }
