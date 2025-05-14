@@ -52,16 +52,11 @@ public class OpenViduApiService {
     }
 
     public Long handleWebhookEvent(OpenViduWebhookEventServiceRequest request) {
-//        String identity = JwtUtil.extractIdentity(request.openViduToken(), apiSecret);
-//        String[] parts = identity.split(":");
-//        Long memberId = Long.valueOf(parts[0]);
-//        Long teamId = Long.valueOf(parts[1]);
-        log.info("openViduToken: {}", request.openViduToken());
-
         try {
             log.info("웹훅 요청 처리 시작 - body{} memberId: {}, openViduToken: {}, teamId: {}", request.body(), 2, request.openViduToken(), 1);
 
             WebhookEvent event = webhookReceiver.receive(request.body(), request.openViduToken());
+            log.info("event: {}", event.getParticipant().getIdentity());
 
             return eventHandlers.stream()
                 .filter(handler -> handler.support(event.getEvent()))
