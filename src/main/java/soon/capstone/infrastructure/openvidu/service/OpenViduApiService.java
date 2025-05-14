@@ -53,24 +53,27 @@ public class OpenViduApiService {
 
     public Long handleWebhookEvent(OpenViduWebhookEventServiceRequest request) {
         try {
-            log.info("웹훅 요청 처리 시작 - body{} memberId: {}, openViduToken: {}, teamId: {}", request.body(), 2, request.openViduToken(), 1);
-
             WebhookEvent event = webhookReceiver.receive(request.body(), request.openViduToken());
-            log.info("event: {}", event.getParticipant().getIdentity());
+            String identity = event.getParticipant().getIdentity();
+            String[] split = identity.split(":");
+            Long memberId = Long.parseLong(split[0]);
+            Long teamId = Long.parseLong(split[1]);
+
+            log.info("웹훅 요청 처리 시작 - body{} memberId: {}, openViduToken: {}, teamId: {}", request.body(), memberId, request.openViduToken(), teamId);
 
             return eventHandlers.stream()
                 .filter(handler -> handler.support(event.getEvent()))
                 .findFirst()
                 .map(handler -> {
-                    log.info("이벤트 처리 중 - memberId: {}, event: {}", 2, event.getEvent());
+                    log.info("이벤트 처리 중 - memberId: {}, event: {}", memberId, event.getEvent());
                     return handler.handle(event, request);
                 })
                 .orElseThrow(() -> {
-                    log.error("지원하지 않는 이벤트 타입 - memberId: {}, event: {}", 2, event.getEvent());
+                    log.error("지원하지 않는 이벤트 타입 - memberId: {}, event: {}", memberId, event.getEvent());
                     return new InvalidRequest();
                 });
         } catch (Exception e) {
-            log.error("웹훅 이벤트 처리 중 오류 발생 - memberId: {}, 오류: {}", 2, e.getMessage());
+            log.error("웹훅 이벤트 처리 중 오류 발생 - 오류: {}", e.getMessage());
             throw new InvalidRequest();
         }
     }
