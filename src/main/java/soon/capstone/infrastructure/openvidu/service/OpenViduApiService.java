@@ -55,11 +55,8 @@ public class OpenViduApiService {
         try {
             WebhookEvent event = webhookReceiver.receive(request.body(), request.openViduToken());
             String identity = event.getParticipant().getIdentity();
+            log.info("identity: {}", identity);
             String[] split = identity.split(":");
-            if (split.length != 2) {
-                log.error("잘못된 identity 형식 - identity: {}", identity);
-                throw new InvalidRequest();
-            }
             Long memberId = Long.parseLong(split[0]);
             Long teamId = Long.parseLong(split[1]);
 
