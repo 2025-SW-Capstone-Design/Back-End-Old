@@ -6,10 +6,7 @@ import lombok.Builder;
 public record OpenViduWebhookEventServiceRequest(
 
     String body,
-    Long memberId,
-    Long teamId,
     String openViduToken
 
 ) {
-
 }

@@ -36,4 +36,8 @@ public class ChatRoomTeamMemberRepository {
         chatRoomTeamMemberJpaRepository.deleteAllInBatch();
     }
 
+    public boolean existsByChatRoomIdAndTeamMemberId(Long chatRoomId, Long teamMemberId) {
+        return chatRoomTeamMemberJpaRepository.existsByChatRoomIdAndTeamMemberId(chatRoomId, teamMemberId);
+    }
+
 }

@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import soon.capstone.IntegrationTestSupport;
 import soon.capstone.domain.chatroom.entity.ChatRoom;
-import soon.capstone.domain.chatroom.entity.ChatRoomTeamMember;
 import soon.capstone.domain.chatroom.repository.chatroom.ChatRoomRepository;
 import soon.capstone.domain.chatroom.repository.member.ChatRoomTeamMemberRepository;
 import soon.capstone.domain.chatroom.service.dto.request.ChatRoomCreateServiceRequest;
@@ -20,12 +19,10 @@ import soon.capstone.domain.team.entity.Team;
 import soon.capstone.domain.team.repository.TeamRepository;
 import soon.capstone.domain.teammember.entity.TeamMember;
 import soon.capstone.domain.teammember.repository.TeamMemberRepository;
-import soon.capstone.global.exception.chatroom.ChatRoomAlreadyExistsForTeamException;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.tuple;
 
 class ChatRoomServiceTest extends IntegrationTestSupport {
@@ -57,7 +54,7 @@ class ChatRoomServiceTest extends IntegrationTestSupport {
         memberRepository.deleteAllInBatch();
     }
 
-    @DisplayName("채팅방 생성 요청 시 동일한 SID로 이미 존재하는 경우 예외가 발생한다")
+    @DisplayName("채팅방 생성 요청 시 동일한 SID로 이미 존재하는 경우 존재하는 채팅방 ID를 반환한다")
     @Test
     void createRoomThrowsExceptionWhenChatRoomAlreadyExists() {
         // given
@@ -75,33 +72,12 @@ class ChatRoomServiceTest extends IntegrationTestSupport {
 
         var request = createChatRoomCreateServiceRequest(team, member);
 
-        // expected
-        assertThatThrownBy(() -> chatRoomService.createRoom(request))
-            .isInstanceOf(ChatRoomAlreadyExistsForTeamException.class);
-    }
-
-    @DisplayName("채팅방 생성 요청 시 요청한 멤버가 채팅방에 추가된다")
-    @Test
-    void createRoomAddsRequestingMemberToChatRoom() {
-        // given
-        Member member = createMember("email", "nickname");
-        memberRepository.save(member);
-
-        Team team = createTeam();
-        teamRepository.save(team);
-
-        TeamMember leader = TeamMember.createLeader(member, team);
-        teamMemberRepository.save(leader);
-
-        var request = createChatRoomCreateServiceRequest(team, member);
-
         // when
-        chatRoomService.createRoom(request);
+        Long chatRoomId = chatRoomService.createRoom(request);
 
         // then
-        ChatRoom chatRoom = chatRoomRepository.findBySid(request.sid());
-        ChatRoomTeamMember chatRoomTeamMember = chatRoomTeamMemberRepository.findByChatRoomIdAndTeamMemberId(chatRoom.getId(), leader.getId());
-        assertThat(chatRoomTeamMember).isNotNull();
+        assertThat(chatRoomId)
+            .isEqualTo(existingChatRoom.getId());
     }
 
     @DisplayName("채팅방을 종료한다")

@@ -16,6 +16,9 @@ import soon.capstone.infrastructure.openvidu.service.dto.response.OpenViduGenera
 
 import java.util.List;
 
+import static soon.capstone.infrastructure.openvidu.common.OpenViduEventType.ROOM_FINISHED;
+import static soon.capstone.infrastructure.openvidu.common.OpenViduEventType.ROOM_STARTED;
+
 @Slf4j
 @Service
 public class OpenViduApiService {
@@ -40,37 +43,64 @@ public class OpenViduApiService {
     public OpenViduGenerateTokenResponse generateOpenViduToken(OpenViduGenerateTokenServiceRequest request) {
         AccessToken token = new AccessToken(apiKey, apiSecret);
         token.setName(request.roomName());
-        token.setIdentity(String.valueOf(request.memberId()));
+        token.setIdentity(request.memberId() + ":" + request.teamId());
         token.addGrants(new RoomJoin(true), new RoomName(request.roomName()));
+
+        log.info("openVidu 토큰 생성 완료 - roomName: {}, memberId: {}, teamId: {}, token: {}",
+            request.roomName(),
+            request.memberId(),
+            request.teamId(),
+            token.toJwt()
+        );
 
         return OpenViduGenerateTokenResponse.builder()
             .token(token.toJwt())
             .roomName(request.roomName())
             .memberId(request.memberId())
+            .teamId(request.teamId())
             .build();
     }
 
-    public Long handleWebhookEvent(OpenViduWebhookEventServiceRequest request) {
+    public void handleWebhookEvent(OpenViduWebhookEventServiceRequest request) {
         try {
-            log.info("웹훅 요청 처리 시작 - memberId: {}, openViduToken: {}", request.memberId(), request.openViduToken());
-
             WebhookEvent event = webhookReceiver.receive(request.body(), request.openViduToken());
+            if (isRoomEvent(event)) {
+                return;
+            }
 
-            return eventHandlers.stream()
+            Long memberId = extractId(event, 0);
+            Long teamId = extractId(event, 1);
+
+            log.info("웹훅 이벤트 수신 - event: {}, memberId: {}, teamId: {}", event.getEvent(), memberId, teamId);
+
+            eventHandlers.stream()
                 .filter(handler -> handler.support(event.getEvent()))
                 .findFirst()
-                .map(handler -> {
-                    log.info("이벤트 처리 중 - memberId: {}, event: {}", request.memberId(), event.getEvent());
-                    return handler.handle(event, request);
-                })
-                .orElseThrow(() -> {
-                    log.error("지원하지 않는 이벤트 타입 - memberId: {}, event: {}", request.memberId(), event.getEvent());
-                    return new InvalidRequest();
-                });
+                .ifPresentOrElse(
+                    handler -> {
+                        log.debug("이벤트 핸들러 실행 - handler: {}, event: {}", handler.getClass().getSimpleName(), event.getEvent());
+                        handler.handle(event, teamId, memberId);
+                    },
+                    () -> {
+                        log.warn("지원하지 않는 이벤트 타입 - event: {}", event.getEvent());
+                        throw new InvalidRequest();
+                    }
+                );
+        } catch (InvalidRequest e) {
+            log.error("잘못된 요청 - message: {}, body: {}", e.getMessage(), request.body(), e);
+            throw e;
         } catch (Exception e) {
-            log.error("웹훅 이벤트 처리 중 오류 발생 - memberId: {}, 오류: {}", request.memberId(), e.getMessage());
+            log.error("웹훅 처리 중 예외 발생 - body: {}", request.body(), e);
             throw new InvalidRequest();
         }
+    }
+
+    private boolean isRoomEvent(WebhookEvent event) {
+        return ROOM_STARTED.getEventType().equals(event.getEvent()) || ROOM_FINISHED.getEventType().equals(event.getEvent());
+    }
+
+    private Long extractId(WebhookEvent event, int index) {
+        return Long.parseLong(event.getParticipant().getIdentity().split(":")[index]);
     }
 
 }

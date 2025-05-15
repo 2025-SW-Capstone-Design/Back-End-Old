@@ -1,6 +1,7 @@
 package soon.capstone.domain.chatroom.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import soon.capstone.domain.chatroom.entity.ChatRoom;
 import soon.capstone.domain.chatroom.entity.ChatRoomTeamMember;
@@ -14,6 +15,7 @@ import soon.capstone.domain.teammember.service.dto.response.TeamMemberDetailResp
 
 import java.util.List;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class ChatRoomTeamMemberService {
@@ -23,6 +25,11 @@ public class ChatRoomTeamMemberService {
     private final ChatRoomRepository chatRoomRepository;
 
     public void addMemberToChatRoom(ChatRoomAddMemberServiceRequest request) {
+        if (chatRoomTeamMemberRepository.existsByChatRoomIdAndTeamMemberId(request.chatRoomId(), request.memberId())) {
+            log.info("채팅방에 이미 존재하는 팀원입니다. - chatRoomId: {}, memberId: {}", request.chatRoomId(), request.memberId());
+            return;
+        }
+
         TeamMember teamMember = teamMemberRepository.findByTeamIdAndMemberId(request.teamId(), request.memberId());
         ChatRoom chatRoom = chatRoomRepository.findById(request.chatRoomId());
 

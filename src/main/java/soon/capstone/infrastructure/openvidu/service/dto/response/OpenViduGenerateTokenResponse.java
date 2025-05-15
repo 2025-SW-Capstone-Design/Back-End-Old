@@ -7,8 +7,8 @@ public record OpenViduGenerateTokenResponse(
 
     String token,
     String roomName,
-    Long memberId
+    Long memberId,
+    Long teamId
 
 ) {
-
 }

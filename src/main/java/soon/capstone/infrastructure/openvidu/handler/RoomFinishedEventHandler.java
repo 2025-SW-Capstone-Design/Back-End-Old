@@ -1,12 +1,13 @@
 package soon.capstone.infrastructure.openvidu.handler;
 
-import livekit.LivekitWebhook;
+import livekit.LivekitWebhook.WebhookEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import soon.capstone.domain.chatroom.service.ChatRoomService;
-import soon.capstone.infrastructure.openvidu.mapper.OpenViduWebhookEventMapper;
-import soon.capstone.infrastructure.openvidu.service.dto.request.OpenViduWebhookEventServiceRequest;
+import soon.capstone.domain.chatroom.service.dto.request.ChatRoomFinishServiceRequest;
+
+import static soon.capstone.infrastructure.openvidu.common.OpenViduEventType.ROOM_FINISHED;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -17,15 +18,24 @@ public class RoomFinishedEventHandler implements OpenViduWebhookEventHandler {
 
     @Override
     public boolean support(String eventType) {
-        return "room_finished".equals(eventType);
+        return ROOM_FINISHED.equals(eventType);
     }
 
     @Override
-    public Long handle(LivekitWebhook.WebhookEvent event, OpenViduWebhookEventServiceRequest request) {
-        log.info("회의 종료: {}", event.getRoom().getName());
+    public void handle(WebhookEvent event, Long teamId, Long memberId) {
+        log.info("팀: {}, 회의 종료: {}", teamId, event.getRoom().getName());
 
-        // TODO: 회의록 요약 요청
-        return chatRoomService.finishRoom(OpenViduWebhookEventMapper.toChatRoomFinishServiceRequest(event, request));
+        // TODO: 회의록 최종 요약 요청
+        ChatRoomFinishServiceRequest request = createChatRoomFinishServiceRequest(event, teamId, memberId);
+        chatRoomService.finishRoom(request);
+    }
+
+    private ChatRoomFinishServiceRequest createChatRoomFinishServiceRequest(WebhookEvent event, Long teamId, Long memberId) {
+        return ChatRoomFinishServiceRequest.builder()
+            .teamId(teamId)
+            .memberId(memberId)
+            .sid(event.getRoom().getSid())
+            .build();
     }
 
 }

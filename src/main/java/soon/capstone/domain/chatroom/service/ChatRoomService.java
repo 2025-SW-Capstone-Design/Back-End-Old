@@ -1,40 +1,44 @@
 package soon.capstone.domain.chatroom.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import soon.capstone.domain.chatroom.entity.ChatRoom;
 import soon.capstone.domain.chatroom.repository.chatroom.ChatRoomRepository;
-import soon.capstone.domain.chatroom.service.dto.request.*;
+import soon.capstone.domain.chatroom.service.dto.request.ChatRoomCreateServiceRequest;
+import soon.capstone.domain.chatroom.service.dto.request.ChatRoomDetailsServiceRequest;
+import soon.capstone.domain.chatroom.service.dto.request.ChatRoomFinishServiceRequest;
+import soon.capstone.domain.chatroom.service.dto.request.ChatRoomResumeServiceRequest;
 import soon.capstone.domain.chatroom.service.dto.response.ChatRoomDetailsResponse;
 import soon.capstone.domain.team.entity.Team;
 import soon.capstone.domain.team.repository.TeamRepository;
 import soon.capstone.domain.teammember.service.TeamMemberValidator;
-import soon.capstone.global.exception.chatroom.ChatRoomAlreadyExistsForTeamException;
 
 import java.util.List;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class ChatRoomService {
 
     private final ChatRoomRepository chatRoomRepository;
-    private final ChatRoomTeamMemberService chatRoomTeamMemberService;
     private final TeamRepository teamRepository;
     private final TeamMemberValidator teamMemberValidator;
 
-    public void createRoom(ChatRoomCreateServiceRequest request) {
+    public Long createRoom(ChatRoomCreateServiceRequest request) {
         teamMemberValidator.validateTeamMember(request.teamId(), request.memberId());
 
         if (chatRoomRepository.existsByTeamIdAndSid(request.teamId(), request.sid())) {
-            throw new ChatRoomAlreadyExistsForTeamException();
+            log.info("채팅방이 이미 존재합니다. 팀 ID: {}, SID: {}", request.teamId(), request.sid());
+            ChatRoom existingChatRoom = chatRoomRepository.findByTeamIdAndSid(request.teamId(), request.sid());
+            return existingChatRoom.getId();
         }
 
         Team team = teamRepository.findById(request.teamId());
         ChatRoom chatRoom = ChatRoom.create(request.title(), team, request.sid());
-        chatRoomRepository.save(chatRoom);
 
-        addMemberToChatRoom(request, chatRoom, team);
+        return chatRoomRepository.save(chatRoom);
     }
 
     @Transactional
@@ -61,15 +65,6 @@ public class ChatRoomService {
         return chatRoomRepository.findAllByTeamId(request.teamId()).stream()
             .map(ChatRoomDetailsResponse::from)
             .toList();
-    }
-
-    private void addMemberToChatRoom(ChatRoomCreateServiceRequest request, ChatRoom chatRoom, Team team) {
-        ChatRoomAddMemberServiceRequest addMemberRequest = ChatRoomAddMemberServiceRequest.builder()
-            .chatRoomId(chatRoom.getId())
-            .teamId(team.getId())
-            .memberId(request.memberId())
-            .build();
-        chatRoomTeamMemberService.addMemberToChatRoom(addMemberRequest);
     }
 
 }

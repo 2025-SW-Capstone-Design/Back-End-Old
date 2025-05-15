@@ -6,11 +6,14 @@ import java.time.LocalDateTime;
 
 @Builder
 public record PortfolioDetailResponse(
+
+    Long id,
     String title,
     String content,
     String nickname,
     String profileImageURL,
     LocalDateTime createTime,
     LocalDateTime modifyTime
+
 ) {
 }
