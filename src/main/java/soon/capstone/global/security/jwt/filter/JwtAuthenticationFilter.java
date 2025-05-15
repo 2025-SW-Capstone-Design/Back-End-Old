@@ -11,16 +11,16 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
-import soon.capstone.global.security.jwt.provider.JwtProvider;
 import soon.capstone.global.exception.dto.response.ErrorResponse;
+import soon.capstone.global.security.jwt.provider.JwtProvider;
 
 import java.io.IOException;
 
 import static jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+import static soon.capstone.global.exception.dto.ErrorDetail.INVALID_TOKEN;
 import static soon.capstone.global.security.jwt.common.TokenType.AUTHORIZATION_HEADER;
 import static soon.capstone.global.security.jwt.common.TokenType.BEARER_PREFIX;
-import static soon.capstone.global.exception.dto.ErrorDetail.INVALID_TOKEN;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -53,6 +53,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             log.error("JWT 인증 실패: {}", e.getMessage());
             responseJWTError(response);
         }
+    }
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        return path.equals("/api/v1/open-vidu/webhook");
     }
 
     private String getTokenFromHeader(HttpServletRequest request) {
