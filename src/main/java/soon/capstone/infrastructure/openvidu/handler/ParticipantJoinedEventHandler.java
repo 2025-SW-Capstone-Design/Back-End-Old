@@ -5,6 +5,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import soon.capstone.domain.chatroom.service.ChatRoomService;
+import soon.capstone.domain.chatroom.service.ChatRoomTeamMemberService;
+import soon.capstone.domain.chatroom.service.dto.request.ChatRoomAddMemberServiceRequest;
 import soon.capstone.domain.chatroom.service.dto.request.ChatRoomCreateServiceRequest;
 
 import static soon.capstone.infrastructure.openvidu.common.OpenViduEventType.PARTICIPANT_JOINED;
@@ -15,6 +17,7 @@ import static soon.capstone.infrastructure.openvidu.common.OpenViduEventType.PAR
 public class ParticipantJoinedEventHandler implements OpenViduWebhookEventHandler {
 
     private final ChatRoomService chatRoomService;
+    private final ChatRoomTeamMemberService chatRoomTeamMemberService;
 
     @Override
     public boolean support(String eventType) {
@@ -30,13 +33,24 @@ public class ParticipantJoinedEventHandler implements OpenViduWebhookEventHandle
         );
 
         ChatRoomCreateServiceRequest request = createChatroomCreateServiceRequest(event, teamId, memberId);
-        chatRoomService.createRoom(request);
+        Long chatRoomId = chatRoomService.createRoom(request);
+
+        ChatRoomAddMemberServiceRequest addMemberRequest = createChatRoomAddMemberServiceRequest(chatRoomId, teamId, memberId);
+        chatRoomTeamMemberService.addMemberToChatRoom(addMemberRequest);
     }
 
     private ChatRoomCreateServiceRequest createChatroomCreateServiceRequest(WebhookEvent event, Long teamId, Long memberId) {
         return ChatRoomCreateServiceRequest.builder()
             .title(event.getRoom().getName())
             .sid(event.getRoom().getSid())
+            .teamId(teamId)
+            .memberId(memberId)
+            .build();
+    }
+
+    private ChatRoomAddMemberServiceRequest createChatRoomAddMemberServiceRequest(Long chatRoomId, Long teamId, Long memberId) {
+        return ChatRoomAddMemberServiceRequest.builder()
+            .chatRoomId(chatRoomId)
             .teamId(teamId)
             .memberId(memberId)
             .build();

@@ -48,4 +48,9 @@ public class ChatRoomRepository {
         chatRoomJpaRepository.deleteAllInBatch();
     }
 
+    public ChatRoom findByTeamIdAndSid(Long teamId, String sid) {
+        return chatRoomJpaRepository.findByTeamIdAndSid(teamId, sid)
+            .orElseThrow(ChatRoomNotFoundException::new);
+    }
+
 }
