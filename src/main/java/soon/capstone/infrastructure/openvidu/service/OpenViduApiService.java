@@ -54,9 +54,8 @@ public class OpenViduApiService {
     public void handleWebhookEvent(OpenViduWebhookEventServiceRequest request) {
         try {
             WebhookEvent event = webhookReceiver.receive(request.body(), request.openViduToken());
-            String[] identityParts = event.getParticipant().getIdentity().split(":");
-            Long memberId = Long.parseLong(identityParts[0]);
-            Long teamId = Long.parseLong(identityParts[1]);
+            Long memberId = extractMemberIdFromIdentity(event);
+            Long teamId = extractTeamIdFromIdentity(event);
 
             log.info("웹훅 요청 처리 시작 - body{} memberId: {}, openViduToken: {}, teamId: {}", request.body(), memberId, request.openViduToken(), teamId);
 
@@ -77,6 +76,20 @@ public class OpenViduApiService {
             log.error("웹훅 이벤트 처리 중 오류 발생 - 오류: ", e);
             throw new InvalidRequest();
         }
+    }
+
+    private Long extractMemberIdFromIdentity(WebhookEvent event) {
+        return Long.parseLong(event.getParticipant()
+            .getIdentity()
+            .split(":")[0]
+        );
+    }
+
+    private Long extractTeamIdFromIdentity(WebhookEvent event) {
+        return Long.parseLong(event.getParticipant()
+            .getIdentity()
+            .split(":")[1]
+        );
     }
 
 }
