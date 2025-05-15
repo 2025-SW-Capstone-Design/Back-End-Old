@@ -70,7 +70,7 @@ public class IssueService {
         Issue newIssue = Issue.createNewIssue(title, content, githubIssueNumber, teamMember, milestone, project);
         Long savedIssueNumber = issueRepository.save(newIssue);
 
-        issueLabelRelationService.linkIssueWithLabels(newIssue, labels, memberId, organizationName, repositoryName);
+        issueLabelRelationService.linkIssueWithLabels(newIssue, labels, memberId, organizationName, repositoryName, project);
 
         return savedIssueNumber;
     }
@@ -109,7 +109,7 @@ public class IssueService {
         );
 
         issue.updateIssue(title, content, state, milestone, teamMember);
-        issueLabelRelationService.updateIssueRelation(issue, labels);
+        issueLabelRelationService.updateIssueRelation(issue, labels, milestone.getProject());
     }
 
     @Caching(evict = {
@@ -121,7 +121,19 @@ public class IssueService {
     public void closedIssue(Long memberId, Long issueId, String organizationName, String repositoryName) {
         Issue issue = issueRepository.findById(issueId);
         issue.closed();
-        closedGithubIssue(memberId, issue, organizationName, repositoryName);
+        updateGithubIssueStatus(memberId, issue, organizationName, repositoryName, IssueStatus.CLOSED);
+    }
+
+    @Caching(evict = {
+        @CacheEvict(value = "issuesWithOrganization", key = "#organizationName + ':' + #repositoryName"),
+        @CacheEvict(value = "issuesWithRepository", key = "#organizationName + ':' + #repositoryName"),
+        @CacheEvict(value = "issueDetail", key = "#issueId + ':' + #organizationName + ':' + #repositoryName")
+    })
+    @Transactional
+    public void reopenIssue(Long memberId, Long issueId, String organizationName, String repositoryName) {
+        Issue issue = issueRepository.findById(issueId);
+        issue.reopen();
+        updateGithubIssueStatus(memberId, issue, organizationName, repositoryName, IssueStatus.OPEN); // TODO: 차후 interface로 closed와 통일
     }
 
     @Cacheable(value = "issueDetail", key = "#issueId + ':' + #organizationName + ':' + #repositoryName")
@@ -249,18 +261,19 @@ public class IssueService {
         githubIssueService.updateGithubIssue(request);
     }
 
-    private void closedGithubIssue(
+    private void updateGithubIssueStatus(
         Long memberId,
         Issue issue,
         String organizationName,
-        String repositoryName
+        String repositoryName,
+        IssueStatus status
     ) {
         GithubIssueUpdateServiceRequest request = GithubIssueUpdateServiceRequest.builder()
             .memberId(memberId)
             .organizationName(organizationName)
             .repositoryName(repositoryName)
             .issueNumber(issue.getGithubIssueNumber())
-            .state(IssueStatus.CLOSED.name())
+            .state(status.name())
             .build();
         githubIssueService.updateGithubIssue(request);
     }

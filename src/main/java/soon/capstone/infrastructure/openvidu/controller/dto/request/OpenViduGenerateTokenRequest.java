@@ -12,10 +12,11 @@ public record OpenViduGenerateTokenRequest(
 
 ) {
 
-    public OpenViduGenerateTokenServiceRequest toServiceRequest(Long memberId) {
+    public OpenViduGenerateTokenServiceRequest toServiceRequest(Long memberId, Long teamId) {
         return OpenViduGenerateTokenServiceRequest.builder()
             .roomName(roomName)
             .memberId(memberId)
+            .teamId(teamId)
             .build();
     }
 

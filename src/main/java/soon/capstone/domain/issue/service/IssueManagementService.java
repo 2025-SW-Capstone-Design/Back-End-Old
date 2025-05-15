@@ -2,9 +2,11 @@ package soon.capstone.domain.issue.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import soon.capstone.domain.issue.entity.IssueStatus;
 import soon.capstone.domain.issue.service.dto.ScopeType;
 import soon.capstone.domain.issue.service.dto.request.*;
 import soon.capstone.domain.issue.service.dto.response.IssueDetailResponse;
+import soon.capstone.domain.issue.service.dto.response.IssueDetailWrapperResponse;
 import soon.capstone.domain.issue.service.dto.response.IssueLabelDetailResponse;
 import soon.capstone.domain.issue.service.dto.response.IssueTemplateDetailResponse;
 import soon.capstone.domain.member.entity.Member;
@@ -81,33 +83,47 @@ public class IssueManagementService {
         );
     }
 
-    public void closedIssue(IssueClosedServiceRequest request) {
+    public void updateIssueStatus(IssueUpdateStatusServiceRequest request) {
         Member member = memberRepository.findById(request.memberId());
         Team team = teamRepository.findById(request.teamId());
 
         validateTeamMembership(member, team);
 
-        issueService.closedIssue(
-            member.getId(),
-            request.issueId(),
-            request.organizationName(),
-            request.repositoryName()
-        );
+        switch (IssueStatus.from(request.status())) {
+            case CLOSED -> issueService.closedIssue(
+                member.getId(),
+                request.issueId(),
+                request.organizationName(),
+                request.repositoryName()
+            );
+            case OPEN -> issueService.reopenIssue(
+                member.getId(),
+                request.issueId(),
+                request.organizationName(),
+                request.repositoryName()
+            );
+        }
     }
 
-    public IssueDetailResponse getIssueDetail(IssueDetailServiceRequest request) {
+    public IssueDetailWrapperResponse getIssueDetail(IssueDetailServiceRequest request) {
         Member member = memberRepository.findById(request.memberId());
         Team team = teamRepository.findById(request.teamId());
         Project project = projectRepository.findById(request.projectId());
+        TeamMember teamMember = teamMemberRepository.findByTeamIdAndMemberId(team.getId(), member.getId());
 
         validateTeamMembership(member, team);
 
-        return issueService.getIssueDetail(
+        IssueDetailResponse issueDetail = issueService.getIssueDetail(
             member.getId(),
             request.issueId(),
             team.getOrganizationName(),
             project.getTitle()
         );
+
+        return IssueDetailWrapperResponse.builder()
+            .issueDetail(issueDetail)
+            .teamMemberId(teamMember.getId())
+            .build();
     }
 
     public List<IssueDetailResponse> getIssues(IssueDetailListServiceRequest request) {

@@ -14,4 +14,8 @@ public interface ChatRoomJpaRepository extends JpaRepository<ChatRoom, Long> {
 
     List<ChatRoom> findAllByTeamId(Long team);
 
+    boolean existsByTeamIdAndSid(Long teamId, String sid);
+
+    Optional<ChatRoom> findByTeamIdAndSid(Long teamId, String sid);
+
 }

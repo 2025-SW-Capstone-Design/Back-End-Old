@@ -38,7 +38,7 @@ public class IssueTemplateController implements IssueTemplateControllerDocs {
         @PathVariable Long issueTemplateId,
         @AuthMemberId Long memberId
     ) {
-        issueManagementService.updateIssueTemplate(request.toServiceRequest(teamId, issueTemplateId), memberId);
+        issueManagementService.updateIssueTemplate(request.toServiceRequest(issueTemplateId, teamId), memberId);
 
         return ResponseEntity.ok().build();
     }

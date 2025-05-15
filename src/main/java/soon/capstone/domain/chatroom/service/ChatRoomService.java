@@ -1,6 +1,7 @@
 package soon.capstone.domain.chatroom.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import soon.capstone.domain.chatroom.entity.ChatRoom;
@@ -15,12 +16,12 @@ import soon.capstone.infrastructure.redis.summary.repository.SummaryTextReposito
 
 import java.util.List;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class ChatRoomService {
 
     private final ChatRoomRepository chatRoomRepository;
-    private final ChatRoomTeamMemberService chatRoomTeamMemberService;
     private final GptSummaryService gptSummaryService;
     private final TeamRepository teamRepository;
     private final TeamMemberValidator teamMemberValidator;
@@ -29,13 +30,16 @@ public class ChatRoomService {
     public Long createRoom(ChatRoomCreateServiceRequest request) {
         teamMemberValidator.validateTeamMember(request.teamId(), request.memberId());
 
+        if (chatRoomRepository.existsByTeamIdAndSid(request.teamId(), request.sid())) {
+            log.info("채팅방이 이미 존재합니다. 팀 ID: {}, SID: {}", request.teamId(), request.sid());
+            ChatRoom existingChatRoom = chatRoomRepository.findByTeamIdAndSid(request.teamId(), request.sid());
+            return existingChatRoom.getId();
+        }
+
         Team team = teamRepository.findById(request.teamId());
-        ChatRoom chatRoom = ChatRoom.create(request.title(), request.reservedAt(), team, request.sid());
-        Long savedChatRoomId = chatRoomRepository.save(chatRoom);
+        ChatRoom chatRoom = ChatRoom.create(request.title(), team, request.sid());
 
-        addMemberToChatRoom(request, chatRoom, team);
-
-        return savedChatRoomId;
+        return chatRoomRepository.save(chatRoom);
     }
 
     @Transactional
@@ -69,15 +73,6 @@ public class ChatRoomService {
 
         String summaryToText = gptSummaryService.summaryToText(request.text(), request.isFinal());
         summaryTextRepository.save(request.chatRoomId(), summaryToText);
-    }
-
-    private void addMemberToChatRoom(ChatRoomCreateServiceRequest request, ChatRoom chatRoom, Team team) {
-        ChatRoomAddMemberServiceRequest addMemberRequest = ChatRoomAddMemberServiceRequest.builder()
-            .chatRoomId(chatRoom.getId())
-            .teamId(team.getId())
-            .memberId(request.memberId())
-            .build();
-        chatRoomTeamMemberService.addMemberToChatRoom(addMemberRequest);
     }
 
 }

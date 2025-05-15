@@ -40,8 +40,17 @@ public class ChatRoomRepository {
         return chatRoomJpaRepository.findAllByTeamId(teamId);
     }
 
+    public boolean existsByTeamIdAndSid(Long teamId, String sid) {
+        return chatRoomJpaRepository.existsByTeamIdAndSid(teamId, sid);
+    }
+
     public void deleteAllInBatch() {
         chatRoomJpaRepository.deleteAllInBatch();
+    }
+
+    public ChatRoom findByTeamIdAndSid(Long teamId, String sid) {
+        return chatRoomJpaRepository.findByTeamIdAndSid(teamId, sid)
+            .orElseThrow(ChatRoomNotFoundException::new);
     }
 
 }

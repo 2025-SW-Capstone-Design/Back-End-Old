@@ -149,7 +149,8 @@ class IssueServiceTest extends IntegrationTestSupport {
                 anyList(),
                 anyLong(),
                 anyString(),
-                anyString()
+                anyString(),
+                any(Project.class)
             );
     }
 
@@ -250,8 +251,7 @@ class IssueServiceTest extends IntegrationTestSupport {
             member.getId(),
             issue.getId(),
             team.getOrganizationName(),
-            project.getTitle()
-        );
+            project.getTitle());
 
         // then
         assertThat(response)
@@ -294,6 +294,41 @@ class IssueServiceTest extends IntegrationTestSupport {
         assertThat(responses)
             .extracting("title")
             .containsExactlyInAnyOrder("title1", "title2");
+    }
+
+    @DisplayName("이슈의 상태를 OPEN으로 변경한다")
+    @Test
+    void reopenIssue() {
+        // given
+        Member member = createMember();
+        memberRepository.save(member);
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        TeamMember teamMember = createTeamMember(member, team);
+        teamMemberRepository.save(teamMember);
+
+        Project project = createProject(team);
+        projectRepository.save(project);
+
+        Milestone milestone = createMilestone(project);
+        milestoneRepository.save(milestone);
+
+        Issue issue = Issue.createNewIssue("title", "content", 1L, teamMember, milestone, project);
+        issue.closed();
+        issueRepository.save(issue);
+
+        // when
+        issueService.reopenIssue(member.getId(), issue.getId(), team.getOrganizationName(), project.getTitle());
+
+        // then
+        Issue reopendIssue = issueRepository.findById(issue.getId());
+        assertThat(reopendIssue.getStatus())
+            .isEqualTo(IssueStatus.OPEN);
+
+        verify(githubIssueService, times(1))
+            .updateGithubIssue(any(GithubIssueUpdateServiceRequest.class));
     }
 
     private Member createMember() {

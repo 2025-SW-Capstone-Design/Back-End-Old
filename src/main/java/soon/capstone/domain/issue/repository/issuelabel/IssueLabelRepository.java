@@ -31,13 +31,13 @@ public class IssueLabelRepository {
         return issueLabelJpaRepository.findAllByProject(project);
     }
 
-    public IssueLabel findByTitle(String title) {
-        return issueLabelJpaRepository.findByTitle(title)
+    public IssueLabel findByTitle(String title, Project project) {
+        return issueLabelJpaRepository.findByTitleAndProject(title, project)
             .orElseThrow(IssueLabelNotFoundException::new);
     }
 
-    public List<IssueLabel> findAllByTitleIn(List<String> titles) {
-        return issueLabelJpaRepository.findAllByTitleIn(titles);
+    public List<IssueLabel> findAllByTitleInAndProject(List<String> titles, Project project) {
+        return issueLabelJpaRepository.findAllByTitleInAndProject(titles, project);
     }
 
     public boolean existsByTitleAndProject(String title, Project project) {

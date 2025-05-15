@@ -24,7 +24,7 @@ public class Issue extends BaseTimeEntity {
     @Column(nullable = false)
     private String title;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
     @Column(nullable = false)
@@ -85,6 +85,10 @@ public class Issue extends BaseTimeEntity {
 
     public void closed() {
         this.status = IssueStatus.CLOSED;
+    }
+
+    public void reopen() {
+        this.status = IssueStatus.OPEN;
     }
 
 }

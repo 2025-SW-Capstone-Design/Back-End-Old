@@ -15,6 +15,7 @@ import soon.capstone.domain.issue.repository.issuelabel.IssueLabelRepository;
 import soon.capstone.domain.issue.repository.issuetemplate.IssueTemplateRepository;
 import soon.capstone.domain.issue.service.dto.request.*;
 import soon.capstone.domain.issue.service.dto.response.IssueDetailResponse;
+import soon.capstone.domain.issue.service.dto.response.IssueDetailWrapperResponse;
 import soon.capstone.domain.issue.service.dto.response.IssueLabelDetailResponse;
 import soon.capstone.domain.issue.service.dto.response.IssueTemplateDetailResponse;
 import soon.capstone.domain.member.entity.Member;
@@ -749,16 +750,17 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
         Issue issue = createIssue(project, teamMember, milestone);
         issueRepository.save(issue);
 
-        var request = IssueClosedServiceRequest.builder()
+        var request = IssueUpdateStatusServiceRequest.builder()
             .memberId(member.getId())
             .teamId(team.getId())
             .issueId(issue.getId())
             .organizationName("organizationName")
             .repositoryName("repositoryName")
+            .status("CLOSED")
             .build();
 
         // when
-        issueManagementService.closedIssue(request);
+        issueManagementService.updateIssueStatus(request);
 
         // then
         verify(issueService).closedIssue(
@@ -811,15 +813,14 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
             member.getId(),
             issue.getId(),
             team.getOrganizationName(),
-            project.getTitle()
-        )).willReturn(mockResponse);
+            project.getTitle())).willReturn(mockResponse);
 
         // when
-        IssueDetailResponse response = issueManagementService.getIssueDetail(request);
+        IssueDetailWrapperResponse response = issueManagementService.getIssueDetail(request);
 
         // then
         assertThat(response)
-            .extracting("issueId", "title", "content", "creator", "status")
+            .extracting("issueDetail.issueId", "issueDetail.title", "issueDetail.content", "issueDetail.creator", "issueDetail.status")
             .containsExactly(issue.getId(), "title", "content", "creator", "open");
     }
 

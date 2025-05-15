@@ -16,7 +16,6 @@ import soon.capstone.domain.teammember.entity.TeamMember;
 import soon.capstone.domain.teammember.repository.TeamMemberRepository;
 import soon.capstone.domain.teammember.service.dto.response.TeamMemberDetailResponse;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -125,7 +124,6 @@ class ChatRoomListRepositoryImplTest extends IntegrationTestSupport {
     private ChatRoom createChatRoom(Team team) {
         return ChatRoom.builder()
             .title("chatRoomName")
-            .reservedAt(LocalDateTime.now().plusDays(3L))
             .team(team)
             .sid("sid")
             .build();

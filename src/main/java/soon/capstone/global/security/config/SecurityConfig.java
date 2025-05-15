@@ -3,7 +3,6 @@ package soon.capstone.global.security.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
@@ -45,46 +44,46 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(AbstractHttpConfigurer::disable)
-                .formLogin(AbstractHttpConfigurer::disable)
-                .httpBasic(AbstractHttpConfigurer::disable)
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
-                .cors(cors -> cors.configurationSource(corsConfig()));
+            .csrf(AbstractHttpConfigurer::disable)
+            .formLogin(AbstractHttpConfigurer::disable)
+            .httpBasic(AbstractHttpConfigurer::disable)
+            .sessionManagement(session ->
+                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            )
+            .cors(cors -> cors.configurationSource(corsConfig()));
 
         http
-                .authorizeHttpRequests(auth -> {
-                    auth
-                            .requestMatchers(
-                                    "/oauth2/**", "/login/oauth2/**", "/api/v1/auth/reissue",
-                                    "/swagger-ui/**", "/v3/api-docs/**", "/h2-console/**",
-                                    "/favicon.ico", "/api-docs/**", "/api/v1/health"
-                            ).permitAll()
-                            .anyRequest().authenticated();
-                });
+            .authorizeHttpRequests(auth -> {
+                auth
+                    .requestMatchers(
+                        "/oauth2/**", "/login/oauth2/**", "/api/v1/auth/reissue",
+                        "/swagger-ui/**", "/v3/api-docs/**", "/h2-console/**",
+                        "/favicon.ico", "/api-docs/**", "/api/v1/health", "/api/v1/open-vidu/webhook"
+                    ).permitAll()
+                    .anyRequest().authenticated();
+            });
 
         http
-                .oauth2Login(oauth2 -> {
-                    oauth2
-                            .userInfoEndpoint(userInfoEndpointConfig ->
-                                    userInfoEndpointConfig.userService(oauth2GithubService))
-                            .successHandler(oauth2SuccessHandler)
-                            .failureHandler(oauth2FailureHandler);
-                });
+            .oauth2Login(oauth2 -> {
+                oauth2
+                    .userInfoEndpoint(userInfoEndpointConfig ->
+                        userInfoEndpointConfig.userService(oauth2GithubService))
+                    .successHandler(oauth2SuccessHandler)
+                    .failureHandler(oauth2FailureHandler);
+            });
 
         http
-                .exceptionHandling(exception -> {
-                    exception
-                            .authenticationEntryPoint(jwtAuthenticationEntryPoint)
-                            .accessDeniedHandler(jwtAccessDeniedHandler);
-                });
+            .exceptionHandling(exception -> {
+                exception
+                    .authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                    .accessDeniedHandler(jwtAccessDeniedHandler);
+            });
 
         http
-                .addFilterBefore(
-                        new JwtAuthenticationFilter(jwtProvider, objectMapper),
-                        UsernamePasswordAuthenticationFilter.class
-                );
+            .addFilterBefore(
+                new JwtAuthenticationFilter(jwtProvider, objectMapper),
+                UsernamePasswordAuthenticationFilter.class
+            );
 
         return http.build();
     }
@@ -105,10 +104,10 @@ public class SecurityConfig {
     }
 
     @Bean
-    @ConditionalOnProperty(name = "spring.h2.console.enabled",havingValue = "true")
+    @ConditionalOnProperty(name = "spring.h2.console.enabled", havingValue = "true")
     public WebSecurityCustomizer configureH2ConsoleEnable() {
         return web -> web.ignoring()
-                .requestMatchers(PathRequest.toH2Console());
+            .requestMatchers(PathRequest.toH2Console());
     }
 
 }

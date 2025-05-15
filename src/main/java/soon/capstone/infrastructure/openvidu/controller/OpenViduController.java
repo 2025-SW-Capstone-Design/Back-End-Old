@@ -10,7 +10,6 @@ import soon.capstone.infrastructure.openvidu.controller.dto.request.OpenViduWebh
 import soon.capstone.infrastructure.openvidu.service.OpenViduApiService;
 import soon.capstone.infrastructure.openvidu.service.dto.response.OpenViduGenerateTokenResponse;
 
-
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/open-vidu")
 @RestController
@@ -18,24 +17,23 @@ public class OpenViduController {
 
     private final OpenViduApiService openViduApiService;
 
-    @PostMapping("/token")
+    @PostMapping("/{teamId}/token")
     public ResponseEntity<OpenViduGenerateTokenResponse> createToken(
         @Valid @RequestBody OpenViduGenerateTokenRequest request,
-        @AuthMemberId Long memberId
-    ) {
-        OpenViduGenerateTokenResponse response = openViduApiService.generateOpenViduToken(request.toServiceRequest(memberId));
-        return ResponseEntity.ok(response);
-    }
-
-    @PostMapping(value = "/webhook/{teamId}", consumes = "application/webhook+json")
-    public ResponseEntity<Long> receiveWebhook(
-        @Valid @RequestBody OpenViduWebhookEventRequest request,
-        @RequestHeader(value = "X-OpenVidu-Token") String openViduToken,
         @AuthMemberId Long memberId,
         @PathVariable Long teamId
     ) {
-        Long chatRoomId = openViduApiService.handleWebhookEvent(request.toServiceRequest(memberId, teamId, openViduToken));
-        return ResponseEntity.ok(chatRoomId);
+        OpenViduGenerateTokenResponse response = openViduApiService.generateOpenViduToken(request.toServiceRequest(memberId, teamId));
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping(value = "/webhook", consumes = "application/webhook+json")
+    public ResponseEntity<Void> receiveWebhook(
+        @RequestBody String body,
+        @RequestHeader(value = "Authorization") String openViduToken
+    ) {
+        openViduApiService.handleWebhookEvent(OpenViduWebhookEventRequest.toServiceRequest(body, openViduToken));
+        return ResponseEntity.ok().build();
     }
 
 }
