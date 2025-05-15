@@ -51,25 +51,30 @@ public class OpenViduApiService {
             .build();
     }
 
-    public Long handleWebhookEvent(OpenViduWebhookEventServiceRequest request) {
+    public void handleWebhookEvent(OpenViduWebhookEventServiceRequest request) {
         try {
-            log.info("웹훅 요청 처리 시작 - memberId: {}, openViduToken: {}", request.memberId(), request.openViduToken());
-
             WebhookEvent event = webhookReceiver.receive(request.body(), request.openViduToken());
+            String[] identityParts = event.getParticipant().getIdentity().split(":");
+            Long memberId = Long.parseLong(identityParts[0]);
+            Long teamId = Long.parseLong(identityParts[1]);
 
-            return eventHandlers.stream()
+            log.info("웹훅 요청 처리 시작 - body{} memberId: {}, openViduToken: {}, teamId: {}", request.body(), memberId, request.openViduToken(), teamId);
+
+            eventHandlers.stream()
                 .filter(handler -> handler.support(event.getEvent()))
                 .findFirst()
-                .map(handler -> {
-                    log.info("이벤트 처리 중 - memberId: {}, event: {}", request.memberId(), event.getEvent());
-                    return handler.handle(event, request);
-                })
-                .orElseThrow(() -> {
-                    log.error("지원하지 않는 이벤트 타입 - memberId: {}, event: {}", request.memberId(), event.getEvent());
-                    return new InvalidRequest();
-                });
+                .ifPresentOrElse(
+                    handler -> {
+                        log.info("이벤트 처리 중 - memberId: {}, event: {}", memberId, event.getEvent());
+                        handler.handle(event, teamId, memberId);
+                    },
+                    () -> {
+                        log.error("지원하지 않는 이벤트 타입 - memberId: {}, event: {}", memberId, event.getEvent());
+                        throw new InvalidRequest();
+                    }
+                );
         } catch (Exception e) {
-            log.error("웹훅 이벤트 처리 중 오류 발생 - memberId: {}, 오류: {}", request.memberId(), e.getMessage());
+            log.error("웹훅 이벤트 처리 중 오류 발생 - 오류: ", e);
             throw new InvalidRequest();
         }
     }

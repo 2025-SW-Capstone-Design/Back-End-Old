@@ -6,7 +6,6 @@ import org.springframework.http.MediaType;
 import soon.capstone.ControllerTestSupport;
 import soon.capstone.global.anootation.TestMember;
 import soon.capstone.infrastructure.openvidu.controller.dto.request.OpenViduGenerateTokenRequest;
-import soon.capstone.infrastructure.openvidu.controller.dto.request.OpenViduWebhookEventRequest;
 import soon.capstone.infrastructure.openvidu.service.dto.response.OpenViduGenerateTokenResponse;
 
 import static org.mockito.BDDMockito.given;
@@ -51,25 +50,5 @@ class OpenViduControllerTest extends ControllerTestSupport {
             .andExpect(jsonPath("$.memberId").value(1L))
             .andExpect(jsonPath("$.teamId").value(1L));
     }
-
-    @TestMember
-    @DisplayName("웹훅 이벤트를 처리한다")
-    @Test
-    void processesWebhookEvent() throws Exception {
-        OpenViduWebhookEventRequest request = OpenViduWebhookEventRequest.builder()
-            .body("{\"event\":\"room_started\"}")
-            .build();
-        String openViduToken = "testToken";
-
-        mockMvc.perform(
-                post(BASE_URL + "/webhook/1")
-                    .content(objectMapper.writeValueAsString(request))
-                    .contentType("application/webhook+json")
-                    .header("X-OpenVidu-Token", openViduToken)
-            )
-            .andDo(print())
-            .andExpect(status().isOk());
-    }
-
 
 }

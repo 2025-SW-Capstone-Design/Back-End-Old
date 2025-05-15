@@ -1,5 +1,6 @@
 package soon.capstone.infrastructure.openvidu.controller;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -28,15 +29,13 @@ public class OpenViduController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping(value = "/webhook/{teamId}", consumes = "application/webhook+json")
+    @PostMapping(value = "/webhook", consumes = "application/webhook+json")
     public ResponseEntity<Long> receiveWebhook(
-        @Valid @RequestBody OpenViduWebhookEventRequest request,
-        @RequestHeader(value = "X-OpenVidu-Token") String openViduToken,
-        @AuthMemberId Long memberId,
-        @PathVariable Long teamId
+        @RequestBody JsonNode body,
+        @RequestHeader(value = "Authorization") String openViduToken
     ) {
-        Long chatRoomId = openViduApiService.handleWebhookEvent(request.toServiceRequest(memberId, teamId, openViduToken));
-        return ResponseEntity.ok(chatRoomId);
+        openViduApiService.handleWebhookEvent(OpenViduWebhookEventRequest.toServiceRequest(body, openViduToken));
+        return ResponseEntity.ok().build();
     }
 
 }

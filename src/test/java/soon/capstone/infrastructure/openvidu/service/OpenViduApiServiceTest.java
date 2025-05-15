@@ -1,6 +1,7 @@
 package soon.capstone.infrastructure.openvidu.service;
 
 import io.livekit.server.WebhookReceiver;
+import livekit.LivekitModels.ParticipantInfo;
 import livekit.LivekitWebhook.WebhookEvent;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,8 +16,8 @@ import soon.capstone.infrastructure.openvidu.service.dto.request.OpenViduWebhook
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
+import static soon.capstone.infrastructure.openvidu.common.OpenViduEventType.PARTICIPANT_JOINED;
 
 class OpenViduApiServiceTest extends IntegrationTestSupport {
 
@@ -56,22 +57,30 @@ class OpenViduApiServiceTest extends IntegrationTestSupport {
     @Test
     void handleWebhookEvent() {
         // given
-        String body = "{\"event\":\"participant_joined\"}";
+        Long teamId = 1L;
+        Long memberId = 1L;
+        String identity = memberId + ":" + teamId;
+        String body = "{\"event\":" + PARTICIPANT_JOINED + "}";
         OpenViduWebhookEventServiceRequest request = createOpenViduWebhookEventServiceRequest(body);
 
         WebhookEvent event = WebhookEvent.newBuilder()
-            .setEvent("participant_joined")
+            .setEvent(PARTICIPANT_JOINED.getEventType())
+            .setParticipant(
+                ParticipantInfo.newBuilder()
+                    .setIdentity(identity)
+                    .build()
+            )
             .build();
+
         given(receiver.receive(body, request.openViduToken())).willReturn(event);
-        given(participantJoinedEventHandler.support("participant_joined")).willReturn(true);
-        given(participantJoinedEventHandler.handle(event, request)).willReturn(123L);
+        given(participantJoinedEventHandler.support(PARTICIPANT_JOINED.getEventType()))
+            .willReturn(true);
 
         // when
-        Long roomId = openViduApiService.handleWebhookEvent(request);
+        openViduApiService.handleWebhookEvent(request);
 
         // then
-        assertThat(roomId).isNotNull().isEqualTo(123L);
-        verify(participantJoinedEventHandler).handle(event, request);
+        verify(participantJoinedEventHandler).handle(event, teamId, memberId);
     }
 
     @DisplayName("지원되지 않는 이벤트를 처리 할 경우 예외가 발생한다.")
@@ -80,10 +89,6 @@ class OpenViduApiServiceTest extends IntegrationTestSupport {
         // given
         String body = "{\"event\":\"unsupported_event\"}";
         OpenViduWebhookEventServiceRequest request = createOpenViduWebhookEventServiceRequest(body);
-
-        doThrow(new InvalidRequest())
-            .when(openViduApiService)
-            .handleWebhookEvent(request);
 
         // expected
         assertThatThrownBy(() -> openViduApiService.handleWebhookEvent(request))
@@ -95,8 +100,6 @@ class OpenViduApiServiceTest extends IntegrationTestSupport {
         return OpenViduWebhookEventServiceRequest.builder()
             .body(body)
             .openViduToken("openViduToken")
-            .memberId(1L)
-            .teamId(1L)
             .build();
     }
 
