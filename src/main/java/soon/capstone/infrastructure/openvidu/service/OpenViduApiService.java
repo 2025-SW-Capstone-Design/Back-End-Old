@@ -16,6 +16,7 @@ import soon.capstone.infrastructure.openvidu.service.dto.response.OpenViduGenera
 
 import java.util.List;
 
+import static soon.capstone.infrastructure.openvidu.common.OpenViduEventType.ROOM_FINISHED;
 import static soon.capstone.infrastructure.openvidu.common.OpenViduEventType.ROOM_STARTED;
 
 @Slf4j
@@ -63,12 +64,12 @@ public class OpenViduApiService {
     public void handleWebhookEvent(OpenViduWebhookEventServiceRequest request) {
         try {
             WebhookEvent event = webhookReceiver.receive(request.body(), request.openViduToken());
-            if (event.getEvent().equals(ROOM_STARTED.getEventType())) {
+            if (isRoomEvent(event)) {
                 return;
             }
 
-            Long memberId = extractMemberIdFromIdentity(event);
-            Long teamId = extractTeamIdFromIdentity(event);
+            Long memberId = extractId(event, 0);
+            Long teamId = extractId(event, 1);
 
             log.info("웹훅 이벤트 수신 - event: {}, memberId: {}, teamId: {}", event.getEvent(), memberId, teamId);
 
@@ -94,18 +95,12 @@ public class OpenViduApiService {
         }
     }
 
-    private Long extractMemberIdFromIdentity(WebhookEvent event) {
-        return Long.parseLong(event.getParticipant()
-            .getIdentity()
-            .split(":")[0]
-        );
+    private boolean isRoomEvent(WebhookEvent event) {
+        return ROOM_STARTED.getEventType().equals(event.getEvent()) || ROOM_FINISHED.getEventType().equals(event.getEvent());
     }
 
-    private Long extractTeamIdFromIdentity(WebhookEvent event) {
-        return Long.parseLong(event.getParticipant()
-            .getIdentity()
-            .split(":")[1]
-        );
+    private Long extractId(WebhookEvent event, int index) {
+        return Long.parseLong(event.getParticipant().getIdentity().split(":")[index]);
     }
 
 }
