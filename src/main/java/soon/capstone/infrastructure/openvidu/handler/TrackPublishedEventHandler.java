@@ -17,10 +17,11 @@ public class TrackPublishedEventHandler implements OpenViduWebhookEventHandler {
 
     @Override
     public void handle(LivekitWebhook.WebhookEvent event, Long teamId, Long memberId) {
-        log.info("트랙이 연결되었습니다 - 방 이름: {}, 팀: {}, 참가자: {}, 트랙 SID: {}",
+        log.info("트랙이 연결되었습니다 - 방 이름: {}, 팀: {}, 참가자: {}, 트랙({}) SID: {}",
             event.getRoom().getName(),
             teamId,
             memberId,
+            event.getTrack().getName(),
             event.getTrack().getSid()
         );
     }
