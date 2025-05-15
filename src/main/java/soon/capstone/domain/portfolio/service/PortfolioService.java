@@ -47,6 +47,7 @@ public class PortfolioService {
         validatePortfolioOwnership(portfolio, member);
 
         return PortfolioDetailResponse.builder()
+            .id(portfolio.getId())
             .title(portfolio.getTitle())
             .content(portfolio.getContent())
             .nickname(member.getNickname())
@@ -110,6 +111,7 @@ public class PortfolioService {
 
     private PortfolioResponse mapToPortfolioResponse(Portfolio portfolio) {
         return PortfolioResponse.builder()
+            .id(portfolio.getId())
             .title(portfolio.getTitle())
             .content(portfolio.getContent())
             .createTime(portfolio.getCreateTime())

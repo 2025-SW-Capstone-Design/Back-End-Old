@@ -6,9 +6,12 @@ import java.time.LocalDateTime;
 
 @Builder
 public record PortfolioResponse(
+
+    Long id,
     String title,
     String content,
     LocalDateTime createTime,
     LocalDateTime modifyTime
+
 ) {
 }
