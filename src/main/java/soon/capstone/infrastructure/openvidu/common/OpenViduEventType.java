@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum OpenViduEventType {
 
+    ROOM_STARTED("room_started"),
     TRACK_UNPUBLISHED("track_unpublished"),
     TRACK_PUBLISHED("track_published"),
     ROOM_FINISHED("room_finished"),

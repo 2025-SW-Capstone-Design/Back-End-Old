@@ -16,6 +16,8 @@ import soon.capstone.infrastructure.openvidu.service.dto.response.OpenViduGenera
 
 import java.util.List;
 
+import static soon.capstone.infrastructure.openvidu.common.OpenViduEventType.ROOM_STARTED;
+
 @Slf4j
 @Service
 public class OpenViduApiService {
@@ -61,6 +63,10 @@ public class OpenViduApiService {
     public void handleWebhookEvent(OpenViduWebhookEventServiceRequest request) {
         try {
             WebhookEvent event = webhookReceiver.receive(request.body(), request.openViduToken());
+            if (event.getEvent().equals(ROOM_STARTED.getEventType())) {
+                return;
+            }
+
             Long memberId = extractMemberIdFromIdentity(event);
             Long teamId = extractTeamIdFromIdentity(event);
 
