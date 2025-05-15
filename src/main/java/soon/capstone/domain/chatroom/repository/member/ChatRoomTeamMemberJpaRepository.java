@@ -12,4 +12,6 @@ public interface ChatRoomTeamMemberJpaRepository extends
 
     Optional<ChatRoomTeamMember> findByChatRoomIdAndTeamMemberId(Long chatRoomId, Long teamMemberId);
 
+    boolean existsByChatRoomIdAndTeamMemberId(Long chatRoomId, Long teamMemberId);
+
 }
