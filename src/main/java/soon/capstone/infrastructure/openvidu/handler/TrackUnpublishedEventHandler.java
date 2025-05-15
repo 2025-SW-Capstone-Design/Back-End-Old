@@ -21,7 +21,7 @@ public class TrackUnpublishedEventHandler implements OpenViduWebhookEventHandler
             event.getRoom().getName(),
             teamId,
             memberId,
-            event.getTrack().getName(),
+            event.getTrack().getType(),
             event.getTrack().getSid()
         );
     }

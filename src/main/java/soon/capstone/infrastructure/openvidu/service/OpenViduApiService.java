@@ -13,6 +13,7 @@ import soon.capstone.infrastructure.openvidu.handler.OpenViduWebhookEventHandler
 import soon.capstone.infrastructure.openvidu.service.dto.request.OpenViduGenerateTokenServiceRequest;
 import soon.capstone.infrastructure.openvidu.service.dto.request.OpenViduWebhookEventServiceRequest;
 import soon.capstone.infrastructure.openvidu.service.dto.response.OpenViduGenerateTokenResponse;
+import soon.capstone.infrastructure.redis.openvidu.repository.TemporaryRoomIdentityRepository;
 
 import java.util.List;
 
@@ -27,17 +28,20 @@ public class OpenViduApiService {
     private final String apiSecret;
     private final List<OpenViduWebhookEventHandler> eventHandlers;
     private final WebhookReceiver webhookReceiver;
+    private final TemporaryRoomIdentityRepository temporaryRoomIdentityRepository;
 
     public OpenViduApiService(
         @Value("${livekit.api.key}") String apiKey,
         @Value("${livekit.api.secret}") String apiSecret,
         List<OpenViduWebhookEventHandler> eventHandlers,
-        WebhookReceiver webhookReceiver
+        WebhookReceiver webhookReceiver,
+        TemporaryRoomIdentityRepository temporaryRoomIdentityRepository
     ) {
         this.apiKey = apiKey;
         this.apiSecret = apiSecret;
         this.eventHandlers = eventHandlers;
         this.webhookReceiver = webhookReceiver;
+        this.temporaryRoomIdentityRepository = temporaryRoomIdentityRepository;
     }
 
     public OpenViduGenerateTokenResponse generateOpenViduToken(OpenViduGenerateTokenServiceRequest request) {
@@ -64,12 +68,13 @@ public class OpenViduApiService {
     public void handleWebhookEvent(OpenViduWebhookEventServiceRequest request) {
         try {
             WebhookEvent event = webhookReceiver.receive(request.body(), request.openViduToken());
-            if (isRoomEvent(event)) {
+            if (ROOM_STARTED.equals(event.getEvent())) {
                 return;
             }
 
-            Long memberId = extractId(event, 0);
-            Long teamId = extractId(event, 1);
+            String identity = getIdentity(event);
+            Long memberId = extractIdFromIdentity(identity, 0);
+            Long teamId = extractIdFromIdentity(identity, 1);
 
             log.info("웹훅 이벤트 수신 - event: {}, memberId: {}, teamId: {}", event.getEvent(), memberId, teamId);
 
@@ -95,12 +100,17 @@ public class OpenViduApiService {
         }
     }
 
-    private boolean isRoomEvent(WebhookEvent event) {
-        return ROOM_STARTED.getEventType().equals(event.getEvent()) || ROOM_FINISHED.getEventType().equals(event.getEvent());
+    private String getIdentity(WebhookEvent event) {
+        if (ROOM_FINISHED.getEventType().equals(event.getEvent())) {
+            log.info("방 종료 이벤트 수신 - event: {}", event.getEvent());
+            return temporaryRoomIdentityRepository.findById(event.getRoom().getSid()).getIdentity();
+        }
+
+        return event.getParticipant().getIdentity();
     }
 
-    private Long extractId(WebhookEvent event, int index) {
-        return Long.parseLong(event.getParticipant().getIdentity().split(":")[index]);
+    private Long extractIdFromIdentity(String identity, int index) {
+        return Long.parseLong(identity.split(":")[index]); // memberId:teamId
     }
 
 }

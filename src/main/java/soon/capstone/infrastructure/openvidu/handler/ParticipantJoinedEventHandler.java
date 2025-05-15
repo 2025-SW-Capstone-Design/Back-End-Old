@@ -8,6 +8,8 @@ import soon.capstone.domain.chatroom.service.ChatRoomService;
 import soon.capstone.domain.chatroom.service.ChatRoomTeamMemberService;
 import soon.capstone.domain.chatroom.service.dto.request.ChatRoomAddMemberServiceRequest;
 import soon.capstone.domain.chatroom.service.dto.request.ChatRoomCreateServiceRequest;
+import soon.capstone.infrastructure.redis.openvidu.entity.TemporaryRoomIdentity;
+import soon.capstone.infrastructure.redis.openvidu.repository.TemporaryRoomIdentityRepository;
 
 import static soon.capstone.infrastructure.openvidu.common.OpenViduEventType.PARTICIPANT_JOINED;
 
@@ -18,6 +20,7 @@ public class ParticipantJoinedEventHandler implements OpenViduWebhookEventHandle
 
     private final ChatRoomService chatRoomService;
     private final ChatRoomTeamMemberService chatRoomTeamMemberService;
+    private final TemporaryRoomIdentityRepository temporaryRoomIdentityRepository;
 
     @Override
     public boolean support(String eventType) {
@@ -32,11 +35,10 @@ public class ParticipantJoinedEventHandler implements OpenViduWebhookEventHandle
             event.getRoom().getName()
         );
 
-        ChatRoomCreateServiceRequest request = createChatroomCreateServiceRequest(event, teamId, memberId);
-        Long chatRoomId = chatRoomService.createRoom(request);
+        Long chatRoomId = chatRoomService.createRoom(createChatroomCreateServiceRequest(event, teamId, memberId));
+        chatRoomTeamMemberService.addMemberToChatRoom(createChatRoomAddMemberServiceRequest(chatRoomId, teamId, memberId));
 
-        ChatRoomAddMemberServiceRequest addMemberRequest = createChatRoomAddMemberServiceRequest(chatRoomId, teamId, memberId);
-        chatRoomTeamMemberService.addMemberToChatRoom(addMemberRequest);
+        saveTemporaryRoomIdentity(event.getRoom().getSid(), memberId, teamId);
     }
 
     private ChatRoomCreateServiceRequest createChatroomCreateServiceRequest(WebhookEvent event, Long teamId, Long memberId) {
@@ -54,6 +56,12 @@ public class ParticipantJoinedEventHandler implements OpenViduWebhookEventHandle
             .teamId(teamId)
             .memberId(memberId)
             .build();
+    }
+
+    private void saveTemporaryRoomIdentity(String sid, Long memberId, Long teamId) {
+        if (!temporaryRoomIdentityRepository.existsById(sid)) {
+            temporaryRoomIdentityRepository.save(TemporaryRoomIdentity.create(memberId, teamId, sid));
+        }
     }
 
 }
