@@ -6,14 +6,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import soon.capstone.domain.chatroom.entity.ChatRoom;
 import soon.capstone.domain.chatroom.repository.chatroom.ChatRoomRepository;
-import soon.capstone.domain.chatroom.service.dto.request.ChatRoomCreateServiceRequest;
-import soon.capstone.domain.chatroom.service.dto.request.ChatRoomDetailsServiceRequest;
-import soon.capstone.domain.chatroom.service.dto.request.ChatRoomFinishServiceRequest;
-import soon.capstone.domain.chatroom.service.dto.request.ChatRoomResumeServiceRequest;
+import soon.capstone.domain.chatroom.service.dto.request.*;
 import soon.capstone.domain.chatroom.service.dto.response.ChatRoomDetailsResponse;
+import soon.capstone.domain.meetinglog.service.MeetingLogService;
+import soon.capstone.domain.meetinglog.service.dto.request.MeetingLogCreateServiceRequest;
 import soon.capstone.domain.team.entity.Team;
 import soon.capstone.domain.team.repository.TeamRepository;
 import soon.capstone.domain.teammember.service.TeamMemberValidator;
+import soon.capstone.infrastructure.openai.service.GptSummaryService;
+import soon.capstone.infrastructure.redis.summary.repository.SummaryTextRepository;
 
 import java.util.List;
 
@@ -23,8 +24,11 @@ import java.util.List;
 public class ChatRoomService {
 
     private final ChatRoomRepository chatRoomRepository;
+    private final GptSummaryService gptSummaryService;
     private final TeamRepository teamRepository;
     private final TeamMemberValidator teamMemberValidator;
+    private final SummaryTextRepository summaryTextRepository;
+    private final MeetingLogService meetingLogService;
 
     public Long createRoom(ChatRoomCreateServiceRequest request) {
         teamMemberValidator.validateTeamMember(request.teamId(), request.memberId());
@@ -65,6 +69,25 @@ public class ChatRoomService {
         return chatRoomRepository.findAllByTeamId(request.teamId()).stream()
             .map(ChatRoomDetailsResponse::from)
             .toList();
+    }
+
+    public void summarizeChatroom(ChatRoomSummarizeServiceRequest request) {
+        teamMemberValidator.validateTeamMember(request.teamId(), request.memberId());
+
+        String summaryToText = gptSummaryService.summaryToText(request.text(), request.isFinal());
+        if (request.isFinal()) {
+            meetingLogService.create(createMeetingLogCreateServiceRequest(request.teamId(), request.memberId(), summaryToText));
+        } else {
+            summaryTextRepository.save(request.chatRoomId(), summaryToText);
+        }
+    }
+
+    private MeetingLogCreateServiceRequest createMeetingLogCreateServiceRequest(Long teamId, Long memberId, String content) {
+        return MeetingLogCreateServiceRequest.builder()
+            .teamId(teamId)
+            .memberId(memberId)
+            .content(content)
+            .build();
     }
 
 }

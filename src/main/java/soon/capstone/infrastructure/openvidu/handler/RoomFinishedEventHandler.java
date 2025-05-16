@@ -6,7 +6,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import soon.capstone.domain.chatroom.service.ChatRoomService;
 import soon.capstone.domain.chatroom.service.dto.request.ChatRoomFinishServiceRequest;
+import soon.capstone.domain.chatroom.service.dto.request.ChatRoomSummarizeServiceRequest;
 import soon.capstone.infrastructure.redis.openvidu.repository.TemporaryRoomIdentityRepository;
+import soon.capstone.infrastructure.redis.summary.service.SummaryTextService;
+
+import java.util.stream.Collectors;
 
 import static soon.capstone.infrastructure.openvidu.common.OpenViduEventType.ROOM_FINISHED;
 
@@ -16,6 +20,7 @@ import static soon.capstone.infrastructure.openvidu.common.OpenViduEventType.ROO
 public class RoomFinishedEventHandler implements OpenViduWebhookEventHandler {
 
     private final ChatRoomService chatRoomService;
+    private final SummaryTextService summaryTextService;
     private final TemporaryRoomIdentityRepository temporaryRoomIdentityRepository;
 
     @Override
@@ -27,8 +32,13 @@ public class RoomFinishedEventHandler implements OpenViduWebhookEventHandler {
     public void handle(WebhookEvent event, Long teamId, Long memberId) {
         log.info("팀: {}, 회의 종료: {}", teamId, event.getRoom().getName());
 
-        // TODO: 회의록 최종 요약 요청
-        chatRoomService.finishRoom(createChatRoomFinishServiceRequest(event, teamId, memberId));
+        Long chatRoomId = chatRoomService.finishRoom(createChatRoomFinishServiceRequest(event, teamId, memberId));
+        String combinedSummary = summaryTextService.findAllByChatRoomId(chatRoomId).stream()
+            .map(summaryText -> summaryText.getSummary() + "\n")
+            .collect(Collectors.joining());
+
+        chatRoomService.summarizeChatroom(createChatRoomSummarizeServiceRequest(teamId, memberId, chatRoomId, combinedSummary));
+        summaryTextService.resetIndex(chatRoomId);
 
         temporaryRoomIdentityRepository.deleteById(event.getRoom().getSid());
     }
@@ -38,6 +48,16 @@ public class RoomFinishedEventHandler implements OpenViduWebhookEventHandler {
             .teamId(teamId)
             .memberId(memberId)
             .sid(event.getRoom().getSid())
+            .build();
+    }
+
+    private ChatRoomSummarizeServiceRequest createChatRoomSummarizeServiceRequest(Long teamId, Long memberId, Long chatRoomId, String combinedSummary) {
+        return ChatRoomSummarizeServiceRequest.builder()
+            .teamId(teamId)
+            .memberId(memberId)
+            .chatRoomId(chatRoomId)
+            .text(combinedSummary)
+            .isFinal(true)
             .build();
     }
 

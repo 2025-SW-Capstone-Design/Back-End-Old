@@ -1,9 +1,11 @@
 package soon.capstone.domain.chatroom.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import soon.capstone.domain.chatroom.controller.dto.ChatRoomDetailsRequest;
+import soon.capstone.domain.chatroom.controller.dto.ChatRoomSummarizeRequest;
 import soon.capstone.domain.chatroom.controller.dto.request.ChatRoomResumeRequest;
 import soon.capstone.domain.chatroom.service.ChatRoomService;
 import soon.capstone.domain.chatroom.service.dto.response.ChatRoomDetailsResponse;
@@ -35,6 +37,18 @@ public class ChatRoomController {
     ) {
         List<ChatRoomDetailsResponse> response = chatRoomService.getChatRoomDetails(ChatRoomDetailsRequest.toServiceRequest(memberId, teamId));
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/{chatRoomId}/summary")
+    public ResponseEntity<Void> summarizeChatroom(
+        @Valid @RequestBody ChatRoomSummarizeRequest request,
+        @AuthMemberId Long memberId,
+        @PathVariable Long teamId,
+        @PathVariable Long chatRoomId
+    ) {
+        chatRoomService.summarizeChatroom(request.toServiceRequest(teamId, memberId, chatRoomId));
+        return ResponseEntity.ok()
+            .build();
     }
 
 }
