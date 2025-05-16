@@ -17,6 +17,10 @@ public class MeetingLogRepository {
         meetingLogJpaRepository.save(meetingLog);
     }
 
+    public void saveAll(List<MeetingLog> meetingLog) {
+        meetingLogJpaRepository.saveAll(meetingLog);
+    }
+
     public List<MeetingLog> findAll() {
         return meetingLogJpaRepository.findAll();
     }
@@ -28,6 +32,10 @@ public class MeetingLogRepository {
 
     public void deleteAllInBatch() {
         meetingLogJpaRepository.deleteAllInBatch();
+    }
+
+    public List<MeetingLog> findAllByTeamIdOrderByCreateTimeDesc(Long teamId) {
+        return meetingLogJpaRepository.findAllByTeamIdOrderByCreateTimeDesc(teamId);
     }
 
 }
