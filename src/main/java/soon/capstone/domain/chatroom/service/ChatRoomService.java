@@ -8,6 +8,8 @@ import soon.capstone.domain.chatroom.entity.ChatRoom;
 import soon.capstone.domain.chatroom.repository.chatroom.ChatRoomRepository;
 import soon.capstone.domain.chatroom.service.dto.request.*;
 import soon.capstone.domain.chatroom.service.dto.response.ChatRoomDetailsResponse;
+import soon.capstone.domain.meetinglog.service.MeetingLogService;
+import soon.capstone.domain.meetinglog.service.dto.request.MeetingLogCreateServiceRequest;
 import soon.capstone.domain.team.entity.Team;
 import soon.capstone.domain.team.repository.TeamRepository;
 import soon.capstone.domain.teammember.service.TeamMemberValidator;
@@ -26,6 +28,7 @@ public class ChatRoomService {
     private final TeamRepository teamRepository;
     private final TeamMemberValidator teamMemberValidator;
     private final SummaryTextRepository summaryTextRepository;
+    private final MeetingLogService meetingLogService;
 
     public Long createRoom(ChatRoomCreateServiceRequest request) {
         teamMemberValidator.validateTeamMember(request.teamId(), request.memberId());
@@ -72,7 +75,19 @@ public class ChatRoomService {
         teamMemberValidator.validateTeamMember(request.teamId(), request.memberId());
 
         String summaryToText = gptSummaryService.summaryToText(request.text(), request.isFinal());
-        summaryTextRepository.save(request.chatRoomId(), summaryToText);
+        if (request.isFinal()) {
+            meetingLogService.create(createMeetingLogCreateServiceRequest(request.teamId(), request.memberId(), summaryToText));
+        } else {
+            summaryTextRepository.save(request.chatRoomId(), summaryToText);
+        }
+    }
+
+    private MeetingLogCreateServiceRequest createMeetingLogCreateServiceRequest(Long teamId, Long memberId, String content) {
+        return MeetingLogCreateServiceRequest.builder()
+            .teamId(teamId)
+            .memberId(memberId)
+            .content(content)
+            .build();
     }
 
 }

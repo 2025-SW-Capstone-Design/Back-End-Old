@@ -11,6 +11,8 @@ import soon.capstone.domain.chatroom.repository.chatroom.ChatRoomRepository;
 import soon.capstone.domain.chatroom.repository.member.ChatRoomTeamMemberRepository;
 import soon.capstone.domain.chatroom.service.dto.request.*;
 import soon.capstone.domain.chatroom.service.dto.response.ChatRoomDetailsResponse;
+import soon.capstone.domain.meetinglog.entity.MeetingLog;
+import soon.capstone.domain.meetinglog.repository.MeetingLogRepository;
 import soon.capstone.domain.member.entity.Member;
 import soon.capstone.domain.member.repository.MemberRepository;
 import soon.capstone.domain.team.entity.Team;
@@ -50,6 +52,9 @@ class ChatRoomServiceTest extends IntegrationTestSupport {
     @Autowired
     private SummaryTextRepository summaryTextRepository;
 
+    @Autowired
+    private MeetingLogRepository meetingLogRepository;
+
     @MockitoBean
     private GptSummaryService gptSummaryService;
 
@@ -57,6 +62,7 @@ class ChatRoomServiceTest extends IntegrationTestSupport {
     void tearDown() {
         chatRoomTeamMemberRepository.deleteAllInBatch();
         chatRoomRepository.deleteAllInBatch();
+        meetingLogRepository.deleteAllInBatch();
         teamMemberRepository.deleteAllInBatch();
         teamRepository.deleteAllInBatch();
         memberRepository.deleteAllInBatch();
@@ -219,6 +225,47 @@ class ChatRoomServiceTest extends IntegrationTestSupport {
 
         // then
         verify(gptSummaryService).summaryToText(text, isFinal);
+    }
+
+    @DisplayName("채팅방 요약이 최종 요약인 경우 회의록을 생성한다")
+    @Test
+    void summarizeChatroomCreatesMeetingLogWhenFinalSummary() {
+        // given
+        Member member = createMember("email", "nickname");
+        memberRepository.save(member);
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        TeamMember leader = TeamMember.createLeader(member, team);
+        teamMemberRepository.save(leader);
+
+        ChatRoom chatRoom = createChatRoom(team);
+        chatRoomRepository.save(chatRoom);
+
+        String text = "long text";
+        boolean isFinal = true;
+        var request = ChatRoomSummarizeServiceRequest.builder()
+            .chatRoomId(chatRoom.getId())
+            .teamId(team.getId())
+            .memberId(member.getId())
+            .text(text)
+            .isFinal(isFinal)
+            .build();
+
+        given(gptSummaryService.summaryToText(text, isFinal))
+            .willReturn("Processed Summary");
+
+        // when
+        chatRoomService.summarizeChatroom(request);
+
+        // then
+        verify(gptSummaryService).summaryToText(text, isFinal);
+
+        List<MeetingLog> meetingLogs = meetingLogRepository.findAll();
+        assertThat(meetingLogs).hasSize(1)
+            .extracting("id", "content")
+            .contains(tuple(meetingLogs.getFirst().getId(), "Processed Summary"));
     }
 
     private Member createMember(String email, String nickname) {

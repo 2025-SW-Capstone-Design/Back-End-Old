@@ -9,6 +9,9 @@ import soon.capstone.domain.member.entity.Member;
 import soon.capstone.domain.team.entity.Team;
 import soon.capstone.global.common.BaseTimeEntity;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Table(name = "meeting_logs")
@@ -40,6 +43,20 @@ public class MeetingLog extends BaseTimeEntity {
         this.content = content;
         this.member = member;
         this.team = team;
+    }
+
+    public static MeetingLog create(String content, Member member, Team team, LocalDate now) {
+        return MeetingLog.builder()
+            .content(content)
+            .title(generateTitle(team, now))
+            .member(member)
+            .team(team)
+            .build();
+    }
+
+    private static String generateTitle(Team team, LocalDate now) {
+        String formattedDate = now.format(DateTimeFormatter.ofPattern("yyyy.MM.dd"));
+        return "회의록 - " + team.getName() + " (" + formattedDate + ")";
     }
 
 }
