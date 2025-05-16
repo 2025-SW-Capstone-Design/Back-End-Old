@@ -16,6 +16,8 @@ import soon.capstone.domain.issue.controller.IssueController;
 import soon.capstone.domain.issue.controller.IssueLabelController;
 import soon.capstone.domain.issue.controller.IssueTemplateController;
 import soon.capstone.domain.issue.service.IssueManagementService;
+import soon.capstone.domain.meetinglog.controller.MeetingLogController;
+import soon.capstone.domain.meetinglog.service.MeetingLogService;
 import soon.capstone.domain.member.controller.MemberController;
 import soon.capstone.domain.member.service.MemberService;
 import soon.capstone.domain.milestone.controller.MilestoneController;
@@ -49,7 +51,8 @@ import soon.capstone.infrastructure.openvidu.service.OpenViduApiService;
         OpenViduController.class,
         ChatRoomTeamMemberController.class,
         ChatRoomController.class,
-        MemberController.class
+        MemberController.class,
+        MeetingLogController.class
     }
 )
 public abstract class ControllerTestSupport {
@@ -95,5 +98,8 @@ public abstract class ControllerTestSupport {
 
     @MockitoBean
     protected ChatRoomService chatRoomService;
+
+    @MockitoBean
+    protected MeetingLogService meetingLogService;
 
 }

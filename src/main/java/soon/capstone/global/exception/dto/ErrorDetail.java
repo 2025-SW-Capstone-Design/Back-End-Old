@@ -73,6 +73,9 @@ public enum ErrorDetail {
 
     // openvidu 관련
     TEMPORARY_ROOM_IDENTITY_NOT_FOUND(404, "임시 방 아이디를 찾을 수 없습니다."),
+
+    // 회의록 관련
+    MEETING_LOG_NOT_FOUND(404, "해당 회의록을 찾을 수 없습니다."),
     ;
 
     private final int status;
