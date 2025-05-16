@@ -11,6 +11,7 @@ import soon.capstone.domain.member.entity.Member;
 import soon.capstone.domain.member.repository.MemberRepository;
 import soon.capstone.domain.team.entity.Team;
 import soon.capstone.domain.team.repository.TeamRepository;
+import soon.capstone.domain.teammember.service.TeamMemberValidator;
 
 import java.time.LocalDate;
 
@@ -19,6 +20,7 @@ import java.time.LocalDate;
 public class MeetingLogService {
 
     private final MeetingLogRepository meetingLogRepository;
+    private final TeamMemberValidator teamMemberValidator;
     private final MemberRepository memberRepository;
     private final TeamRepository teamRepository;
 
@@ -31,6 +33,8 @@ public class MeetingLogService {
 
     @Transactional
     public void update(MeetingLogUpdateServiceRequest request) {
+        teamMemberValidator.validateTeamMember(request.teamId(), request.memberId());
+
         MeetingLog meetingLog = meetingLogRepository.findById(request.id());
         meetingLog.update(request.title(), request.content());
     }

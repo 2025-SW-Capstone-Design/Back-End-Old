@@ -7,7 +7,9 @@ public record MeetingLogUpdateServiceRequest(
 
     Long id,
     String title,
-    String content
+    String content,
+    Long memberId,
+    Long teamId
 
 ) {
 }

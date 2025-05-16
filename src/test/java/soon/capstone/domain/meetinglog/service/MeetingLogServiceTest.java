@@ -13,6 +13,8 @@ import soon.capstone.domain.member.entity.Member;
 import soon.capstone.domain.member.repository.MemberRepository;
 import soon.capstone.domain.team.entity.Team;
 import soon.capstone.domain.team.repository.TeamRepository;
+import soon.capstone.domain.teammember.entity.TeamMember;
+import soon.capstone.domain.teammember.repository.TeamMemberRepository;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -32,11 +34,15 @@ class MeetingLogServiceTest extends IntegrationTestSupport {
     private TeamRepository teamRepository;
 
     @Autowired
+    private TeamMemberRepository teamMemberRepository;
+
+    @Autowired
     private MeetingLogRepository meetingLogRepository;
 
     @AfterEach
     void tearDown() {
         meetingLogRepository.deleteAllInBatch();
+        teamMemberRepository.deleteAllInBatch();
         teamRepository.deleteAllInBatch();
         memberRepository.deleteAllInBatch();
     }
@@ -78,11 +84,16 @@ class MeetingLogServiceTest extends IntegrationTestSupport {
         Team team = createTeam();
         teamRepository.save(team);
 
+        TeamMember leader = TeamMember.createLeader(member, team);
+        teamMemberRepository.save(leader);
+
         MeetingLog meetingLog = MeetingLog.create("content", member, team, LocalDate.now());
         meetingLogRepository.save(meetingLog);
 
         MeetingLogUpdateServiceRequest request = MeetingLogUpdateServiceRequest.builder()
             .id(meetingLog.getId())
+            .teamId(team.getId())
+            .memberId(member.getId())
             .content("new content")
             .title("new title")
             .build();
