@@ -54,6 +54,11 @@ public class MeetingLog extends BaseTimeEntity {
             .build();
     }
 
+    public void update(String title, String content) {
+        this.title = title;
+        this.content = content;
+    }
+
     private static String generateTitle(Team team, LocalDate now) {
         String formattedDate = now.format(DateTimeFormatter.ofPattern("yyyy.MM.dd"));
         return "회의록 - " + team.getName() + " (" + formattedDate + ")";

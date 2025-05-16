@@ -5,8 +5,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import soon.capstone.IntegrationTestSupport;
+import soon.capstone.domain.meetinglog.entity.MeetingLog;
 import soon.capstone.domain.meetinglog.repository.MeetingLogRepository;
 import soon.capstone.domain.meetinglog.service.dto.request.MeetingLogCreateServiceRequest;
+import soon.capstone.domain.meetinglog.service.dto.request.MeetingLogUpdateServiceRequest;
 import soon.capstone.domain.member.entity.Member;
 import soon.capstone.domain.member.repository.MemberRepository;
 import soon.capstone.domain.team.entity.Team;
@@ -64,6 +66,35 @@ class MeetingLogServiceTest extends IntegrationTestSupport {
         assertThat(meetingLogRepository.findAll()).hasSize(1)
             .extracting("title", "content")
             .contains(tuple(title, "content"));
+    }
+
+    @DisplayName("회의록을 수정한다.")
+    @Test
+    void update() {
+        // given
+        Member member = createMember("email", "nickname");
+        memberRepository.save(member);
+
+        Team team = createTeam();
+        teamRepository.save(team);
+
+        MeetingLog meetingLog = MeetingLog.create("content", member, team, LocalDate.now());
+        meetingLogRepository.save(meetingLog);
+
+        MeetingLogUpdateServiceRequest request = MeetingLogUpdateServiceRequest.builder()
+            .id(meetingLog.getId())
+            .content("new content")
+            .title("new title")
+            .build();
+
+        // when
+        meetingLogService.update(request);
+
+        // then
+        MeetingLog updatedMeetingLog = meetingLogRepository.findById(meetingLog.getId());
+        assertThat(updatedMeetingLog)
+            .extracting("title", "content")
+            .contains("new title", "new content");
     }
 
     private Member createMember(String email, String nickname) {
