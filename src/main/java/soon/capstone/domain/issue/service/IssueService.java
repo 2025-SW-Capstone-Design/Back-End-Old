@@ -119,10 +119,10 @@ public class IssueService {
         @CacheEvict(value = "issueDetail", key = "#issueId + ':' + #organizationName + ':' + #repositoryName")
     })
     @Transactional
-    public void closedIssue(Member member, Long issueId, String organizationName, String repositoryName) {
+    public void closedIssue(Member member, Long issueId, String organizationName, String repositoryName, List<String> labels) {
         Issue issue = issueRepository.findById(issueId);
         issue.closed();
-        updateGithubIssueStatus(member.getId(), issue, organizationName, repositoryName, IssueStatus.CLOSED, member.getNickname());
+        updateGithubIssueStatus(member.getId(), issue, organizationName, repositoryName, IssueStatus.CLOSED, member.getNickname(), labels);
     }
 
     @Caching(evict = {
@@ -131,10 +131,10 @@ public class IssueService {
         @CacheEvict(value = "issueDetail", key = "#issueId + ':' + #organizationName + ':' + #repositoryName")
     })
     @Transactional
-    public void reopenIssue(Member member, Long issueId, String organizationName, String repositoryName) {
+    public void reopenIssue(Member member, Long issueId, String organizationName, String repositoryName, List<String> labels) {
         Issue issue = issueRepository.findById(issueId);
         issue.reopen();
-        updateGithubIssueStatus(member.getId(), issue, organizationName, repositoryName, IssueStatus.OPEN, member.getNickname()); // TODO: 차후 interface로 closed와 통일
+        updateGithubIssueStatus(member.getId(), issue, organizationName, repositoryName, IssueStatus.OPEN, member.getNickname(), labels); // TODO: 차후 interface로 closed와 통일
     }
 
     @Cacheable(value = "issueDetail", key = "#issueId + ':' + #organizationName + ':' + #repositoryName")
@@ -268,13 +268,17 @@ public class IssueService {
         String organizationName,
         String repositoryName,
         IssueStatus status,
-        String assignees
+        String assignees,
+        List<String> labels
     ) {
         GithubIssueUpdateServiceRequest request = GithubIssueUpdateServiceRequest.builder()
             .memberId(memberId)
             .organizationName(organizationName)
             .repositoryName(repositoryName)
+            .title(issue.getTitle())
+            .body(issue.getContent())
             .assignees(assignees)
+            .labels(labels)
             .issueNumber(issue.getGithubIssueNumber())
             .state(status.name())
             .build();
