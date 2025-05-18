@@ -68,15 +68,19 @@ public class OpenViduApiService {
     public void handleWebhookEvent(OpenViduWebhookEventServiceRequest request) {
         try {
             WebhookEvent event = webhookReceiver.receive(request.body(), request.openViduToken());
-            if (ROOM_STARTED.equals(event.getEvent())) {
-                return;
+
+            log.info("웹훅 이벤트 수신 - event: {}", event.getEvent());
+            Long memberId;
+            Long teamId;
+            if (requiresIdentity(event)) {
+                String identity = getIdentity(event);
+                memberId = extractIdFromIdentity(identity, 0);
+                teamId = extractIdFromIdentity(identity, 1);
+                log.info("이벤트 identity 정보 - memberId: {}, teamId: {}", memberId, teamId);
+            } else {
+                teamId = null;
+                memberId = null;
             }
-
-            String identity = getIdentity(event);
-            Long memberId = extractIdFromIdentity(identity, 0);
-            Long teamId = extractIdFromIdentity(identity, 1);
-
-            log.info("웹훅 이벤트 수신 - event: {}, memberId: {}, teamId: {}", event.getEvent(), memberId, teamId);
 
             eventHandlers.stream()
                 .filter(handler -> handler.support(event.getEvent()))
@@ -91,6 +95,7 @@ public class OpenViduApiService {
                         throw new InvalidRequest();
                     }
                 );
+
         } catch (InvalidRequest e) {
             log.error("잘못된 요청 - message: {}, body: {}", e.getMessage(), request.body(), e);
             throw e;
@@ -100,14 +105,27 @@ public class OpenViduApiService {
         }
     }
 
+    private boolean requiresIdentity(WebhookEvent event) {
+        return switch (event.getEvent()) {
+            case "participant_joined", "participant_left", "track_published", "room_finished" -> true;
+            default -> false;
+        };
+    }
+
+
     private String getIdentity(WebhookEvent event) {
         if (ROOM_FINISHED.getEventType().equals(event.getEvent())) {
             log.info("방 종료 이벤트 수신 - event: {}", event.getEvent());
             return temporaryRoomIdentityRepository.findById(event.getRoom().getSid()).getIdentity();
         }
 
+        if (event.getParticipant() == null) {
+            throw new InvalidRequest();
+        }
+
         return event.getParticipant().getIdentity();
     }
+
 
     private Long extractIdFromIdentity(String identity, int index) {
         return Long.parseLong(identity.split(":")[index]); // memberId:teamId
