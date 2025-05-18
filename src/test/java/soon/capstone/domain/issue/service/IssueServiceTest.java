@@ -201,7 +201,7 @@ class IssueServiceTest extends IntegrationTestSupport {
         issueRepository.save(issue);
 
         // when
-        issueService.closedIssue(member.getId(), issue.getId(), team.getOrganizationName(), project.getTitle());
+        issueService.closedIssue(member, issue.getId(), team.getOrganizationName(), project.getTitle(), List.of(""));
 
         // then
         Issue closedIssue = issueRepository.findById(issue.getId());
@@ -320,7 +320,7 @@ class IssueServiceTest extends IntegrationTestSupport {
         issueRepository.save(issue);
 
         // when
-        issueService.reopenIssue(member.getId(), issue.getId(), team.getOrganizationName(), project.getTitle());
+        issueService.reopenIssue(member, issue.getId(), team.getOrganizationName(), project.getTitle(), List.of(""));
 
         // then
         Issue reopendIssue = issueRepository.findById(issue.getId());

@@ -2,6 +2,8 @@ package soon.capstone.domain.issue.service.dto.request;
 
 import lombok.Builder;
 
+import java.util.List;
+
 @Builder
 public record IssueUpdateStatusServiceRequest(
 
@@ -10,7 +12,8 @@ public record IssueUpdateStatusServiceRequest(
     Long issueId,
     String organizationName,
     String repositoryName,
-    String status
+    String status,
+    List<String> labels
 
 ) {
 }

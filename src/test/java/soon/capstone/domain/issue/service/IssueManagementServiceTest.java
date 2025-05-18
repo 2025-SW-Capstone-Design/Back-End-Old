@@ -764,10 +764,11 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
 
         // then
         verify(issueService).closedIssue(
-            anyLong(),
+            any(Member.class),
             anyLong(),
             anyString(),
-            anyString()
+            anyString(),
+            anyList()
         );
     }
 
