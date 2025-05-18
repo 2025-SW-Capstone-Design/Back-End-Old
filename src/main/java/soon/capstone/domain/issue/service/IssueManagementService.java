@@ -94,13 +94,15 @@ public class IssueManagementService {
                 member,
                 request.issueId(),
                 request.organizationName(),
-                request.repositoryName()
+                request.repositoryName(),
+                request.labels()
             );
             case OPEN -> issueService.reopenIssue(
                 member,
                 request.issueId(),
                 request.organizationName(),
-                request.repositoryName()
+                request.repositoryName(),
+                request.labels()
             );
         }
     }
