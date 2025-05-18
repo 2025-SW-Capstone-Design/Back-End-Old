@@ -767,7 +767,8 @@ class IssueManagementServiceTest extends IntegrationTestSupport {
             any(Member.class),
             anyLong(),
             anyString(),
-            anyString()
+            anyString(),
+            anyList()
         );
     }
 
