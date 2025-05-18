@@ -2,6 +2,7 @@ package soon.capstone.domain.chatroom.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import soon.capstone.domain.chatroom.entity.ChatRoom;
@@ -15,6 +16,7 @@ import soon.capstone.domain.team.repository.TeamRepository;
 import soon.capstone.domain.teammember.service.TeamMemberValidator;
 import soon.capstone.infrastructure.openai.service.GptSummaryService;
 import soon.capstone.infrastructure.redis.summary.repository.SummaryTextRepository;
+import soon.capstone.infrastructure.s3.service.S3Service;
 
 import java.util.List;
 
@@ -29,6 +31,10 @@ public class ChatRoomService {
     private final TeamMemberValidator teamMemberValidator;
     private final SummaryTextRepository summaryTextRepository;
     private final MeetingLogService meetingLogService;
+    private final S3Service s3Service;
+
+    @Value("${cloud.aws.s3.bucket}")
+    private String bucketName;
 
     public Long createRoom(ChatRoomCreateServiceRequest request) {
         teamMemberValidator.validateTeamMember(request.teamId(), request.memberId());
@@ -81,6 +87,13 @@ public class ChatRoomService {
             summaryTextRepository.save(request.chatRoomId(), summaryToText);
         }
     }
+
+    public void summarizeChatroomToS3File(ChatRoomSummarizeServiceRequest request) {
+        byte[] fileBytes = s3Service.getFileBytes(bucketName, request.text());
+        String s = gptSummaryService.summaryToText(fileBytes, request.text());
+        meetingLogService.create(createMeetingLogCreateServiceRequest(request.teamId(), request.memberId(), s));
+    }
+
 
     private MeetingLogCreateServiceRequest createMeetingLogCreateServiceRequest(Long teamId, Long memberId, String content) {
         return MeetingLogCreateServiceRequest.builder()

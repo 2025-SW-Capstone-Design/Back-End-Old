@@ -33,12 +33,14 @@ public class RoomFinishedEventHandler implements OpenViduWebhookEventHandler {
         log.info("팀: {}, 회의 종료: {}", teamId, event.getRoom().getName());
 
         Long chatRoomId = chatRoomService.finishRoom(createChatRoomFinishServiceRequest(event, teamId, memberId));
-        String combinedSummary = summaryTextService.findAllByChatRoomId(chatRoomId).stream()
-            .map(summaryText -> summaryText.getSummary() + "\n")
-            .collect(Collectors.joining());
+        String fileName = event.getRoom().getName() + memberId + teamId + ".ogg";
+        chatRoomService.summarizeChatroomToS3File(createChatRoomSummarizeServiceRequest(teamId, memberId, chatRoomId, fileName));
+//        String combinedSummary = summaryTextService.findAllByChatRoomId(chatRoomId).stream()
+//            .map(summaryText -> summaryText.getSummary() + "\n")
+//            .collect(Collectors.joining());
 
-        chatRoomService.summarizeChatroom(createChatRoomSummarizeServiceRequest(teamId, memberId, chatRoomId, combinedSummary));
-        summaryTextService.resetIndex(chatRoomId);
+//        chatRoomService.summarizeChatroom(createChatRoomSummarizeServiceRequest(teamId, memberId, chatRoomId, combinedSummary));
+//        summaryTextService.resetIndex(chatRoomId);
 
         temporaryRoomIdentityRepository.deleteById(event.getRoom().getSid());
     }
