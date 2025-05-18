@@ -91,13 +91,13 @@ public class IssueManagementService {
 
         switch (IssueStatus.from(request.status())) {
             case CLOSED -> issueService.closedIssue(
-                member.getId(),
+                member,
                 request.issueId(),
                 request.organizationName(),
                 request.repositoryName()
             );
             case OPEN -> issueService.reopenIssue(
-                member.getId(),
+                member,
                 request.issueId(),
                 request.organizationName(),
                 request.repositoryName()

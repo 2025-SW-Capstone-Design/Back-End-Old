@@ -12,6 +12,7 @@ import soon.capstone.domain.issue.entity.IssueStatus;
 import soon.capstone.domain.issue.repository.issue.IssueRepository;
 import soon.capstone.domain.issue.service.dto.response.IssueDetailResponse;
 import soon.capstone.domain.issue.service.dto.response.IssueLabelDetailResponse;
+import soon.capstone.domain.member.entity.Member;
 import soon.capstone.domain.milestone.entity.Milestone;
 import soon.capstone.domain.project.entity.Project;
 import soon.capstone.domain.teammember.entity.TeamMember;
@@ -118,10 +119,10 @@ public class IssueService {
         @CacheEvict(value = "issueDetail", key = "#issueId + ':' + #organizationName + ':' + #repositoryName")
     })
     @Transactional
-    public void closedIssue(Long memberId, Long issueId, String organizationName, String repositoryName) {
+    public void closedIssue(Member member, Long issueId, String organizationName, String repositoryName) {
         Issue issue = issueRepository.findById(issueId);
         issue.closed();
-        updateGithubIssueStatus(memberId, issue, organizationName, repositoryName, IssueStatus.CLOSED);
+        updateGithubIssueStatus(member.getId(), issue, organizationName, repositoryName, IssueStatus.CLOSED, member.getNickname());
     }
 
     @Caching(evict = {
@@ -130,10 +131,10 @@ public class IssueService {
         @CacheEvict(value = "issueDetail", key = "#issueId + ':' + #organizationName + ':' + #repositoryName")
     })
     @Transactional
-    public void reopenIssue(Long memberId, Long issueId, String organizationName, String repositoryName) {
+    public void reopenIssue(Member member, Long issueId, String organizationName, String repositoryName) {
         Issue issue = issueRepository.findById(issueId);
         issue.reopen();
-        updateGithubIssueStatus(memberId, issue, organizationName, repositoryName, IssueStatus.OPEN); // TODO: 차후 interface로 closed와 통일
+        updateGithubIssueStatus(member.getId(), issue, organizationName, repositoryName, IssueStatus.OPEN, member.getNickname()); // TODO: 차후 interface로 closed와 통일
     }
 
     @Cacheable(value = "issueDetail", key = "#issueId + ':' + #organizationName + ':' + #repositoryName")
@@ -266,12 +267,14 @@ public class IssueService {
         Issue issue,
         String organizationName,
         String repositoryName,
-        IssueStatus status
+        IssueStatus status,
+        String assignees
     ) {
         GithubIssueUpdateServiceRequest request = GithubIssueUpdateServiceRequest.builder()
             .memberId(memberId)
             .organizationName(organizationName)
             .repositoryName(repositoryName)
+            .assignees(assignees)
             .issueNumber(issue.getGithubIssueNumber())
             .state(status.name())
             .build();
