@@ -18,7 +18,9 @@ import soon.capstone.infrastructure.openai.service.GptSummaryService;
 import soon.capstone.infrastructure.redis.summary.repository.SummaryTextRepository;
 import soon.capstone.infrastructure.s3.service.S3Service;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -89,11 +91,35 @@ public class ChatRoomService {
     }
 
     public void summarizeChatroomToS3File(ChatRoomSummarizeServiceRequest request) {
-        byte[] fileBytes = s3Service.getFileBytes(bucketName, request.text());
-        String s = gptSummaryService.summaryToText(fileBytes, request.text());
-        meetingLogService.create(createMeetingLogCreateServiceRequest(request.teamId(), request.memberId(), s));
+        String meetingName = request.text();
+        String longestFilePath = findLongestFileByMeetingName(meetingName, request.teamId(), request.memberId());
+
+        if (longestFilePath == null) {
+            log.error("No matching S3 files found for meeting name: {}", meetingName);
+            return;
+        }
+
+        log.info("Selected file for summarization: {}", longestFilePath);
+        byte[] fileBytes = s3Service.getFileBytes(bucketName, longestFilePath);
+        String summary = gptSummaryService.summaryToText(fileBytes, longestFilePath);
+        meetingLogService.create(createMeetingLogCreateServiceRequest(request.teamId(), request.memberId(), summary));
     }
 
+    private String findLongestFileByMeetingName(String meetingName, Long teamId, Long memberId) {
+        List<String> allFiles = s3Service.listFiles(bucketName);
+
+        String filePrefix = meetingName;
+
+        String teamIdStr = String.valueOf(teamId);
+        String memberIdStr = String.valueOf(memberId);
+
+        Optional<String> longestFile = allFiles.stream()
+            .filter(file -> file.startsWith(filePrefix))
+            .filter(file -> file.contains(teamIdStr) && file.contains(memberIdStr))
+            .max(Comparator.comparingInt(String::length));
+
+        return longestFile.orElse(null);
+    }
 
     private MeetingLogCreateServiceRequest createMeetingLogCreateServiceRequest(Long teamId, Long memberId, String content) {
         return MeetingLogCreateServiceRequest.builder()
@@ -102,5 +128,4 @@ public class ChatRoomService {
             .content(content)
             .build();
     }
-
 }

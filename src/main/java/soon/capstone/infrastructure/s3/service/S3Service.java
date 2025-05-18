@@ -6,6 +6,9 @@ import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
+import software.amazon.awssdk.services.s3.model.S3Object;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @Service
@@ -21,5 +24,13 @@ public class S3Service {
 
         ResponseBytes<GetObjectResponse> objectBytes = s3Client.getObjectAsBytes(getObjectRequest);
         return objectBytes.asByteArray();
+    }
+
+    public List<String> listFiles(String bucketName) {
+        return s3Client.listObjectsV2Paginator(builder -> builder.bucket(bucketName).build())
+            .contents()
+            .stream()
+            .map(S3Object::key)
+            .toList();
     }
 }
