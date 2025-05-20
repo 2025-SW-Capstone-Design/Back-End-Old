@@ -59,7 +59,7 @@ public class TeamService {
         return teamReaderService.getTeamDetails(memberId);
     }
 
-    private void validateTeamLeader(Long memberId, Long teamId) {
+    private void validateTeamLeader(Long teamId, Long memberId) {
         TeamMember teamMember = teamMemberRepository.findByTeamIdAndMemberId(teamId, memberId);
         if (!isLeader(teamMember.getRole())) {
             throw new IsNotTeamLeaderException();
