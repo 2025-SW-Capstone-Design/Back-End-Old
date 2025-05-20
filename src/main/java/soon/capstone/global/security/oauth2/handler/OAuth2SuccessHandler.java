@@ -24,7 +24,7 @@ import java.io.IOException;
 @Component
 public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
-    private final String BASE_URL = "http://localhost:3000";
+    private final String BASE_URL = "https://planhub.site";
     private final JwtProvider jwtProvider;
     private final OAuthTokenRepository oauthTokenRepository;
     private final JwtRepository jwtRepository;
