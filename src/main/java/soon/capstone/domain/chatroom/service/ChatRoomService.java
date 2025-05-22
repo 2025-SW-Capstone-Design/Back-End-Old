@@ -92,7 +92,7 @@ public class ChatRoomService {
 
     public void summarizeChatroomToS3File(ChatRoomSummarizeServiceRequest request) {
         String meetingName = request.text();
-        String longestFilePath = findLongestFileByMeetingName(meetingName, request.teamId(), request.memberId());
+        String longestFilePath = findLargestFileByMeetingName(meetingName, request.teamId(), request.memberId());
 
         if (longestFilePath == null) {
             log.error("No matching S3 files found for meeting name: {}", meetingName);
@@ -105,21 +105,19 @@ public class ChatRoomService {
         meetingLogService.create(createMeetingLogCreateServiceRequest(request.teamId(), request.memberId(), summary));
     }
 
-    private String findLongestFileByMeetingName(String meetingName, Long teamId, Long memberId) {
+    private String findLargestFileByMeetingName(String meetingName, Long teamId, Long memberId) {
         List<String> allFiles = s3Service.listFiles(bucketName);
-
-        String filePrefix = meetingName;
 
         String teamIdStr = String.valueOf(teamId);
         String memberIdStr = String.valueOf(memberId);
 
-        Optional<String> longestFile = allFiles.stream()
-            .filter(file -> file.startsWith(filePrefix))
+        return allFiles.stream()
+            .filter(file -> file.contains(meetingName))
             .filter(file -> file.contains(teamIdStr) && file.contains(memberIdStr))
-            .max(Comparator.comparingInt(String::length));
-
-        return longestFile.orElse(null);
+            .max(Comparator.comparingLong(file -> s3Service.getFileSize(bucketName, file)))
+            .orElse(null);
     }
+
 
     private MeetingLogCreateServiceRequest createMeetingLogCreateServiceRequest(Long teamId, Long memberId, String content) {
         return MeetingLogCreateServiceRequest.builder()

@@ -33,4 +33,10 @@ public class S3Service {
             .map(S3Object::key)
             .toList();
     }
+
+    public long getFileSize(String bucket, String key) {
+        return s3Client.headObject(builder -> builder.bucket(bucket).key(key).build())
+            .contentLength();
+    }
+
 }
