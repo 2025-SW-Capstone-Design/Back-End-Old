@@ -68,29 +68,42 @@ public class OpenViduApiService {
     public void handleWebhookEvent(OpenViduWebhookEventServiceRequest request) {
         try {
             WebhookEvent event = webhookReceiver.receive(request.body(), request.openViduToken());
-            if (ROOM_STARTED.equals(event.getEvent())) {
-                return;
+
+            log.info("웹훅 이벤트 수신 - event: {}", event.getEvent());
+
+            Long memberId = null;
+            Long teamId = null;
+
+            if (requiresIdentity(event)) {
+                try {
+                    String identity = getIdentity(event);
+                    memberId = extractIdFromIdentity(identity, 0);
+                    teamId = extractIdFromIdentity(identity, 1);
+                    log.info("이벤트 identity 정보 - memberId: {}, teamId: {}", memberId, teamId);
+                } catch (Exception e) {
+                    log.warn("Identity 정보를 추출할 수 없습니다 - event: {}", event.getEvent(), e);
+                }
             }
 
-            String identity = getIdentity(event);
-            Long memberId = extractIdFromIdentity(identity, 0);
-            Long teamId = extractIdFromIdentity(identity, 1);
+            boolean handlerFound = false;
+            for (OpenViduWebhookEventHandler handler : eventHandlers) {
+                if (handler.support(event.getEvent())) {
+                    log.debug("이벤트 핸들러 실행 - handler: {}, event: {}", handler.getClass().getSimpleName(), event.getEvent());
+                    handler.handle(event, teamId, memberId);
+                    handlerFound = true;
+                    break;
+                }
+            }
 
-            log.info("웹훅 이벤트 수신 - event: {}, memberId: {}, teamId: {}", event.getEvent(), memberId, teamId);
+            if (!handlerFound) {
+                if (isEgressEvent(event.getEvent())) {
+                    log.info("Egress 이벤트 처리됨 - event: {}", event.getEvent());
+                } else {
+                    log.warn("지원하지 않는 이벤트 타입 - event: {}", event.getEvent());
+                    throw new InvalidRequest();
+                }
+            }
 
-            eventHandlers.stream()
-                .filter(handler -> handler.support(event.getEvent()))
-                .findFirst()
-                .ifPresentOrElse(
-                    handler -> {
-                        log.debug("이벤트 핸들러 실행 - handler: {}, event: {}", handler.getClass().getSimpleName(), event.getEvent());
-                        handler.handle(event, teamId, memberId);
-                    },
-                    () -> {
-                        log.warn("지원하지 않는 이벤트 타입 - event: {}", event.getEvent());
-                        throw new InvalidRequest();
-                    }
-                );
         } catch (InvalidRequest e) {
             log.error("잘못된 요청 - message: {}, body: {}", e.getMessage(), request.body(), e);
             throw e;
@@ -100,17 +113,33 @@ public class OpenViduApiService {
         }
     }
 
+    private boolean requiresIdentity(WebhookEvent event) {
+        return switch (event.getEvent()) {
+            case "participant_joined", "participant_left", "track_published", "room_finished" -> true;
+            case "egress_started", "egress_updated", "egress_ended" -> false;
+            default -> false;
+        };
+    }
+
+    private boolean isEgressEvent(String eventType) {
+        return eventType != null && eventType.startsWith("egress_");
+    }
+
     private String getIdentity(WebhookEvent event) {
         if (ROOM_FINISHED.getEventType().equals(event.getEvent())) {
             log.info("방 종료 이벤트 수신 - event: {}", event.getEvent());
             return temporaryRoomIdentityRepository.findById(event.getRoom().getSid()).getIdentity();
         }
 
+        if (event.getParticipant() == null) {
+            throw new InvalidRequest();
+        }
+
         return event.getParticipant().getIdentity();
     }
+
 
     private Long extractIdFromIdentity(String identity, int index) {
         return Long.parseLong(identity.split(":")[index]); // memberId:teamId
     }
-
 }

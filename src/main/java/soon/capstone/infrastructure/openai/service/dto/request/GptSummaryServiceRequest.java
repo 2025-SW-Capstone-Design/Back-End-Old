@@ -5,6 +5,8 @@ import soon.capstone.infrastructure.openai.common.PromptType;
 
 import java.util.List;
 
+import static soon.capstone.infrastructure.openai.common.PromptType.FINAL_SUMMARY;
+
 @Builder
 public record GptSummaryServiceRequest(
 
@@ -18,14 +20,14 @@ public record GptSummaryServiceRequest(
     }
 
     public static GptSummaryServiceRequest of(String text, String model, boolean isFinal) {
-        PromptType promptType = (isFinal) ? PromptType.FINAL_SUMMARY : PromptType.INTERMEDIATE_SUMMARY;
+//        PromptType promptType = (isFinal) ? PromptType.FINAL_SUMMARY : PromptType.INTERMEDIATE_SUMMARY;
 
         return GptSummaryServiceRequest.builder()
             .model(model)
             .messages(List.of(
                 Message.builder()
                     .role("system")
-                    .content(promptType.getPrompt())
+                    .content(FINAL_SUMMARY.getPrompt())
                     .build(),
                 Message.builder()
                     .role("user")

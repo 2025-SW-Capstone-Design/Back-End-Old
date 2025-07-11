@@ -39,13 +39,13 @@ public class TeamService {
     }
 
     public String generateInvitationCode(Long teamId, Long memberId) {
-        validateTeamLeader(memberId);
+        validateTeamLeader(teamId, memberId);
 
         return teamInvitationService.generateInvitationCode(teamId);
     }
 
     public void sendInvitationEmails(TeamInvitationServiceRequest request, Long memberId) {
-        validateTeamLeader(memberId);
+        validateTeamLeader(request.teamId(), memberId);
 
         teamInvitationService.sendInvitationEmails(request.teamId(), request.emails());
     }
@@ -59,8 +59,8 @@ public class TeamService {
         return teamReaderService.getTeamDetails(memberId);
     }
 
-    private void validateTeamLeader(Long memberId) {
-        TeamMember teamMember = teamMemberRepository.findByMemberId(memberId);
+    private void validateTeamLeader(Long teamId, Long memberId) {
+        TeamMember teamMember = teamMemberRepository.findByTeamIdAndMemberId(teamId, memberId);
         if (!isLeader(teamMember.getRole())) {
             throw new IsNotTeamLeaderException();
         }

@@ -1,6 +1,7 @@
 package soon.capstone.infrastructure.restclient.config;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
@@ -15,7 +16,8 @@ public class RestClientConfig {
     private String openAiKey;
 
     private static final String GITHUB_BASE_URL = "https://api.github.com";
-    private static final String OPEN_AI_BASE_URL = "https://api.openai.com/v1/chat/completions";
+    private static final String OPEN_AI_CHAT_BASE_URL = "https://api.openai.com/v1/chat/completions";
+    private static final String OPEN_AI_BASE_URL = "https://api.openai.com/v1";
 
     public RestClient githubRestClient(String oauth2Token) {
         return RestClient.builder()
@@ -30,6 +32,14 @@ public class RestClientConfig {
             .baseUrl(OPEN_AI_BASE_URL)
             .defaultHeader(AUTHORIZATION_HEADER.getValue(), BEARER_PREFIX.getValue() + openAiKey)
             .defaultHeader("Content-Type", APPLICATION_JSON_VALUE)
+            .build();
+    }
+
+    public RestClient openAiChatRestClient() {
+        return RestClient.builder()
+            .baseUrl(OPEN_AI_CHAT_BASE_URL)
+            .defaultHeader(AUTHORIZATION_HEADER.getValue(), BEARER_PREFIX.getValue() + openAiKey)
+            .defaultHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
             .build();
     }
 

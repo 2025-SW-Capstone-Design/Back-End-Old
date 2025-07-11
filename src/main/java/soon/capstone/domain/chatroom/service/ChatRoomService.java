@@ -2,6 +2,7 @@ package soon.capstone.domain.chatroom.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import soon.capstone.domain.chatroom.entity.ChatRoom;
@@ -15,8 +16,11 @@ import soon.capstone.domain.team.repository.TeamRepository;
 import soon.capstone.domain.teammember.service.TeamMemberValidator;
 import soon.capstone.infrastructure.openai.service.GptSummaryService;
 import soon.capstone.infrastructure.redis.summary.repository.SummaryTextRepository;
+import soon.capstone.infrastructure.s3.service.S3Service;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -29,6 +33,10 @@ public class ChatRoomService {
     private final TeamMemberValidator teamMemberValidator;
     private final SummaryTextRepository summaryTextRepository;
     private final MeetingLogService meetingLogService;
+    private final S3Service s3Service;
+
+    @Value("${cloud.aws.s3.bucket}")
+    private String bucketName;
 
     public Long createRoom(ChatRoomCreateServiceRequest request) {
         teamMemberValidator.validateTeamMember(request.teamId(), request.memberId());
@@ -82,6 +90,35 @@ public class ChatRoomService {
         }
     }
 
+    public void summarizeChatroomToS3File(ChatRoomSummarizeServiceRequest request) {
+        String meetingName = request.text();
+        String longestFilePath = findLargestFileByMeetingName(meetingName, request.teamId(), request.memberId());
+
+        if (longestFilePath == null) {
+            log.error("No matching S3 files found for meeting name: {}", meetingName);
+            return;
+        }
+
+        log.info("Selected file for summarization: {}", longestFilePath);
+        byte[] fileBytes = s3Service.getFileBytes(bucketName, longestFilePath);
+        String summary = gptSummaryService.summaryToText(fileBytes, longestFilePath);
+        meetingLogService.create(createMeetingLogCreateServiceRequest(request.teamId(), request.memberId(), summary));
+    }
+
+    private String findLargestFileByMeetingName(String meetingName, Long teamId, Long memberId) {
+        List<String> allFiles = s3Service.listFiles(bucketName);
+
+        String teamIdStr = String.valueOf(teamId);
+        String memberIdStr = String.valueOf(memberId);
+
+        return allFiles.stream()
+            .filter(file -> file.contains(meetingName))
+            .filter(file -> file.contains(teamIdStr) && file.contains(memberIdStr))
+            .max(Comparator.comparingLong(file -> s3Service.getFileSize(bucketName, file)))
+            .orElse(null);
+    }
+
+
     private MeetingLogCreateServiceRequest createMeetingLogCreateServiceRequest(Long teamId, Long memberId, String content) {
         return MeetingLogCreateServiceRequest.builder()
             .teamId(teamId)
@@ -89,5 +126,4 @@ public class ChatRoomService {
             .content(content)
             .build();
     }
-
 }
